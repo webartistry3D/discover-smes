@@ -1,0 +1,1523 @@
+// ============================================================
+// DISCOVER FESTAC — PRISMA DATABASE SCHEMA
+// PostgreSQL + Prisma ORM
+// Designed for multi-tenant, multi-LGA scalability
+// ============================================================
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions", "relationJoins"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pg_trgm]
+}
+
+// ─────────────────────────────────────────────
+// USERS & AUTH
+// ─────────────────────────────────────────────
+
+model User {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  phone            String    @unique
+  email            String?   @unique
+  firstName        String
+  lastName         String
+  avatar           String?
+  role             UserRole  @default(USER)
+  isActive         Boolean   @default(true)
+  isPhoneVerified  Boolean   @default(false)
+  passwordHash     String?
+  lastLoginAt      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relations
+  vendor           Vendor?
+  reviews          Review[]
+  bookings         Booking[]
+  otpCodes         OtpCode[]
+  refreshTokens    RefreshToken[]
+  auditLogs        AuditLog[]
+  payments         Payment[]
+
+  @@index([phone])
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+model OtpCode {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @db.Uuid
+  code      String
+  phone     String
+  expiresAt DateTime
+  isUsed    Boolean  @default(false)
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([phone, code])
+  @@index([expiresAt])
+  @@map("otp_codes")
+}
+
+model RefreshToken {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @db.Uuid
+  token     String   @unique
+  expiresAt DateTime
+  isRevoked Boolean  @default(false)
+  userAgent String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ─────────────────────────────────────────────
+// CATEGORIES
+// ─────────────────────────────────────────────
+
+model Category {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  slug        String   @unique
+  description String?
+  icon        String   @default("store")
+  color       String   @default("#2D6A4F")
+  coverImage  String?
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  vendors      Vendor[]
+  subCategories SubCategory[]
+
+  @@index([slug])
+  @@index([isActive, sortOrder])
+  @@map("categories")
+}
+
+model SubCategory {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String
+  slug       String
+  parentId   String   @db.Uuid
+  isActive   Boolean  @default(true)
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  parent  Category @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  vendors Vendor[]
+
+  @@unique([parentId, slug])
+  @@index([parentId])
+  @@map("sub_categories")
+}
+
+// ─────────────────────────────────────────────
+// VENDORS
+// ─────────────────────────────────────────────
+
+model Vendor {
+  id               String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId           String            @unique @db.Uuid
+  businessName     String
+  slug             String            @unique
+  description      String
+  phone            String
+  whatsappPhone    String?
+  email            String?
+  address          String
+  ward             String?
+  lga              String            @default("Amuwo-Odofin")
+  state            String            @default("Lagos")
+  
+  // Geo — stored as lat/lng floats; PostGIS point for spatial queries
+  latitude         Float?
+  longitude        Float?
+  
+  // Media
+  coverImage       String?
+  logo             String?
+  images           String[]          @default([])
+  
+  // Classification
+  categoryId       String            @db.Uuid
+  subCategoryId    String?           @db.Uuid
+  businessType     BusinessType      @default(SERVICE)
+  priceRange       PriceRange        @default(MID_RANGE)
+  tags             String[]          @default([])
+  
+  // Operational
+  openingHours     Json?             // OpeningHours JSON
+  deliveryAvailable Boolean          @default(false)
+  
+  // Status & Verification
+  status           VendorStatus      @default(PENDING)
+  verificationLevel VerificationLevel @default(NONE)
+  isFeatured       Boolean           @default(false)
+  featuredUntil    DateTime?
+  
+  // Stats (denormalized for performance)
+  averageRating    Float             @default(0)
+  totalReviews     Int               @default(0)
+  totalViews       Int               @default(0)
+  totalWhatsappClicks Int            @default(0)
+  totalLeads       Int               @default(0)
+  
+  // AI Knowledge Base
+  aiContext        String?           // Serialized knowledge base for AI
+  
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  // Relations
+  owner            User              @relation(fields: [userId], references: [id])
+  category         Category          @relation(fields: [categoryId], references: [id])
+  subCategory      SubCategory?      @relation(fields: [subCategoryId], references: [id])
+  products         Product[]
+  services         Service[]
+  reviews          Review[]
+  bookings         Booking[]
+  verificationRequests VerificationRequest[]
+  analyticsEvents  AnalyticsEvent[]
+  faqs             VendorFaq[]
+  promotions       Promotion[]
+  loyaltyPrograms  LoyaltyProgram[]
+  whatsappCampaigns WhatsAppCampaign[]
+  messages         Message[]
+  incomes          Income[]
+  expenses         Expense[]
+  invoices         Invoice[]
+  customers        Customer[]
+  inventoryItems   InventoryItem[]
+  stockMovements   StockMovement[]
+  stockAlerts      StockAlert[]
+  taxRecords       TaxRecord[]
+  financialReports FinancialReport[]
+  aiConfiguration  AIConfiguration?
+  payments         Payment[]
+  paymentConfigurations PaymentConfiguration[]
+  subscription     Subscription?
+  chatbotSettings  ChatbotSettings?
+  chatbotRules     ChatbotRule[]
+  chatbotSessions  ChatbotSession[]
+  usageLogs        UsageLog[]
+  vendorQuota      VendorQuota?
+  responseCache    ResponseCache[]
+
+  @@index([slug])
+  @@index([categoryId])
+  @@index([lga, ward])
+  @@index([status])
+  @@index([verificationLevel])
+  @@index([isFeatured])
+  @@index([averageRating])
+  @@index([latitude, longitude])
+  // Full-text search index on businessName and description
+  @@map("vendors")
+}
+
+// ─────────────────────────────────────────────
+// PRODUCTS & SERVICES
+// ─────────────────────────────────────────────
+
+model Product {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId    String   @db.Uuid
+  name        String
+  description String?
+  price       Decimal  @db.Decimal(12, 2)
+  currency    String   @default("NGN")
+  images      String[] @default([])
+  isAvailable Boolean  @default(true)
+  stock       Int?
+  unit        String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@index([vendorId, isAvailable])
+  @@map("products")
+}
+
+model Service {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId        String   @db.Uuid
+  name            String
+  description     String?
+  price           Decimal? @db.Decimal(12, 2)
+  priceLabel      String?
+  currency        String   @default("NGN")
+  durationMinutes Int?
+  images          String[] @default([])
+  isAvailable     Boolean  @default(true)
+  bookingRequired Boolean  @default(false)
+  sortOrder       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  vendor   Vendor    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+
+  @@index([vendorId, isAvailable])
+  @@map("services")
+}
+
+model VendorFaq {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId  String   @db.Uuid
+  question  String
+  answer    String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@index([vendorId])
+  @@map("vendor_faqs")
+}
+
+// ─────────────────────────────────────────────
+// REVIEWS
+// ─────────────────────────────────────────────
+
+model Review {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId     String   @db.Uuid
+  userId       String   @db.Uuid
+  rating       Int      // 1-5
+  comment      String?
+  images       String[] @default([])
+  isVerified   Boolean  @default(false)
+  helpfulCount Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([vendorId, userId])
+  @@index([vendorId, rating])
+  @@index([userId])
+  @@map("reviews")
+}
+
+// ─────────────────────────────────────────────
+// BOOKINGS
+// ─────────────────────────────────────────────
+
+model Booking {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId        String        @db.Uuid
+  userId          String        @db.Uuid
+  serviceId       String?       @db.Uuid
+  scheduledAt     DateTime
+  durationMinutes Int?
+  status          BookingStatus @default(PENDING)
+  notes           String?
+  customerName    String
+  customerPhone   String
+  reminderSent    Boolean       @default(false)
+  price           Decimal?      @db.Decimal(12, 2)
+  currency        String        @default("NGN")
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  vendor  Vendor   @relation(fields: [vendorId], references: [id])
+  user    User     @relation(fields: [userId], references: [id])
+  service Service? @relation(fields: [serviceId], references: [id])
+
+  @@index([vendorId, scheduledAt])
+  @@index([userId])
+  @@index([status])
+  @@index([scheduledAt])
+  @@map("bookings")
+}
+
+// ─────────────────────────────────────────────
+// MESSAGES (WhatsApp)
+// ─────────────────────────────────────────────
+
+model Message {
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId       String        @db.Uuid
+  fromPhone      String
+  toPhone        String
+  direction      MessageDirection
+  content        String
+  messageType    String        @default("text")
+  whatsappMsgId  String?       @unique
+  status         MessageStatus @default(SENT)
+  isAiGenerated  Boolean       @default(false)
+  intent         String?
+  
+  // Twilio-specific fields
+  provider       MessageProvider @default(FACEBOOK)
+  twilioSid      String?       @unique
+  twilioStatus   String?
+  twilioErrorCode  String?
+  twilioErrorMessage  String?
+  priority       MessagePriority @default(NORMAL)
+  queuedAt       DateTime?
+  sentAt         DateTime?
+  deliveredAt    DateTime?
+  readAt         DateTime?
+  
+  createdAt      DateTime      @default(now())
+
+  vendor Vendor @relation(fields: [vendorId], references: [id])
+
+  @@index([vendorId, createdAt])
+  @@index([fromPhone])
+  @@index([twilioSid])
+  @@map("messages")
+}
+
+// ─────────────────────────────────────────────
+// VERIFICATION
+// ─────────────────────────────────────────────
+
+model VerificationRequest {
+  id              String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId        String                    @db.Uuid
+  requestedLevel  RequestedVerificationLevel
+  status          VerificationRequestStatus @default(PENDING)
+  documents       String[]                  @default([])
+  notes           String?
+  reviewedById    String?                   @db.Uuid
+  reviewedAt      DateTime?
+  rejectionReason String?
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+
+  vendor Vendor @relation(fields: [vendorId], references: [id])
+
+  @@index([vendorId])
+  @@index([status])
+  @@map("verification_requests")
+}
+
+// ─────────────────────────────────────────────
+// PROMOTIONS
+// ─────────────────────────────────────────────
+
+model Promotion {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId    String    @db.Uuid
+  title       String
+  description String?
+  imageUrl    String?
+  discount    Float?
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@index([vendorId, isActive])
+  @@index([startDate, endDate])
+  @@map("promotions")
+}
+
+// ─────────────────────────────────────────────
+// LOYALTY PROGRAMS
+// ─────────────────────────────────────────────
+
+model LoyaltyProgram {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId          String   @db.Uuid
+  name              String
+  description       String?
+  pointsPerNaira    Float    @default(1) // Points earned per Naira spent
+  redemptionRate    Float    @default(100) // Points needed for 1 Naira discount
+  minPointsToRedeem Int      @default(100) // Minimum points to redeem
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  vendor       Vendor         @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  loyaltyTiers LoyaltyTier[]
+  members      CustomerLoyalty[]
+
+  @@index([vendorId, isActive])
+  @@map("loyalty_programs")
+}
+
+model LoyaltyTier {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  programId       String   @db.Uuid
+  name            String
+  minPoints       Int      // Minimum points to reach this tier
+  discountPercent Float?   // Discount percentage for this tier
+  benefits        String?  // JSON string of benefits
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  program LoyaltyProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+  members  CustomerLoyalty[]
+
+  @@index([programId])
+  @@map("loyalty_tiers")
+}
+
+model CustomerLoyalty {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  customerId  String   @db.Uuid
+  programId   String   @db.Uuid
+  tierId      String?  @db.Uuid
+  points      Int      @default(0)
+  totalSpent  Float    @default(0)
+  joinedAt    DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  customer    Customer         @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  program     LoyaltyProgram   @relation(fields: [programId], references: [id], onDelete: Cascade)
+  tier        LoyaltyTier?     @relation(fields: [tierId], references: [id], onDelete: SetNull)
+  transactions LoyaltyTransaction[]
+
+  @@unique([customerId, programId])
+  @@index([customerId])
+  @@index([programId])
+  @@map("customer_loyalty")
+}
+
+model LoyaltyTransaction {
+  id          String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  loyaltyId   String                 @db.Uuid
+  type        LoyaltyTransactionType
+  points      Int
+  description String?
+  metadata    String?                // JSON string for additional data
+  createdAt   DateTime               @default(now())
+
+  loyalty CustomerLoyalty @relation(fields: [loyaltyId], references: [id], onDelete: Cascade)
+
+  @@index([loyaltyId])
+  @@index([createdAt])
+  @@map("loyalty_transactions")
+}
+
+enum LoyaltyTransactionType {
+  EARNED
+  REDEEMED
+  ADJUSTED
+  EXPIRED
+}
+
+// ─────────────────────────────────────────────
+// WHATSAPP CAMPAIGNS
+// ─────────────────────────────────────────────
+
+model WhatsAppCampaign {
+  id          String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId    String              @db.Uuid
+  name        String
+  type        WhatsAppCampaignType
+  status      CampaignStatus      @default(DRAFT)
+  content     String              // JSON string with campaign content
+  scheduledAt DateTime?
+  sentAt      DateTime?
+  recipientCount Int             @default(0)
+  deliveredCount Int            @default(0)
+  readCount   Int                @default(0)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@index([vendorId, status])
+  @@index([scheduledAt])
+  @@map("whatsapp_campaigns")
+}
+
+enum WhatsAppCampaignType {
+  BROADCAST
+  STATUS_UPDATE
+  PROMOTION
+  REMINDER
+}
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  SENT
+  DELIVERED
+  FAILED
+}
+
+// ─────────────────────────────────────────────
+// PAYMENTS
+// ─────────────────────────────────────────────
+
+model Payment {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String        @db.Uuid
+  vendorId        String?       @db.Uuid
+  bookingId       String?       @db.Uuid
+  amount          Float
+  currency        String        @default("NGN")
+  status          PaymentStatus @default(PENDING)
+  paymentMethod   String?
+  paymentGateway  String        @default("paystack")
+  reference       String?       @unique
+  metadata        String?       // JSON string for additional data
+  paidAt          DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vendor  Vendor?  @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+
+  @@index([userId, status])
+  @@index([vendorId, status])
+  @@index([bookingId])
+  @@index([reference])
+  @@index([createdAt])
+  @@map("payments")
+}
+
+model PaymentConfiguration {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId        String   @db.Uuid
+  paymentGateway  String   @default("paystack")
+  publicKey       String
+  secretKey       String
+  testMode        Boolean  @default(true)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@unique([vendorId, paymentGateway])
+  @@index([vendorId])
+  @@map("payment_configurations")
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+  PROCESSING
+}
+
+// ─────────────────────────────────────────────
+// SUBSCRIPTIONS
+// ─────────────────────────────────────────────
+
+model Subscription {
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId        String            @db.Uuid
+  planType        SubscriptionPlan  @default(FREEMIUM)
+  status          SubscriptionStatus @default(ACTIVE)
+  startDate       DateTime          @default(now())
+  endDate         DateTime?
+  billingCycle    BillingCycle      @default(MONTHLY)
+  autoRenew       Boolean           @default(true)
+  cancelledAt     DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  payments SubscriptionPayment[]
+
+  @@unique([vendorId])
+  @@index([vendorId, status])
+  @@index([endDate])
+  @@map("subscriptions")
+}
+
+model SubscriptionPayment {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  subscriptionId  String        @db.Uuid
+  amount          Float
+  currency        String        @default("NGN")
+  status          PaymentStatus @default(PENDING)
+  paymentMethod   String?
+  paymentGateway  String        @default("paystack")
+  reference       String?       @unique
+  paidAt          DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([subscriptionId, status])
+  @@index([reference])
+  @@map("subscription_payments")
+}
+
+enum SubscriptionPlan {
+  FREEMIUM
+  GROWTH
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  TRIAL
+  PENDING
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+// ─────────────────────────────────────────────
+// ANALYTICS
+// ─────────────────────────────────────────────
+
+model AnalyticsEvent {
+  id        String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId  String?           @db.Uuid
+  eventType AnalyticsEventType
+  userId    String?           @db.Uuid
+  sessionId String?
+  metadata  Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime          @default(now())
+
+  vendor Vendor? @relation(fields: [vendorId], references: [id])
+
+  @@index([vendorId, eventType, createdAt])
+  @@index([eventType, createdAt])
+  @@map("analytics_events")
+}
+
+model SearchLog {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  query       String
+  categoryId  String?  @db.Uuid
+  lga         String?
+  ward        String?
+  resultCount Int      @default(0)
+  userId      String?  @db.Uuid
+  sessionId   String?
+  createdAt   DateTime @default(now())
+
+  @@index([query, createdAt])
+  @@index([categoryId])
+  @@map("search_logs")
+}
+
+// ─────────────────────────────────────────────
+// FINANCIAL MANAGEMENT
+// ─────────────────────────────────────────────
+
+model Income {
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId    String        @db.Uuid
+  amount      Decimal       @db.Decimal(12, 2)
+  currency    String        @default("NGN")
+  category    IncomeCategory
+  source      String?       // e.g., "Product Sale", "Service Booking", "Custom"
+  sourceId    String?       @db.Uuid // Reference to booking, product, etc.
+  description String?
+  date        DateTime      @default(now())
+  notes       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@index([vendorId, date])
+  @@index([category])
+  @@map("incomes")
+}
+
+model Expense {
+  id          String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId    String         @db.Uuid
+  amount      Decimal        @db.Decimal(12, 2)
+  currency    String         @default("NGN")
+  category    ExpenseCategory
+  description String?
+  date        DateTime       @default(now())
+  receiptUrl  String?
+  notes       String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@index([vendorId, date])
+  @@index([category])
+  @@map("expenses")
+}
+
+model Invoice {
+  id              String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId        String          @db.Uuid
+  customerId      String?         @db.Uuid
+  invoiceNumber   String          @unique
+  customerName    String
+  customerEmail   String?
+  customerPhone   String?
+  customerAddress String?
+  subtotal        Decimal         @db.Decimal(12, 2)
+  taxRate         Float           @default(0)
+  taxAmount       Decimal         @db.Decimal(12, 2) @default(0)
+  discountAmount  Decimal         @db.Decimal(12, 2) @default(0)
+  total           Decimal         @db.Decimal(12, 2)
+  currency        String          @default("NGN")
+  status          InvoiceStatus   @default(DRAFT)
+  dueDate         DateTime?
+  paidDate        DateTime?
+  notes           String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  vendor    Vendor           @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  customer  Customer?        @relation(fields: [customerId], references: [id])
+  lineItems InvoiceLineItem[]
+
+  @@index([vendorId, status])
+  @@index([invoiceNumber])
+  @@index([dueDate])
+  @@map("invoices")
+}
+
+model InvoiceLineItem {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  invoiceId   String   @db.Uuid
+  description String
+  quantity    Int      @default(1)
+  unitPrice   Decimal  @db.Decimal(12, 2)
+  total       Decimal  @db.Decimal(12, 2)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@map("invoice_line_items")
+}
+
+model FinancialReport {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId    String   @db.Uuid
+  reportType  FinancialReportType
+  period      String   // e.g., "2024-Q1", "2024-01", "YTD"
+  startDate   DateTime
+  endDate     DateTime
+  
+  // Report data (stored as JSON for flexibility)
+  data        Json
+  
+  // Summary metrics
+  totalRevenue    Decimal? @db.Decimal(15, 2)
+  totalExpenses   Decimal? @db.Decimal(15, 2)
+  netProfit       Decimal? @db.Decimal(15, 2)
+  grossMargin     Decimal? @db.Decimal(5, 2) // percentage
+  operatingMargin Decimal? @db.Decimal(5, 2) // percentage
+  
+  // Cash flow specific
+  netCashFlow     Decimal? @db.Decimal(15, 2)
+  operatingCashFlow Decimal? @db.Decimal(15, 2)
+  investingCashFlow Decimal? @db.Decimal(15, 2)
+  financingCashFlow Decimal? @db.Decimal(15, 2)
+  
+  // Sales analytics specific
+  totalSales      Decimal? @db.Decimal(15, 2)
+  averageOrderValue Decimal? @db.Decimal(12, 2)
+  totalOrders     Int?
+  conversionRate  Decimal? @db.Decimal(5, 2)
+  
+  // Tax summary specific
+  totalTaxLiability Decimal? @db.Decimal(15, 2)
+  totalTaxPaid     Decimal? @db.Decimal(15, 2)
+  taxBalance       Decimal? @db.Decimal(15, 2)
+  
+  generatedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  
+  @@index([vendorId, reportType])
+  @@index([vendorId, period])
+  @@index([generatedAt])
+  @@map("financial_reports")
+}
+
+// ─────────────────────────────────────────────
+// CUSTOMER RELATIONSHIP MANAGEMENT (CRM)
+// ─────────────────────────────────────────────
+
+model Customer {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId        String    @db.Uuid
+  name            String
+  email           String?
+  phone           String?
+  address         String?
+  city            String?
+  state           String?
+  company         String?
+  notes           String?
+  status          CustomerStatus @default(ACTIVE)
+  totalPurchases  Decimal   @default(0) @db.Decimal(12, 2)
+  totalSpent      Decimal   @default(0) @db.Decimal(12, 2)
+  lastContactDate DateTime?
+  lastPurchaseDate DateTime?
+  leadScore       Int?      // Lead qualification score (0-100)
+  leadTier        String?   // 'HOT' | 'WARM' | 'COLD'
+  leadStatus      String?   // Lead status for CRM
+  source          String?   // Lead source (e.g., 'WHATSAPP_AI', 'WEBSITE', 'REFERRAL')
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  vendor         Vendor           @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  customerNotes  CustomerNote[]
+  tags           CustomerTag[]
+  communications CommunicationLog[]
+  invoices       Invoice[]
+  loyaltyMemberships CustomerLoyalty[]
+
+  @@index([vendorId, status])
+  @@index([vendorId, lastContactDate])
+  @@index([vendorId, lastPurchaseDate])
+  @@index([phone])
+  @@index([leadTier])
+  @@map("customers")
+}
+
+model AIConfiguration {
+  id                        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId                  String   @unique @db.Uuid
+  isEnabled                 Boolean  @default(true)
+  greetingMessage           String?
+  faqEnabled                Boolean  @default(true)
+  pricingInquiryEnabled     Boolean  @default(true)
+  bookingAssistanceEnabled Boolean  @default(true)
+  inventoryInquiryEnabled   Boolean  @default(true)
+  leadQualificationEnabled  Boolean  @default(true)
+  leadQualificationThreshold Int?   @default(70)
+  customResponses           Json?    // Custom responses for specific intents
+  businessHoursOverride     String?
+  outOfHoursMessage         String?
+  escalationPhone           String?
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@map("ai_configurations")
+}
+
+model CustomerNote {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  customerId String   @db.Uuid
+  content    String
+  isPrivate  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId, createdAt])
+  @@map("customer_notes")
+}
+
+model CustomerTag {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  customerId String   @db.Uuid
+  name       String
+  color      String   @default("#6366f1")
+  createdAt  DateTime @default(now())
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, name])
+  @@index([customerId])
+  @@map("customer_tags")
+}
+
+model CommunicationLog {
+  id         String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  customerId String              @db.Uuid
+  type       CommunicationType
+  direction  CommunicationDirection
+  subject    String?
+  content    String
+  status     CommunicationStatus @default(SENT)
+  metadata   Json?
+  createdAt  DateTime            @default(now())
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId, createdAt])
+  @@index([type])
+  @@map("communication_logs")
+}
+
+// ─────────────────────────────────────────────
+// INVENTORY MANAGEMENT
+// ─────────────────────────────────────────────
+
+model InventoryItem {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId    String   @db.Uuid
+  sku         String?  @unique
+  name        String
+  description String?
+  category    String?
+  unit        String?  // e.g., "pcs", "kg", "liters"
+  quantity    Decimal  @default(0) @db.Decimal(12, 2)
+  minStock    Decimal  @default(0) @db.Decimal(12, 2) // Minimum stock level for alerts
+  maxStock    Decimal? @db.Decimal(12, 2) // Maximum stock level
+  unitCost    Decimal  @default(0) @db.Decimal(12, 2) // Cost per unit
+  sellingPrice Decimal @default(0) @db.Decimal(12, 2) // Selling price per unit
+  location    String?  // Storage location
+  supplier    String?  // Supplier name
+  reorderPoint Decimal @default(0) @db.Decimal(12, 2) // Point at which to reorder
+  reorderQty  Decimal? @db.Decimal(12, 2) // Quantity to reorder
+  isActive    Boolean  @default(true)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  vendor         Vendor          @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  stockMovements StockMovement[]
+  stockAlerts    StockAlert[]
+
+  @@index([vendorId, isActive])
+  @@index([sku])
+  @@index([category])
+  @@map("inventory_items")
+}
+
+model StockMovement {
+  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  inventoryId String       @db.Uuid
+  vendorId    String       @db.Uuid
+  type        MovementType
+  quantity    Decimal      @db.Decimal(12, 2)
+  unitCost    Decimal?     @db.Decimal(12, 2) // Cost at time of movement
+  reference   String?      // Invoice number, PO number, etc.
+  reason      String?      // Reason for the movement
+  notes       String?
+  createdAt   DateTime     @default(now())
+
+  inventory InventoryItem @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  vendor     Vendor        @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@index([inventoryId, createdAt])
+  @@index([vendorId, createdAt])
+  @@index([type])
+  @@map("stock_movements")
+}
+
+model StockAlert {
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  inventoryId String        @db.Uuid
+  vendorId    String        @db.Uuid
+  type        AlertType
+  severity    AlertSeverity @default(MEDIUM)
+  message     String
+  quantity    Decimal       @db.Decimal(12, 2)
+  threshold   Decimal       @db.Decimal(12, 2)
+  isResolved  Boolean       @default(false)
+  resolvedAt  DateTime?
+  createdAt   DateTime      @default(now())
+
+  inventory InventoryItem @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  vendor     Vendor        @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@index([inventoryId, isResolved])
+  @@index([vendorId, isResolved])
+  @@index([severity])
+  @@map("stock_alerts")
+}
+
+// ─────────────────────────────────────────────
+// AUDIT LOG
+// ─────────────────────────────────────────────
+
+model AuditLog {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String?  @db.Uuid
+  action     String
+  resource   String
+  resourceId String?
+  oldValues  Json?
+  newValues  Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([resource, resourceId])
+  @@map("audit_logs")
+}
+
+// ─────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────
+
+enum UserRole {
+  USER
+  VENDOR
+  MODERATOR
+  VERIFICATION_OFFICER
+  LGA_OPERATOR
+  SUPER_ADMIN
+}
+
+enum VendorStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  REJECTED
+}
+
+enum VerificationLevel {
+  NONE
+  PHONE_VERIFIED
+  BUSINESS_VERIFIED
+  GOVERNMENT_ENDORSED
+}
+
+enum RequestedVerificationLevel {
+  BUSINESS_VERIFIED
+  GOVERNMENT_ENDORSED
+}
+
+enum VerificationRequestStatus {
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum BusinessType {
+  PRODUCT
+  SERVICE
+  HYBRID
+}
+
+enum PriceRange {
+  BUDGET
+  MID_RANGE
+  PREMIUM
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum MessageStatus {
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
+enum MessageProvider {
+  FACEBOOK
+  TWILIO
+}
+
+enum MessagePriority {
+  LOW
+  NORMAL
+  HIGH
+}
+
+enum AnalyticsEventType {
+  VENDOR_VIEW
+  VENDOR_WHATSAPP_CLICK
+  VENDOR_SEARCH_APPEARANCE
+  PRODUCT_VIEW
+  SERVICE_VIEW
+  BOOKING_CREATED
+  BOOKING_CONFIRMED
+  BOOKING_CANCELLED
+  REVIEW_CREATED
+  SEARCH_PERFORMED
+  CATEGORY_BROWSED
+  PROMOTION_VIEWED
+}
+
+enum IncomeCategory {
+  PRODUCT_SALE
+  SERVICE_BOOKING
+  CONSULTATION
+  COMMISSION
+  OTHER
+}
+
+enum ExpenseCategory {
+  RENT
+  UTILITIES
+  SALARIES
+  SUPPLIES
+  MARKETING
+  TRANSPORT
+  EQUIPMENT
+  MAINTENANCE
+  INSURANCE
+  TAXES
+  OTHER
+}
+
+enum FinancialReportType {
+  PROFIT_LOSS
+  CASH_FLOW
+  SALES_ANALYTICS
+  TAX_SUMMARY
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum CustomerStatus {
+  ACTIVE
+  INACTIVE
+  VIP
+  LEAD
+}
+
+enum CommunicationType {
+  EMAIL
+  PHONE_CALL
+  SMS
+  WHATSAPP
+  IN_PERSON
+  OTHER
+}
+
+enum CommunicationDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum CommunicationStatus {
+  SENT
+  DELIVERED
+  READ
+  FAILED
+  PENDING
+}
+
+enum MovementType {
+  IN
+  OUT
+  ADJUSTMENT
+  TRANSFER
+  RETURN
+  DAMAGE
+  LOSS
+}
+
+enum AlertType {
+  LOW_STOCK
+  OUT_OF_STOCK
+  OVERSTOCK
+  EXPIRED
+  REORDER_NEEDED
+}
+
+enum AlertSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+// ─── TAX MANAGEMENT ─────────────────────────────────────────────
+
+enum TaxType {
+  VAT
+  INCOME_TAX
+  SALES_TAX
+  SERVICE_TAX
+  WITHHOLDING_TAX
+  CUSTOMS_DUTY
+  EXCISE_DUTY
+  OTHER
+}
+
+enum TaxStatus {
+  PENDING
+  PAID
+  OVERDUE
+  PARTIALLY_PAID
+  WAIVED
+  DISPUTED
+}
+
+model TaxRecord {
+  id          String   @id @default(cuid())
+  vendorId    String   @db.Uuid
+  vendor      Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  
+  type        TaxType
+  period      String   // e.g., "2024-Q1", "2024-01"
+  description String?
+  
+  // Tax calculation fields
+  baseAmount  Decimal  @db.Decimal(15, 2)
+  taxRate     Decimal  @db.Decimal(5, 2) // e.g., 7.5 for 7.5%
+  taxAmount   Decimal  @db.Decimal(15, 2)
+  
+  // VAT specific
+  vatInput    Decimal? @db.Decimal(15, 2)
+  vatOutput   Decimal? @db.Decimal(15, 2)
+  netVat      Decimal? @db.Decimal(15, 2)
+  
+  // Status and payment
+  status      TaxStatus @default(PENDING)
+  dueDate     DateTime?
+  paidDate    DateTime?
+  
+  // Additional fields
+  reference   String?  // Invoice number, transaction reference
+  notes       String?
+  metadata    Json?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  payments    TaxPayment[]
+  reports     TaxReport[]
+  
+  @@index([vendorId])
+  @@index([type])
+  @@index([status])
+  @@index([dueDate])
+}
+
+model TaxPayment {
+  id          String   @id @default(cuid())
+  taxRecordId String
+  taxRecord   TaxRecord @relation(fields: [taxRecordId], references: [id], onDelete: Cascade)
+  
+  amount      Decimal  @db.Decimal(15, 2)
+  paymentDate DateTime @default(now())
+  paymentMethod String? // e.g., "BANK_TRANSFER", "CASH", "ONLINE"
+  reference   String?  // Payment reference/receipt number
+  notes       String?
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([taxRecordId])
+  @@index([paymentDate])
+}
+
+model TaxReport {
+  id          String   @id @default(cuid())
+  taxRecordId String
+  taxRecord   TaxRecord @relation(fields: [taxRecordId], references: [id], onDelete: Cascade)
+  
+  reportType  String   // e.g., "VAT_RETURN", "INCOME_TAX_RETURN"
+  period      String
+  generatedAt DateTime @default(now())
+  
+  // Report data
+  totalTax    Decimal  @db.Decimal(15, 2)
+  totalPaid   Decimal  @db.Decimal(15, 2)
+  balance     Decimal  @db.Decimal(15, 2)
+  
+  // Compliance status
+  isCompliant Boolean  @default(true)
+  complianceNotes String?
+  
+  // Report file
+  fileUrl     String?
+  fileName    String?
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([taxRecordId])
+  @@index([reportType])
+  @@index([period])
+}
+
+// ─── CHATBOT SYSTEM ─────────────────────────────────────────────
+
+enum ChatbotRuleType {
+  FAQ
+  PRICING
+  DELIVERY
+  HOURS
+  PAYMENT
+  LOCATION
+  CUSTOM
+}
+
+enum ChatbotSessionStatus {
+  ACTIVE
+  HUMAN_TAKEOVER
+  CLOSED
+}
+
+model ChatbotSettings {
+  id                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId            String   @db.Uuid
+  chatbotEnabled      Boolean  @default(true)
+  greetingMessage     String?  @db.Text
+  fallbackMessage     String?  @db.Text
+  humanHandoffMessage String? @db.Text
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Relations
+  vendor              Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  rules               ChatbotRule[]
+  sessions            ChatbotSession[]
+
+  @@unique([vendorId])
+  @@index([vendorId])
+  @@map("chatbot_settings")
+}
+
+model ChatbotRule {
+  id                String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId          String           @db.Uuid
+  ruleType          ChatbotRuleType
+  keyword           String
+  questionPattern   String?          @db.Text
+  response          String           @db.Text
+  priority          Int              @default(0)
+  isActive          Boolean          @default(true)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  // Relations
+  vendor            Vendor           @relation(fields: [vendorId], references: [id], onDelete: Cascade, map: "chatbot_rules_vendor_fkey")
+  settings          ChatbotSettings  @relation(fields: [vendorId], references: [id], onDelete: Cascade, map: "chatbot_rules_settings_fkey")
+
+  @@index([vendorId])
+  @@index([ruleType])
+  @@index([isActive])
+  @@map("chatbot_rules")
+}
+
+model ChatbotSession {
+  id                String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId          String                @db.Uuid
+  customerPhone     String
+  botActive         Boolean               @default(true)
+  humanTakeover     Boolean               @default(false)
+  sessionStatus     ChatbotSessionStatus  @default(ACTIVE)
+  lastMessage       String?               @db.Text
+  lastMessageAt     DateTime?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  // Relations
+  vendor            Vendor                @relation(fields: [vendorId], references: [id], onDelete: Cascade, map: "chatbot_sessions_vendor_fkey")
+  settings          ChatbotSettings       @relation(fields: [vendorId], references: [id], onDelete: Cascade, map: "chatbot_sessions_settings_fkey")
+
+  @@index([vendorId])
+  @@index([customerPhone])
+  @@index([sessionStatus])
+  @@map("chatbot_sessions")
+}
+
+// ─────────────────────────────────────────────
+// WHATSAPP COST CONTROL SYSTEM (WCCS)
+// ─────────────────────────────────────────────
+
+model UsageLog {
+  id               String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId         String      @db.Uuid
+  sessionId        String?     @db.Uuid
+  messageType      MessageType
+  conversationId   String?
+  costEstimate     Float
+  cached           Boolean     @default(false)
+  timestamp        DateTime    @default(now())
+
+  // Relations
+  vendor           Vendor      @relation(fields: [vendorId], references: [id], onDelete: Cascade, map: "usage_logs_vendor_fkey")
+
+  @@index([vendorId])
+  @@index([timestamp])
+  @@index([messageType])
+  @@map("usage_logs")
+}
+
+model VendorQuota {
+  id               String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId         String      @unique @db.Uuid
+  monthlyLimit     Int
+  currentUsage     Int         @default(0)
+  resetDate        DateTime
+  reducedMode      Boolean     @default(false)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  // Relations
+  vendor           Vendor      @relation(fields: [vendorId], references: [id], onDelete: Cascade, map: "vendor_quotas_vendor_fkey")
+
+  @@index([vendorId])
+  @@map("vendor_quotas")
+}
+
+model ResponseCache {
+  id               String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId         String      @db.Uuid
+  keyword          String
+  response         String      @db.Text
+  hitCount         Int         @default(0)
+  lastHitAt        DateTime?
+  expiresAt        DateTime
+  createdAt        DateTime    @default(now())
+
+  // Relations
+  vendor           Vendor      @relation(fields: [vendorId], references: [id], onDelete: Cascade, map: "response_cache_vendor_fkey")
+
+  @@unique([vendorId, keyword])
+  @@index([vendorId])
+  @@index([keyword])
+  @@index([expiresAt])
+  @@map("response_cache")
+}
+
+enum MessageType {
+  MARKETING
+  UTILITY
+  AUTHENTICATION
+  SERVICE
+  SESSION
+}

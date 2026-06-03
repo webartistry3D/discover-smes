@@ -1,0 +1,119 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --brand-green: #1B5E20;
+    --brand-green-light: #2E7D32;
+    --brand-amber: #F59E0B;
+    --safe-top: env(safe-area-inset-top);
+    --safe-bottom: env(safe-area-inset-bottom);
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    font-family: 'DM Sans', sans-serif;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply font-body text-gray-900 bg-white;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+}
+
+@layer components {
+  /* Glassmorphism card */
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-xl border border-white/20 shadow-glass;
+  }
+
+  .glass-card-dark {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-glass-dark;
+  }
+
+  /* Skeleton loader */
+  .skeleton {
+    @apply relative overflow-hidden bg-gray-100 before:absolute before:inset-0 before:bg-gradient-to-r before:from-gray-100 before:via-gray-50 before:to-gray-100 before:bg-[length:200%_100%] before:animate-shimmer;
+  }
+
+  /* Scrollbar */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+  .scrollbar-thin::-webkit-scrollbar { width: 4px; height: 4px; }
+  .scrollbar-thin::-webkit-scrollbar-track { @apply bg-transparent; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { @apply bg-gray-300 rounded-full; }
+
+  /* WhatsApp button */
+  .btn-whatsapp {
+    @apply inline-flex items-center gap-2 px-4 py-2.5 bg-whatsapp text-white font-semibold text-sm rounded-xl
+           hover:bg-green-500 active:scale-95 transition-all duration-150 shadow-sm;
+  }
+
+  /* Primary button */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-festac-green text-white font-semibold text-sm rounded-xl
+           hover:bg-festac-green-light active:scale-95 transition-all duration-150 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gray-100 text-gray-800 font-semibold text-sm rounded-xl
+           hover:bg-gray-200 active:scale-95 transition-all duration-150;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 border-2 border-festac-green text-festac-green font-semibold text-sm rounded-xl
+           hover:bg-festac-green hover:text-white active:scale-95 transition-all duration-150;
+  }
+
+  /* Input */
+  .input {
+    @apply w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm
+           placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500
+           transition-all duration-150;
+  }
+
+  /* Vendor card */
+  .vendor-card {
+    @apply bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 overflow-hidden cursor-pointer;
+  }
+
+  /* Badge */
+  .badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold;
+  }
+
+  /* Star rating */
+  .star-filled { @apply text-festac-amber fill-festac-amber; }
+  .star-empty { @apply text-gray-300; }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+  .safe-pt { padding-top: env(safe-area-inset-top); }
+  .safe-pb { padding-bottom: env(safe-area-inset-bottom); }
+}
+
+/* Leaflet map overrides */
+.leaflet-container {
+  font-family: 'DM Sans', sans-serif !important;
+  border-radius: 1rem;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 1rem !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
+}
