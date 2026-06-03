@@ -123,8 +123,8 @@ services:
         sync: false            # e.g. https://discover-festac-api.onrender.com/api/v1
 
 # ─── POSTGRES DATABASE ────────────────────────────────────────
-databases:
-  - name: discover-festac-db
-    databaseName: discover_festac
-    plan: starter              # free | starter (free has 90-day expiry)
-    region: oregon
+#databases:
+#  - name: discover-festac-db
+#    databaseName: discover_festac
+#    plan: starter              # free | starter (free has 90-day expiry)
+#    region: oregon
