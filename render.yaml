@@ -96,7 +96,7 @@ services:
   - type: web
     name: discover-festac-web
     runtime: static
-    region: oregon
+    # region: oregon
     rootDir: apps/frontend
     buildCommand: |
       cd ../../
