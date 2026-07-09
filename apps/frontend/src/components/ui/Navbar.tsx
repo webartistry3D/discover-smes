@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, MapPin, X, Sun, Moon, User, LogOut, ChevronDown, Bell } from 'lucide-react';
+import { Search, MapPin, X, Sun, Moon, User, LogOut, ChevronDown, Bell, Lock, LogIn, UserPlus } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAuthStore } from '../../stores/auth.store';
 import { useUIStore } from '../../stores/ui.store';
@@ -16,9 +16,12 @@ export function Navbar() {
   const searchRef = useRef<HTMLInputElement>(null);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [showSignoutModal, setShowSignoutModal] = useState(false);
+  const [isAuthDropdownOpen, setIsAuthDropdownOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
+  const authRef = useRef<HTMLDivElement>(null);
   const [dropdownPos, setDropdownPos] = useState({ top: 0, right: 0 });
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const authDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isProfileDropdownOpen && profileRef.current) {
@@ -26,6 +29,13 @@ export function Navbar() {
       setDropdownPos({ top: rect.bottom + 8, right: window.innerWidth - rect.right });
     }
   }, [isProfileDropdownOpen]);
+
+  useEffect(() => {
+    if (isAuthDropdownOpen && authRef.current) {
+      const rect = authRef.current.getBoundingClientRect();
+      setDropdownPos({ top: rect.bottom + 8, right: window.innerWidth - rect.right });
+    }
+  }, [isAuthDropdownOpen]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -40,6 +50,20 @@ export function Navbar() {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [isProfileDropdownOpen]);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (!isAuthDropdownOpen) return;
+      if (
+        authDropdownRef.current && !authDropdownRef.current.contains(e.target as Node) &&
+        authRef.current && !authRef.current.contains(e.target as Node)
+      ) {
+        setIsAuthDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [isAuthDropdownOpen]);
 
   const isHome = location === '/';
 
@@ -64,6 +88,17 @@ export function Navbar() {
 
   const closeProfileDropdown = () => {
     setIsProfileDropdownOpen(false);
+  };
+
+  const closeAuthDropdown = () => {
+    setIsAuthDropdownOpen(false);
+  };
+
+  const toggleAuthDropdown = () => {
+    if (!isAuthDropdownOpen) {
+      closeAllDropdowns();
+    }
+    setIsAuthDropdownOpen(!isAuthDropdownOpen);
   };
 
   return (
@@ -156,12 +191,12 @@ export function Navbar() {
 
                   </div>
               ) : (
-                <div className="flex items-center gap-2">
+                <div className="relative" ref={authRef}>
                   <button
-                    onClick={() => openAuthModal('login')}
-                    className={clsx('text-sm font-semibold transition-colors px-3 py-2', isDarkMode ? 'text-gray-300 hover:text-festac-green' : 'text-gray-700 hover:text-festac-green')}
+                    onClick={toggleAuthDropdown}
+                    className={clsx('p-2 rounded-xl transition-colors', isDarkMode ? 'hover:bg-gray-800 text-gray-300' : 'hover:bg-gray-100 text-gray-700')}
                   >
-                    Sign In
+                    <Lock size={24} />
                   </button>
                 </div>
               )}
@@ -218,6 +253,63 @@ export function Navbar() {
                 >
                   <LogOut size={18} />
                   <span>Sign Out</span>
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Auth Dropdown — Sign In / Sign Up */}
+      <AnimatePresence>
+        {isAuthDropdownOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.5 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="fixed inset-0 bg-black z-40"
+              onClick={closeAuthDropdown}
+            />
+            <motion.div
+              initial={{ opacity: 0, y: -20, scaleY: 0.9, originY: 0 }}
+              animate={{ opacity: 1, y: 0, scaleY: 1 }}
+              exit={{ opacity: 0, y: -16, scaleY: 0.9 }}
+              transition={{ type: 'spring', stiffness: 280, damping: 28, mass: 0.8 }}
+              ref={authDropdownRef}
+              style={{ position: 'fixed', top: dropdownPos.top, right: dropdownPos.right, zIndex: 40 }}
+              className={clsx(
+                'w-max shadow-2xl overflow-hidden rounded-2xl',
+                isDarkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white border border-gray-200'
+              )}
+            >
+              <div className="p-2">
+                <button
+                  onClick={() => {
+                    closeAuthDropdown();
+                    openAuthModal('login');
+                  }}
+                  className={clsx(
+                    'w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-sm font-medium whitespace-nowrap',
+                    isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
+                  )}
+                >
+                  <LogIn size={18} />
+                  <span>Sign In</span>
+                </button>
+                <button
+                  onClick={() => {
+                    closeAuthDropdown();
+                    openAuthModal('signup');
+                  }}
+                  className={clsx(
+                    'w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-sm font-medium whitespace-nowrap',
+                    isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
+                  )}
+                >
+                  <UserPlus size={18} />
+                  <span>Sign Up</span>
                 </button>
               </div>
             </motion.div>
