@@ -41,6 +41,10 @@ export function AuthModal() {
       setTimeout(() => {
         closeAuthModal();
         resetForm();
+        // Route SUPER_ADMIN to admin panel
+        if (res.data.user.role === 'SUPER_ADMIN') {
+          window.location.href = '/admin';
+        }
       }, 1500);
     },
     onError: (error: Error) => toast.error(error.message),

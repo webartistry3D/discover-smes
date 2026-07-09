@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, MapPin, X, Sun, Moon, User, LogOut, ChevronDown, Bell, Lock, LogIn, UserPlus } from 'lucide-react';
+import { Search, MapPin, X, Sun, Moon, User, LogOut, ChevronDown, Bell, Lock, LogIn, UserPlus, Store } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAuthStore } from '../../stores/auth.store';
 import { useUIStore } from '../../stores/ui.store';
@@ -310,6 +310,21 @@ export function Navbar() {
                 >
                   <UserPlus size={18} />
                   <span>Sign Up</span>
+                </button>
+                <div className="h-px my-2" />
+                <button
+                  onClick={() => {
+                    closeAuthDropdown();
+                    // Navigate to vendor onboarding
+                    window.location.href = '/vendors/new';
+                  }}
+                  className={clsx(
+                    'w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-sm font-medium whitespace-nowrap',
+                    isDarkMode ? 'text-festac-green hover:bg-gray-700' : 'text-festac-green hover:bg-green-50'
+                  )}
+                >
+                  <Store size={18} />
+                  <span>Become a Vendor</span>
                 </button>
               </div>
             </motion.div>

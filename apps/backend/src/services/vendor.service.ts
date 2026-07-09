@@ -222,6 +222,15 @@ export class VendorService {
       },
     });
 
+    // Create verification request for admin approval
+    await prisma.verificationRequest.create({
+      data: {
+        vendorId: vendor.id,
+        status: 'PENDING',
+        requestedLevel: 'BUSINESS_VERIFIED',
+      },
+    });
+
     return vendor;
   }
 

@@ -6,6 +6,7 @@ import { Toaster } from 'react-hot-toast';
 import { clsx } from 'clsx';
 import { Navbar } from './components/ui/Navbar';
 import { MobileBottomNav } from './components/ui/MobileBottomNav';
+import { AdminMobileBottomNav } from './components/ui/AdminMobileBottomNav';
 import PWAInstallPrompt from './components/ui/PWAInstallPrompt';
 import { AuthModal } from './components/ui/AuthModal';
 import { Spinner } from './components/ui/index';
@@ -91,7 +92,7 @@ function ProtectedRoute({ children, roles }: { children: React.ReactNode; roles?
 function AppLayout({ children }: { children: React.ReactNode }) {
   const { isDarkMode } = useUIStore();
   const [location] = useLocation();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const isLandingPage = location === '/';
 
   return (
@@ -100,7 +101,11 @@ function AppLayout({ children }: { children: React.ReactNode }) {
       <main className={clsx('flex-1', isAuthenticated ? 'pb-20' : '')}>
         {children}
       </main>
-      {isAuthenticated && <MobileBottomNav />}
+      {isAuthenticated && (
+  <>
+    {user?.role === 'SUPER_ADMIN' ? <AdminMobileBottomNav /> : <MobileBottomNav />}
+  </>
+)}
       <PWAInstallPrompt />
       <footer className={clsx('text-white hidden', isDarkMode ? 'bg-gray-800' : 'bg-gray-900')}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2">

@@ -89,7 +89,7 @@ export function MobileBottomNav() {
       href: '/dashboard',
       icon: <LayoutDashboard size={36} />,
       requiresAuth: true,
-      roles: ['VENDOR', 'SUPER_ADMIN'],
+      roles: ['VENDOR'],
     },
     {
       label: 'Finance',
@@ -98,7 +98,7 @@ export function MobileBottomNav() {
       hasDropdown: true,
       dropdownKey: 'finance',
       requiresAuth: true,
-      roles: ['VENDOR', 'SUPER_ADMIN'],
+      roles: ['VENDOR'],
     },
     {
       label: 'Operations',
@@ -107,7 +107,7 @@ export function MobileBottomNav() {
       hasDropdown: true,
       dropdownKey: 'operations',
       requiresAuth: true,
-      roles: ['VENDOR', 'SUPER_ADMIN'],
+      roles: ['VENDOR'],
     },
     {
       label: 'Monitor',
@@ -116,7 +116,7 @@ export function MobileBottomNav() {
       hasDropdown: true,
       dropdownKey: 'monitor',
       requiresAuth: true,
-      roles: ['VENDOR', 'SUPER_ADMIN'],
+      roles: ['VENDOR'],
     },
     {
       label: 'Map',
