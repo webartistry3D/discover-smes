@@ -12,14 +12,12 @@ services:
     runtime: node
     region: oregon             # Change to: frankfurt, singapore, ohio
     plan: starter              # free | starter | standard
-    rootDir: apps/backend
+    rootDir: .
     buildCommand: |
-      cd ../../
       npm install
-      npm run build --workspace=packages/shared
-      npm run build --workspace=apps/backend
-      npm run db:migrate:prod
-    startCommand: node dist/server.js
+      cd packages/shared && npm install && npm run build && cd ../..
+      cd apps/backend && npm install && npm run db:generate && npm run build && cd ../..
+    startCommand: node apps/backend/dist/server.js
     healthCheckPath: /api/v1/health
     autoDeploy: true           # Deploy on every push to main branch
 
@@ -92,18 +90,40 @@ services:
       - key: RATE_LIMIT_MAX
         value: 100
 
+      # Redis — auto-linked from Redis service below
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: discover-smes-redis
+          property: connectionString
+      - key: REDIS_ENABLED
+        value: true
+      - key: REDIS_TTL_SECONDS
+        value: 3600
+
+      # Session
+      - key: SESSION_SECRET
+        sync: false
+      - key: SESSION_NAME
+        value: discover-sms.sid
+      - key: SESSION_MAX_AGE
+        value: 86400000
+      - key: SESSION_SECURE
+        value: true
+      - key: SESSION_SAME_SITE
+        value: none
+
   # ─── FRONTEND (Static Site) ────────────────────────────────
   - type: web
     name: discover-smes-web
     runtime: static
     region: oregon
-    rootDir: apps/frontend
+    rootDir: .
     buildCommand: |
-      cd ../../
       npm install
-      npm run build --workspace=packages/shared
-      npm run build --workspace=apps/frontend
-    staticPublishPath: dist
+      cd packages/shared && npm install && npm run build && cd ../..
+      cd apps/frontend && npm install && npm run build && cd ../..
+    staticPublishPath: apps/frontend/dist
     pullRequestPreviewsEnabled: true
     headers:
       - path: /*
@@ -123,8 +143,16 @@ services:
         sync: false            # e.g. https://discover-festac-api.onrender.com/api/v1
 
 # ─── POSTGRES DATABASE ────────────────────────────────────────
+# Already created manually on Render as discover-smes-db
 databases:
   - name: discover-smes-db
-    databaseName: discover_smes
+    databaseName: discoversmes
     plan: starter              # free | starter (free has 90-day expiry)
     region: oregon
+
+# ─── REDIS (for session storage, caching, rate limiting) ───────
+- type: redis
+  name: discover-smes-redis
+  plan: starter              # free | starter
+  region: oregon
+  maxmemoryPolicy: allkeys-lru

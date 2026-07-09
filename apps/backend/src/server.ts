@@ -3,8 +3,10 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
+import session from 'express-session';
 import { createServer } from 'http';
 import { join } from 'path';
+import connectRedis from 'connect-redis';
 
 import { config } from './config/index.js';
 import { connectDatabase } from './config/database.js';
@@ -13,6 +15,7 @@ import { apiRouter } from './routes/index.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { globalRateLimit } from './middleware/rateLimiter.js';
 import socketService from './services/socket.service.js';
+import { redisService } from './services/redis.service.js';
 
 async function bootstrap(): Promise<void> {
   const app = express();
@@ -45,6 +48,35 @@ async function bootstrap(): Promise<void> {
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
     }),
+  );
+
+  // ─── Session Middleware ─────────────────────────────────
+  let sessionStore: session.Store | undefined;
+  if (config.session.redisEnabled && redisService.isReady()) {
+    const RedisStore = connectRedis as any;
+    const redisClient = redisService.getClient();
+    if (redisClient) {
+      sessionStore = new RedisStore({ client: redisClient, prefix: 'sess:' });
+      logger.info('Using Redis for session storage');
+    }
+  } else {
+    logger.info(config.session.redisEnabled ? 'Redis not available, using memory store for sessions' : 'Using memory store for sessions (Redis disabled)');
+  }
+
+  app.use(
+    session({
+      name: config.session.name,
+      secret: config.session.secret,
+      resave: false,
+      saveUninitialized: false,
+      store: sessionStore,
+      cookie: {
+        maxAge: config.session.maxAge,
+        secure: config.session.secure,
+        sameSite: config.session.sameSite,
+        httpOnly: true,
+      },
+    })
   );
 
   // ─── Body Parsing ────────────────────────────────────────
@@ -125,6 +157,7 @@ async function bootstrap(): Promise<void> {
     httpServer.close(async () => {
       const { disconnectDatabase } = await import('./config/database.js');
       await disconnectDatabase();
+      await redisService.disconnect();
       logger.info('Server closed');
       process.exit(0);
     });

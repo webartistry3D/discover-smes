@@ -84,6 +84,15 @@ export const config = {
     localUploadDir: path.resolve(process.cwd(), 'uploads'),
   },
 
+  session: {
+    secret: optionalEnv('SESSION_SECRET', 'change-this-secret-in-production-min-32-chars'),
+    name: optionalEnv('SESSION_NAME', 'discover-sms.sid'),
+    maxAge: parseInt(optionalEnv('SESSION_MAX_AGE', '86400000'), 10), // 24 hours
+    secure: optionalEnv('SESSION_SECURE', 'true') === 'true',
+    sameSite: optionalEnv('SESSION_SAME_SITE', 'lax') as 'strict' | 'lax' | 'none',
+    redisEnabled: optionalEnv('REDIS_ENABLED', 'true') === 'true',
+  },
+
   rateLimit: {
     windowMs: parseInt(optionalEnv('RATE_LIMIT_WINDOW_MS', '900000'), 10),
     max: parseInt(optionalEnv('RATE_LIMIT_MAX', '100'), 10),

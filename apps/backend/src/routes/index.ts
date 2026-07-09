@@ -23,6 +23,7 @@ import {
 import { prisma } from '../config/database.js';
 import { sendSuccess, sendCreated, AppError } from '../utils/errors.js';
 import { logger } from '../utils/logger.js';
+import { redisService } from '../services/redis.service.js';
 
 const router = Router();
 
@@ -30,7 +31,8 @@ const router = Router();
 router.get('/health', async (_req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
-    sendSuccess(res, { status: 'ok', timestamp: new Date().toISOString(), version: '1.0.0' });
+    const redisStatus = redisService.isReady() ? 'connected' : 'disconnected';
+    sendSuccess(res, { status: 'ok', timestamp: new Date().toISOString(), version: '1.0.0', services: { database: 'connected', redis: redisStatus } });
   } catch {
     res.status(503).json({ success: false, error: { code: 'DB_ERROR', message: 'Database unavailable' } });
   }
