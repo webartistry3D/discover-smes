@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import type { CreatePaymentRequest, CreatePaymentConfigurationRequest, PaymentStatus } from '@discover-festac/shared';
+import type { CreatePaymentRequest, CreatePaymentConfigurationRequest, PaymentStatus } from '@discover-smes/shared';
 
 const prisma = new PrismaClient();
 

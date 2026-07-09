@@ -1,21 +1,61 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-import type {
-  ChatbotSettings,
-  ChatbotRule,
-  ChatbotSession,
-  ChatbotRuleType,
-  ChatbotSessionStatus,
-  UpdateChatbotSettingsRequest,
-  CreateChatbotRuleRequest,
-  UpdateChatbotRuleRequest,
-  TakeoverSessionRequest,
-  ResumeSessionRequest,
-  ProcessMessageRequest,
-  ProcessMessageResponse,
-} from '@discover-festac/shared';
+import { PrismaClient, ChatbotSettings, ChatbotRule, ChatbotSession, ChatbotRuleType, ChatbotSessionStatus } from '@prisma/client';
+import conversationAnalyticsService from '../services/conversation-analytics.service.js';
 
 const prisma = new PrismaClient();
+
+// Local type definitions
+interface UpdateChatbotSettingsRequest {
+  chatbotEnabled?: boolean;
+  greetingMessage?: string;
+  fallbackMessage?: string;
+  humanHandoffMessage?: string;
+  offlineMessage?: string;
+  handoffEnabled?: boolean;
+  businessHoursEnabled?: boolean;
+  businessHours?: any;
+  fuzzyMatchingEnabled?: boolean;
+  fuzzyThreshold?: number;
+}
+
+interface CreateChatbotRuleRequest {
+  ruleType: ChatbotRuleType;
+  keyword: string;
+  questionPattern?: string;
+  response: string;
+  priority?: number;
+}
+
+interface UpdateChatbotRuleRequest {
+  ruleType?: ChatbotRuleType;
+  keyword?: string;
+  questionPattern?: string;
+  response?: string;
+  priority?: number;
+  isActive?: boolean;
+}
+
+interface TakeoverSessionRequest {
+  sessionId: string;
+  assignedOperatorId?: string;
+}
+
+interface ResumeSessionRequest {
+  sessionId: string;
+}
+
+interface ProcessMessageRequest {
+  vendorId: string;
+  customerPhone: string;
+  message: string;
+}
+
+interface ProcessMessageResponse {
+  response: string;
+  shouldHandoff: boolean;
+  matchedRule?: ChatbotRule;
+  newState?: string;
+}
 
 class ChatbotController {
   // ─── CHATBOT SETTINGS ────────────────────────────────────────────────
@@ -431,6 +471,44 @@ class ChatbotController {
     } catch (err) {
       console.error('Process message error:', err);
       res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: 'Failed to process message' } });
+    }
+  }
+
+  // ─── CONVERSATION ANALYTICS ─────────────────────────────────────────────
+
+  async getAnalytics(req: Request, res: Response): Promise<void> {
+    try {
+      const vendorId = req.user?.vendorId;
+      const period = (req.query.period as string) || 'all';
+
+      if (!vendorId) {
+        res.status(400).json({ success: false, error: { code: 'NO_VENDOR', message: 'Vendor not found' } });
+        return;
+      }
+
+      const metrics = await conversationAnalyticsService.getVendorMetrics(vendorId, period);
+      res.json({ success: true, data: metrics });
+    } catch (err) {
+      console.error('Get analytics error:', err);
+      res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: 'Failed to get analytics' } });
+    }
+  }
+
+  async getGlobalAnalytics(req: Request, res: Response): Promise<void> {
+    try {
+      const period = (req.query.period as string) || 'all';
+
+      // Only allow admins to access global analytics
+      if (req.user?.role !== 'SUPER_ADMIN' && req.user?.role !== 'MODERATOR') {
+        res.status(403).json({ success: false, error: { code: 'FORBIDDEN', message: 'Access denied' } });
+        return;
+      }
+
+      const metrics = await conversationAnalyticsService.getGlobalMetrics(period);
+      res.json({ success: true, data: metrics });
+    } catch (err) {
+      console.error('Get global analytics error:', err);
+      res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: 'Failed to get global analytics' } });
     }
   }
 }

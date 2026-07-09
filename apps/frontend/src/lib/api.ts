@@ -78,7 +78,7 @@ api.interceptors.response.use(
         const response = await axios.post(`${BASE_URL}/auth/refresh`, {
           refreshToken: refreshTokenValue,
         });
-        const { accessToken, refreshToken } = response.data.data.tokens;
+        const { accessToken, refreshToken } = response.data.data;
         setAuthTokens(accessToken, refreshToken);
         processQueue(null, accessToken);
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
@@ -141,6 +141,7 @@ export const vendorApi = {
 
 export const categoryApi = {
   all: () => api.get('/categories'),
+  create: (data: { name: string; description?: string }) => api.post('/categories', data),
 };
 
 export const reviewApi = {
@@ -366,6 +367,9 @@ export const chatbotApi = {
   getSessions: () => api.get('/chatbot/sessions'),
   takeoverSession: (data: unknown) => api.post('/chatbot/session/takeover', data),
   resumeSession: (data: unknown) => api.post('/chatbot/session/resume', data),
+
+  // Conversation Analytics
+  getAnalytics: (period: string = 'all') => api.get('/chatbot/analytics', { params: { period } }),
 
   // Message Processing
   processMessage: (data: unknown) => api.post('/chatbot/process-message', data),

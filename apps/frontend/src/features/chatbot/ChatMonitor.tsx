@@ -17,10 +17,13 @@ import {
 import { useChatbotSessions, useTakeoverSession, useResumeSession } from '../../hooks/useChatbot';
 import { Button, Skeleton, Badge } from '../../components/ui/index';
 import { useAuthStore } from '../../stores/auth.store';
+import { useUIStore } from '../../stores/ui.store';
+import { clsx } from 'clsx';
 import { ChatbotSessionStatus } from '../../lib/shared';
 import toast from 'react-hot-toast';
 
 export default function ChatMonitor() {
+  const { isDarkMode } = useUIStore();
   const { user } = useAuthStore();
   const { data: sessions, isLoading, error, refetch } = useChatbotSessions();
   const takeoverSession = useTakeoverSession();
@@ -32,13 +35,13 @@ export default function ChatMonitor() {
   // Show access denied if not a vendor
   if (!isVendor) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className={clsx('min-h-screen flex items-center justify-center', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
         <div className="text-center">
-          <div className="p-4 bg-gray-100 rounded-full inline-flex mb-4">
+          <div className={clsx('p-4 rounded-full inline-flex mb-4', isDarkMode ? 'bg-gray-800' : 'bg-gray-100')}>
             <Lock size={48} className="text-gray-400" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
-          <p className="text-gray-600 mb-6">You need to be a vendor to access Chat Monitor.</p>
+          <h1 className={clsx('text-2xl font-bold mb-2', isDarkMode ? 'text-white' : 'text-gray-900')}>Access Denied</h1>
+          <p className={clsx('mb-6', isDarkMode ? 'text-gray-400' : 'text-gray-600')}>You need to be a vendor to access Chat Monitor.</p>
         </div>
       </div>
     );
@@ -47,13 +50,13 @@ export default function ChatMonitor() {
   // Show error state
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className={clsx('min-h-screen flex items-center justify-center', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
         <div className="text-center">
           <div className="p-4 bg-red-100 rounded-full inline-flex mb-4">
             <AlertCircle size={48} className="text-red-500" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Sessions</h1>
-          <p className="text-gray-600 mb-6">Failed to load chat sessions. Please try again.</p>
+          <h1 className={clsx('text-2xl font-bold mb-2', isDarkMode ? 'text-white' : 'text-gray-900')}>Error Loading Sessions</h1>
+          <p className={clsx('mb-6', isDarkMode ? 'text-gray-400' : 'text-gray-600')}>Failed to load chat sessions. Please try again.</p>
           <Button onClick={() => window.location.reload()} variant="primary">Retry</Button>
         </div>
       </div>
@@ -108,7 +111,7 @@ export default function ChatMonitor() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className={clsx('min-h-screen', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
         <div className="bg-gradient-hero text-white">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
             <Skeleton className="h-12 w-64 mb-4" />
@@ -131,7 +134,7 @@ export default function ChatMonitor() {
   const botActiveSessions = sessions?.filter((s) => s.botActive) || [];
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className={clsx('min-h-screen pb-20', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       {/* Header */}
       <div className="bg-gradient-hero text-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
@@ -143,7 +146,7 @@ export default function ChatMonitor() {
             </Link>
             <div className="flex-1">
               <h1 className="font-display font-bold text-2xl">Chat Monitor</h1>
-              <p className="text-white/60 text-sm mt-1">Monitor and manage active chat sessions</p>
+              {/*<p className="text-white/60 text-sm mt-1">Monitor and manage active chat sessions</p>*/}
             </div>
             <Button
               onClick={() => refetch()}
@@ -155,38 +158,38 @@ export default function ChatMonitor() {
           </div>
 
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             <div className="bg-white/10 backdrop-blur rounded-xl p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-500/20 rounded-lg">
-                  <MessageSquare size={20} className="text-blue-300" />
-                </div>
-                <div>
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-start">
+                  <div className="p-2 bg-blue-500/20 rounded-lg">
+                    <MessageSquare size={20} className="text-blue-300" />
+                  </div>
                   <p className="text-white/60 text-xs">Total Sessions</p>
-                  <p className="text-white font-bold text-xl">{sessions?.length || 0}</p>
                 </div>
+                <p className="text-white font-bold text-6xl font-mono">{sessions?.length || 0}</p>
               </div>
             </div>
             <div className="bg-white/10 backdrop-blur rounded-xl p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-500/20 rounded-lg">
-                  <Activity size={20} className="text-green-300" />
-                </div>
-                <div>
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-start">
+                  <div className="p-2 bg-green-500/20 rounded-lg">
+                    <Activity size={20} className="text-green-300" />
+                  </div>
                   <p className="text-white/60 text-xs">Active</p>
-                  <p className="text-white font-bold text-xl">{activeSessions.length}</p>
                 </div>
+                <p className="text-white font-bold text-6xl font-mono">{activeSessions.length}</p>
               </div>
             </div>
             <div className="bg-white/10 backdrop-blur rounded-xl p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-500/20 rounded-lg">
-                  <Zap size={20} className="text-purple-300" />
-                </div>
-                <div>
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-start">
+                  <div className="p-2 bg-purple-500/20 rounded-lg">
+                    <Zap size={20} className="text-purple-300" />
+                  </div>
                   <p className="text-white/60 text-xs">Bot Active</p>
-                  <p className="text-white font-bold text-xl">{botActiveSessions.length}</p>
                 </div>
+                <p className="text-white font-bold text-6xl font-mono">{botActiveSessions.length}</p>
               </div>
             </div>
           </div>
@@ -197,10 +200,10 @@ export default function ChatMonitor() {
         {/* Sessions List */}
         <div className="space-y-3">
           {!sessions || sessions.length === 0 ? (
-            <div className="bg-white rounded-xl shadow-sm p-12 border border-gray-200 text-center">
-              <MessageSquare size={48} className="text-gray-300 mx-auto mb-4" />
-              <h3 className="font-semibold text-gray-900 mb-2">No Active Sessions</h3>
-              <p className="text-gray-600">
+            <div className={clsx('rounded-xl shadow-sm p-12 border text-center', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200')}>
+              <MessageSquare size={48} className={clsx('mx-auto mb-4', isDarkMode ? 'text-gray-600' : 'text-gray-300')} />
+              <h3 className={clsx('font-semibold mb-2', isDarkMode ? 'text-white' : 'text-gray-900')}>No Active Sessions</h3>
+              <p className={clsx(isDarkMode ? 'text-gray-400' : 'text-gray-600')}>
                 Chat sessions will appear here when customers message you
               </p>
             </div>
@@ -210,16 +213,14 @@ export default function ChatMonitor() {
                 key={session.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`bg-white rounded-xl shadow-sm p-4 border ${
-                  session.humanTakeover ? 'border-amber-200 bg-amber-50' : 'border-gray-200'
-                }`}
+                className={clsx('rounded-xl shadow-sm p-4 border', session.humanTakeover ? 'bg-amber-50 border-amber-200' : '', isDarkMode ? session.humanTakeover ? 'bg-amber-900/20 border-amber-800' : 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200')}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-3">
                       <div className="flex items-center gap-2">
-                        <Phone size={16} className="text-gray-500" />
-                        <span className="font-semibold text-gray-900">{session.customerPhone}</span>
+                        <Phone size={16} className={clsx(isDarkMode ? 'text-gray-400' : 'text-gray-500')} />
+                        <span className={clsx('font-semibold', isDarkMode ? 'text-white' : 'text-gray-900')}>{session.customerPhone}</span>
                       </div>
                       <Badge variant={
                         session.sessionStatus === ChatbotSessionStatus.ACTIVE ? 'green' :
@@ -242,12 +243,12 @@ export default function ChatMonitor() {
                     </div>
                     
                     {session.lastMessage && (
-                      <div className="mb-3 p-3 bg-gray-50 rounded-lg">
-                        <p className="text-sm text-gray-700">{session.lastMessage}</p>
+                      <div className={clsx('mb-3 p-3 rounded-lg', isDarkMode ? 'bg-gray-700' : 'bg-gray-50')}>
+                        <p className={clsx('text-sm', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>{session.lastMessage}</p>
                       </div>
                     )}
                     
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
+                    <div className={clsx('flex items-center gap-4 text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>
                       <div className="flex items-center gap-1">
                         <Clock size={14} />
                         <span>Last: {formatTime(session.lastMessageAt)}</span>

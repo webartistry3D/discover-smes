@@ -6,6 +6,8 @@ import { useCustomers, useCreateCustomer, useUpdateCustomer, useDeleteCustomer, 
 import { Button, Skeleton, Badge } from '../../components/ui/index';
 import type { Customer, CustomerStatus } from '../../lib/shared';
 import toast from 'react-hot-toast';
+import { useUIStore } from '../../stores/ui.store';
+import { clsx } from 'clsx';
 
 const CUSTOMER_STATUS: { value: CustomerStatus; label: string; color: string }[] = [
   { value: 'ACTIVE', label: 'Active', color: 'bg-green-500' },
@@ -15,6 +17,7 @@ const CUSTOMER_STATUS: { value: CustomerStatus; label: string; color: string }[]
 ];
 
 export default function CRMManagerPage() {
+  const { isDarkMode } = useUIStore();
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
@@ -178,11 +181,11 @@ export default function CRMManagerPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className={clsx('min-h-screen pb-20', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       {/* Header */}
       <div className="bg-gradient-hero text-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-          <div className="flex items-center gap-4 mb-6">
+          <div className="flex items-center gap-4 mb-4">
             <Link href="/dashboard">
               <button className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors">
                 <ChevronLeft size={20} />
@@ -190,47 +193,45 @@ export default function CRMManagerPage() {
             </Link>
             <div className="flex-1">
               <h1 className="font-display font-bold text-2xl">CRM Manager</h1>
-              <p className="text-white/60 text-sm mt-1">Manage your customer relationships</p>
             </div>
-            <Button onClick={() => setIsAdding(true)} variant="primary">
-              <Plus size={18} className="mr-2" />
-              Add Customer
+            <Button onClick={() => setIsAdding(true)} variant="primary" className="p-2">
+              <Plus size={20} />
             </Button>
           </div>
 
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             <div className="bg-white/10 backdrop-blur rounded-xl p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-500/20 rounded-lg">
-                  <Users size={20} className="text-blue-300" />
-                </div>
-                <div>
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-start">
+                  <div className="p-2 bg-blue-500/20 rounded-lg">
+                    <Users size={20} className="text-blue-300" />
+                  </div>
                   <p className="text-white/60 text-xs">Total Customers</p>
-                  <p className="text-white font-bold text-xl">{summary?.totalCustomers || 0}</p>
                 </div>
+                <p className="text-white font-bold text-6xl font-mono">{summary?.totalCustomers || 0}</p>
               </div>
             </div>
             <div className="bg-white/10 backdrop-blur rounded-xl p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-500/20 rounded-lg">
-                  <Users size={20} className="text-green-300" />
-                </div>
-                <div>
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-start">
+                  <div className="p-2 bg-green-500/20 rounded-lg">
+                    <Users size={20} className="text-green-300" />
+                  </div>
                   <p className="text-white/60 text-xs">Active Customers</p>
-                  <p className="text-white font-bold text-xl">{summary?.statusBreakdown?.active || 0}</p>
                 </div>
+                <p className="text-white font-bold text-6xl font-mono">{summary?.statusBreakdown?.active || 0}</p>
               </div>
             </div>
             <div className="bg-white/10 backdrop-blur rounded-xl p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-500/20 rounded-lg">
-                  <Mail size={20} className="text-purple-300" />
-                </div>
-                <div>
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-start">
+                  <div className="p-2 bg-purple-500/20 rounded-lg">
+                    <Mail size={20} className="text-purple-300" />
+                  </div>
                   <p className="text-white/60 text-xs">Recent Communications</p>
-                  <p className="text-white font-bold text-xl">{summary?.recentCommunications || 0}</p>
                 </div>
+                <p className="text-white font-bold text-6xl font-mono">{summary?.recentCommunications || 0}</p>
               </div>
             </div>
           </div>
@@ -241,20 +242,20 @@ export default function CRMManagerPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <Search className={clsx('absolute left-3 top-1/2 -translate-y-1/2', isDarkMode ? 'text-gray-400' : 'text-gray-400')} size={18} />
             <input
               type="text"
               placeholder="Search customers..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green"
+              className={clsx('w-full pl-10 pr-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green', isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'border-gray-200')}
             />
           </div>
           <div className="flex gap-2">
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green bg-white"
+              className={clsx('px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green', isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'border-gray-200 bg-white')}
             >
               <option value="all">All Status</option>
               {CUSTOMER_STATUS.map((status) => (
@@ -275,7 +276,7 @@ export default function CRMManagerPage() {
           </div>
         ) : filteredCustomers && filteredCustomers.length > 0 ? (
           <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-            <div className="flex gap-4 min-w-max sm:block xs:block">
+            <div className="flex flex-col gap-4">
               {filteredCustomers.map((customer, index) => (
                 <motion.div
                   key={customer.id}
@@ -283,18 +284,18 @@ export default function CRMManagerPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                   onClick={() => setSelectedCustomerId(customer.id)}
-                  className="min-w-[320px] flex-shrink-0 sm:min-w-full bg-white rounded-xl p-4 shadow-card hover:shadow-md transition-shadow cursor-pointer"
+                  className={clsx('w-full rounded-xl p-4 shadow-card hover:shadow-md transition-shadow cursor-pointer', isDarkMode ? 'bg-gray-800' : 'bg-white')}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-semibold text-gray-900">{customer.name}</h3>
+                        <h3 className={clsx('font-semibold', isDarkMode ? 'text-white' : 'text-gray-900')}>{customer.name}</h3>
                         <Badge className={getStatusInfo(customer.status).color}>
                           {getStatusInfo(customer.status).label}
                         </Badge>
                       </div>
 
-                      <div className="space-y-1 text-sm text-gray-600">
+                      <div className={clsx('space-y-1 text-sm', isDarkMode ? 'text-gray-300' : 'text-gray-600')}>
                         {customer.email && (
                           <div className="flex items-center gap-2">
                             <Mail size={14} />
@@ -315,8 +316,8 @@ export default function CRMManagerPage() {
                         )}
                       </div>
 
-                      <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
-                        <span>₦{Number(customer.totalSpent).toLocaleString()} spent</span>
+                      <div className={clsx('mt-2 flex items-center gap-4 text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>
+                        <span className="font-mono">₦{Number(customer.totalSpent).toLocaleString()}</span> spent
                         <span>{customer._count?.invoices || 0} purchases</span>
                       </div>
                     </div>
@@ -348,9 +349,9 @@ export default function CRMManagerPage() {
             </div>
           </div>
         ) : (
-          <div className="text-center py-12">
-            <Users size={48} className="mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500">No customers found</p>
+          <div className={clsx('rounded-xl p-8 text-center', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+            <Users size={48} className={clsx('mx-auto mb-4', isDarkMode ? 'text-gray-600' : 'text-gray-300')} />
+            <p className={clsx(isDarkMode ? 'text-gray-400' : 'text-gray-500')}>No customers found</p>
           </div>
         )}
       </div>
@@ -361,13 +362,13 @@ export default function CRMManagerPage() {
           <div className="flex items-center gap-4 mb-6">
             <button
               onClick={() => setSelectedCustomerId(null)}
-              className="p-2 bg-white rounded-xl shadow-card hover:shadow-md transition-shadow"
+              className={clsx('p-2 rounded-xl shadow-card hover:shadow-md transition-shadow', isDarkMode ? 'bg-gray-800' : 'bg-white')}
             >
               <X size={20} />
             </button>
             <div className="flex-1">
-              <h2 className="font-display font-bold text-2xl">{selectedCustomer.name}</h2>
-              <p className="text-gray-500 text-sm">{selectedCustomer.company || 'Individual Customer'}</p>
+              <h2 className={clsx('font-display font-bold text-2xl', isDarkMode ? 'text-white' : 'text-gray-900')}>{selectedCustomer.name}</h2>
+              <p className={clsx('text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>{selectedCustomer.company || 'Individual Customer'}</p>
             </div>
             <Badge className={getStatusInfo(selectedCustomer.status).color}>
               {getStatusInfo(selectedCustomer.status).label}
@@ -376,42 +377,42 @@ export default function CRMManagerPage() {
 
           {/* Purchase History */}
           {purchaseHistory && (
-            <div className="bg-white rounded-2xl p-6 shadow-card mb-6">
-              <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <div className={clsx('rounded-2xl p-6 shadow-card mb-6', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+              <h3 className={clsx('font-semibold mb-4 flex items-center gap-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
                 <DollarSign size={18} className="text-festac-green" />
                 Purchase History
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <div className="bg-gray-50 rounded-xl p-4">
-                  <p className="text-xs text-gray-500 mb-1">Total Purchases</p>
-                  <p className="font-bold text-gray-900">{purchaseHistory.totalPurchases}</p>
+                  <p className={clsx('text-xs mb-1', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>Total Purchases</p>
+                  <p className={clsx('font-bold font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{purchaseHistory.totalPurchases}</p>
                 </div>
                 <div className="bg-gray-50 rounded-xl p-4">
-                  <p className="text-xs text-gray-500 mb-1">Total Spent</p>
-                  <p className="font-bold text-gray-900">₦{purchaseHistory.totalSpent.toLocaleString()}</p>
+                  <p className={clsx('text-xs mb-1', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>Total Spent</p>
+                  <p className={clsx('font-bold font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>₦{purchaseHistory.totalSpent.toLocaleString()}</p>
                 </div>
                 <div className="bg-gray-50 rounded-xl p-4">
-                  <p className="text-xs text-gray-500 mb-1">Avg. Order Value</p>
-                  <p className="font-bold text-gray-900">₦{purchaseHistory.averageOrderValue.toLocaleString()}</p>
+                  <p className={clsx('text-xs mb-1', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>Avg. Order Value</p>
+                  <p className={clsx('font-bold font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>₦{purchaseHistory.averageOrderValue.toLocaleString()}</p>
                 </div>
                 <div className="bg-gray-50 rounded-xl p-4">
-                  <p className="text-xs text-gray-500 mb-1">Last Purchase</p>
-                  <p className="font-bold text-gray-900 text-sm">
+                  <p className={clsx('text-xs mb-1', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>Last Purchase</p>
+                  <p className={clsx('font-bold text-sm', isDarkMode ? 'text-white' : 'text-gray-900')}>
                     {purchaseHistory.lastPurchaseDate ? new Date(purchaseHistory.lastPurchaseDate).toLocaleDateString() : 'N/A'}
                   </p>
                 </div>
               </div>
               {purchaseHistory.invoices.length > 0 && (
                 <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-gray-700">Recent Invoices</h4>
+                  <h4 className={clsx('text-sm font-medium', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Recent Invoices</h4>
                   {purchaseHistory.invoices.slice(0, 5).map((invoice) => (
-                    <div key={invoice.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div key={invoice.id} className={clsx('flex items-center justify-between p-3 rounded-lg', isDarkMode ? 'bg-gray-700' : 'bg-gray-50')}>
                       <div>
-                        <p className="text-sm font-medium text-gray-900">{invoice.invoiceNumber}</p>
-                        <p className="text-xs text-gray-500">{new Date(invoice.date).toLocaleDateString()}</p>
+                        <p className={clsx('text-sm font-medium', isDarkMode ? 'text-white' : 'text-gray-900')}>{invoice.invoiceNumber}</p>
+                        <p className={clsx('text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>{new Date(invoice.date).toLocaleDateString()}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-gray-900">₦{invoice.total.toLocaleString()}</p>
+                        <p className={clsx('font-semibold font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>₦{invoice.total.toLocaleString()}</p>
                         <Badge className="text-xs">{invoice.status}</Badge>
                       </div>
                     </div>
@@ -422,8 +423,8 @@ export default function CRMManagerPage() {
           )}
 
           {/* Tags */}
-          <div className="bg-white rounded-2xl p-6 shadow-card mb-6">
-            <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <div className={clsx('rounded-2xl p-6 shadow-card mb-6', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+            <h3 className={clsx('font-semibold mb-4 flex items-center gap-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
               <Tag size={18} className="text-festac-green" />
               Tags
             </h3>
@@ -445,7 +446,7 @@ export default function CRMManagerPage() {
                   </div>
                 ))
               ) : (
-                <p className="text-gray-500 text-sm">No tags yet</p>
+                <p className={clsx('text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>No tags yet</p>
               )}
             </div>
             <form onSubmit={handleAddTag} className="flex gap-2">
@@ -453,7 +454,7 @@ export default function CRMManagerPage() {
                 name="newTagName"
                 type="text"
                 placeholder="Add a tag..."
-                className="flex-1 px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green"
+                className={clsx('flex-1 px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
               />
               <Button type="submit" variant="primary" size="sm">
                 Add
@@ -462,21 +463,21 @@ export default function CRMManagerPage() {
           </div>
 
           {/* Notes */}
-          <div className="bg-white rounded-2xl p-6 shadow-card mb-6">
-            <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <div className={clsx('rounded-2xl p-6 shadow-card mb-6', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+            <h3 className={clsx('font-semibold mb-4 flex items-center gap-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
               <StickyNote size={18} className="text-festac-green" />
               Notes
             </h3>
             <div className="space-y-3 mb-4">
               {customerNotes && customerNotes.length > 0 ? (
                 customerNotes.map((note) => (
-                  <div key={note.id} className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-700">{note.content}</p>
-                    <p className="text-xs text-gray-400 mt-1">{new Date(note.createdAt).toLocaleDateString()}</p>
+                  <div key={note.id} className={clsx('p-3 rounded-lg', isDarkMode ? 'bg-gray-700' : 'bg-gray-50')}>
+                    <p className={clsx('text-sm', isDarkMode ? 'text-gray-200' : 'text-gray-700')}>{note.content}</p>
+                    <p className={clsx('text-xs mt-1', isDarkMode ? 'text-gray-400' : 'text-gray-400')}>{new Date(note.createdAt).toLocaleDateString()}</p>
                   </div>
                 ))
               ) : (
-                <p className="text-gray-500 text-sm">No notes yet</p>
+                <p className={clsx('text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>No notes yet</p>
               )}
             </div>
             <form onSubmit={handleAddNote} className="flex gap-2">
@@ -484,7 +485,7 @@ export default function CRMManagerPage() {
                 name="noteContent"
                 type="text"
                 placeholder="Add a note..."
-                className="flex-1 px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green"
+                className={clsx('flex-1 px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
               />
               <Button type="submit" variant="primary" size="sm">
                 Add
@@ -493,31 +494,31 @@ export default function CRMManagerPage() {
           </div>
 
           {/* Communications */}
-          <div className="bg-white rounded-2xl p-6 shadow-card mb-6">
-            <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <div className={clsx('rounded-2xl p-6 shadow-card mb-6', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+            <h3 className={clsx('font-semibold mb-4 flex items-center gap-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
               <MessageSquare size={18} className="text-festac-green" />
               Communications
             </h3>
             <div className="space-y-3 mb-4">
               {communications && communications.length > 0 ? (
                 communications.map((comm) => (
-                  <div key={comm.id} className="p-3 bg-gray-50 rounded-lg">
+                  <div key={comm.id} className={clsx('p-3 rounded-lg', isDarkMode ? 'bg-gray-700' : 'bg-gray-50')}>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-medium text-gray-500">{comm.type}</span>
-                      <span className="text-xs text-gray-400">{new Date(comm.createdAt).toLocaleDateString()}</span>
+                      <span className={clsx('text-xs font-medium', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>{comm.type}</span>
+                      <span className={clsx('text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-400')}>{new Date(comm.createdAt).toLocaleDateString()}</span>
                     </div>
-                    <p className="text-sm text-gray-700">{comm.content}</p>
+                    <p className={clsx('text-sm', isDarkMode ? 'text-gray-200' : 'text-gray-700')}>{comm.content}</p>
                   </div>
                 ))
               ) : (
-                <p className="text-gray-500 text-sm">No communications yet</p>
+                <p className={clsx('text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>No communications yet</p>
               )}
             </div>
             <form onSubmit={handleAddCommunication} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <select
                   name="commType"
-                  className="px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green bg-white"
+                  className={clsx('px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200 bg-white')}
                 >
                   <option value="PHONE_CALL">Phone Call</option>
                   <option value="EMAIL">Email</option>
@@ -527,7 +528,7 @@ export default function CRMManagerPage() {
                 </select>
                 <select
                   name="commDirection"
-                  className="px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green bg-white"
+                  className={clsx('px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200 bg-white')}
                 >
                   <option value="OUTBOUND">Outbound</option>
                   <option value="INBOUND">Inbound</option>
@@ -537,7 +538,7 @@ export default function CRMManagerPage() {
                 name="commContent"
                 placeholder="Log communication details..."
                 rows={2}
-                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green"
+                className={clsx('w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
               />
               <Button type="submit" variant="primary" size="sm">
                 Log Communication
@@ -553,83 +554,83 @@ export default function CRMManagerPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+            className={clsx('rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto', isDarkMode ? 'bg-gray-800' : 'bg-white')}
           >
             <div className="p-6">
-              <h2 className="text-xl font-bold mb-6">{editingId ? 'Edit Customer' : 'Add Customer'}</h2>
+              <h2 className={clsx('text-xl font-bold mb-6', isDarkMode ? 'text-white' : 'text-gray-900')}>{editingId ? 'Edit Customer' : 'Add Customer'}</h2>
               <form onSubmit={editingId ? handleUpdate : handleCreate} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                  <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Name *</label>
                   <input
                     type="text"
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green"
+                    className={clsx('w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Email</label>
                   <input
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green"
+                    className={clsx('w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                  <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Phone</label>
                   <input
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green"
+                    className={clsx('w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Company</label>
+                  <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Company</label>
                   <input
                     type="text"
                     value={formData.company}
                     onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green"
+                    className={clsx('w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                    <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>City</label>
                     <input
                       type="text"
                       value={formData.city}
                       onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green"
+                      className={clsx('w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                    <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>State</label>
                     <input
                       type="text"
                       value={formData.state}
                       onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green"
+                      className={clsx('w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                  <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Address</label>
                   <textarea
                     value={formData.address}
                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                     rows={2}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green"
+                    className={clsx('w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                  <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Status</label>
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value as CustomerStatus })}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green bg-white"
+                    className={clsx('w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200 bg-white')}
                   >
                     {CUSTOMER_STATUS.map((status) => (
                       <option key={status.value} value={status.value}>
@@ -639,12 +640,12 @@ export default function CRMManagerPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                  <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Notes</label>
                   <textarea
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                     rows={3}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green"
+                    className={clsx('w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                   />
                 </div>
                 <div className="flex gap-3 pt-4">

@@ -1,6 +1,6 @@
 import rateLimit from 'express-rate-limit';
 import { config } from '../config/index.js';
-import { ERROR_CODES } from '@discover-festac/shared';
+import { ERROR_CODES } from '@discover-smes/shared';
 
 const rateLimitResponse = (code: string, message: string) => ({
   success: false,

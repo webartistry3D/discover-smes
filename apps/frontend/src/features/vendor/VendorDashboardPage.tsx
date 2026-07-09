@@ -11,6 +11,7 @@ import { useAuthStore } from '../../stores/auth.store';
 import { useUIStore } from '../../stores/ui.store';
 import { Skeleton, Badge, Button } from '../../components/ui/index';
 import { formatNaira } from '../../lib/shared';
+import { formatCurrencyCompact } from '../../lib/utils';
 import { clsx } from 'clsx';
 
 export default function VendorDashboardPage() {
@@ -38,30 +39,98 @@ export default function VendorDashboardPage() {
   const totalItems = Object.keys(profileCompleteness).length;
   const completenessPercentage = Math.round((completedItems / totalItems) * 100);
 
+  // Time-based greeting
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 0 && hour < 12) return 'Good morning,';
+    if (hour >= 12 && hour < 17) return 'Good afternoon,';
+    return 'Good evening,';
+  };
+
   return (
     <div className={clsx('min-h-screen pb-10', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       {/* Header */}
       <div className="bg-gradient-hero text-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-          <div className="flex items-start justify-between">
+          <div>
+            {/*
             <div>
               <p className="text-white/60 text-sm">Vendor Dashboard</p>
               <h1 className="font-display font-bold text-2xl mt-1">
-                Welcome back, {user?.firstName} 👋
+                Good morning, {user?.firstName} 
               </h1>
             </div>
-            <div className="flex items-center gap-2">
-              <button className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors">
-                <Bell size={18} />
-              </button>
-              <button className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors">
-                <Settings size={18} />
-              </button>
+            */}
+            {/* Welcome Section */}
+            <div className="rounded-lg p-0">
+              <h1 className="text-xl font-inter font-regular text-white mb-0">
+                {getGreeting()} {user?.firstName}! 
+              </h1>
+              <p className="font-inter text-white/80 text-sm mt-0">
+                Here's your business update..
+              </p>
             </div>
           </div>
 
+          {/* ─── FINANCIAL SUMMARY ─────────────────────────────── */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white/10 backdrop-blur rounded-xl p-4"
+            >
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-start">
+                  <div className="p-2 bg-green-500/20 rounded-lg">
+                    <ArrowUpRight size={20} className="text-green-300" />
+                  </div>
+                  <p className="text-white/60 text-xs">Income</p>
+                </div>
+                <p className="text-white font-bold text-6xl font-mono">
+                  {formatCurrencyCompact(financialSummary?.income || 0)}
+                </p>
+              </div>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="bg-white/10 backdrop-blur rounded-xl p-4"
+            >
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-start">
+                  <div className="p-2 bg-red-500/20 rounded-lg">
+                    <ArrowDownRight size={20} className="text-red-300" />
+                  </div>
+                  <p className="text-white/60 text-xs">Expenses</p>
+                </div>
+                <p className="text-white font-bold text-6xl font-mono">
+                  {formatCurrencyCompact(financialSummary?.expense || 0)}
+                </p>
+              </div>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-white/10 backdrop-blur rounded-xl p-4"
+            >
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-start">
+                  <div className="p-2 bg-blue-500/20 rounded-lg">
+                    <Wallet size={20} className="text-blue-300" />
+                  </div>
+                  <p className="text-white/60 text-xs">Net Profit</p>
+                </div>
+                <p className={`text-white font-bold text-6xl font-mono ${financialSummary?.profit >= 0 ? 'text-green-300' : 'text-red-300'}`}>
+                  {formatCurrencyCompact(financialSummary?.profit || 0)}
+                </p>
+              </div>
+            </motion.div>
+          </div>
+
           {/* Period selector */}
-          <div className="flex items-center gap-2 mt-5">
+          <div className="flex justify-center items-center gap-2 mt-4">
             <button
               onClick={() => setPeriod('week')}
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${period === 'week' ? 'bg-white text-festac-green' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
@@ -74,63 +143,6 @@ export default function VendorDashboardPage() {
             >
               This Month
             </button>
-          </div>
-
-          {/* ─── FINANCIAL SUMMARY ─────────────────────────────── */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white/10 backdrop-blur rounded-xl p-4"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center text-green-600">
-                  <ArrowUpRight size={18} />
-                </div>
-                <div>
-                  <p className="text-xs text-white/70">Income</p>
-                  <p className="text-lg font-bold text-white">
-                    ₦{(financialSummary?.income || 0).toLocaleString()}
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="bg-white/10 backdrop-blur rounded-xl p-4"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center text-red-600">
-                  <ArrowDownRight size={18} />
-                </div>
-                <div>
-                  <p className="text-xs text-white/70">Expenses</p>
-                  <p className="text-lg font-bold text-white">
-                    ₦{(financialSummary?.expense || 0).toLocaleString()}
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-white/10 backdrop-blur rounded-xl p-4"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
-                  <Wallet size={18} />
-                </div>
-                <div>
-                  <p className="text-xs text-white/70">Net Profit</p>
-                  <p className={`text-lg font-bold ${financialSummary?.profit >= 0 ? 'text-green-200' : 'text-red-200'}`}>
-                    ₦{(financialSummary?.profit || 0).toLocaleString()}
-                  </p>
-                </div>
-              </div>
-            </motion.div>
           </div>
         </div>
       </div>
@@ -161,7 +173,7 @@ export default function VendorDashboardPage() {
                   <div className={clsx('w-8 h-8 rounded-xl flex items-center justify-center mb-2', isDarkMode ? `bg-${stat.color}-900/30 text-${stat.color}-400` : `bg-${stat.color}-50 text-${stat.color}-600`)}>
                     {stat.icon}
                   </div>
-                  <p className={clsx('text-2xl font-display font-black', isDarkMode ? 'text-white' : 'text-gray-900')}>{(stat.value ?? 0).toLocaleString()}</p>
+                  <p className={clsx('text-4xl font-display font-black font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{(stat.value ?? 0).toLocaleString()}</p>
                   <p className={clsx('text-xs mt-0.5', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>{stat.label}</p>
                 </>
               )}
@@ -214,42 +226,6 @@ export default function VendorDashboardPage() {
         </div>
 
         {/* ─── QUICK ACTIONS ──────────────────────────────────── */}
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { icon: <Calendar size={18} />, label: 'My Bookings', desc: 'View all your bookings', href: '/bookings' },
-            { icon: <Settings size={18} />, label: 'Edit Profile', desc: 'Update your business info', href: '/profile' },
-            { icon: <BarChart3 size={18} />, label: 'Full Analytics', desc: 'Detailed performance data', href: '/dashboard/analytics' },
-            { icon: <CheckCircle size={18} />, label: 'Get Verified', desc: 'Build customer trust', href: '/dashboard/verification' },
-            { icon: <TrendingUp size={18} />, label: 'Boost Listing', desc: 'Reach more customers', href: '/dashboard/promote' },
-            { icon: <ArrowUpRight size={18} />, label: 'Income Manager', desc: 'Track business income', href: '/financial/income' },
-            { icon: <ArrowDownRight size={18} />, label: 'Expense Manager', desc: 'Manage expenses', href: '/financial/expense' },
-            { icon: <Wallet size={18} />, label: 'Invoice Manager', desc: 'Create & send invoices', href: '/financial/invoices' },
-            { icon: <PieChart size={18} />, label: 'Financial Reports', desc: 'P&L, Cash Flow, Sales, Tax', href: '/financial/reports' },
-            { icon: <Users size={18} />, label: 'CRM Manager', desc: 'Manage customers', href: '/crm' },
-            { icon: <Package size={18} />, label: 'Inventory Manager', desc: 'Track stock levels', href: '/inventory' },
-            { icon: <FileText size={18} />, label: 'Tax Manager', desc: 'Track taxes & compliance', href: '/tax' },
-            { icon: <Bot size={18} />, label: 'Chatbot Settings', desc: 'Configure rule-based bot', href: '/settings?tab=chatbot' },
-            { icon: <MessageSquare size={18} />, label: 'FAQ Manager', desc: 'Manage chatbot rules', href: '/chatbot/faq' },
-            { icon: <MessageCircle size={18} />, label: 'Chat Monitor', desc: 'Monitor active sessions', href: '/chatbot/monitor' },
-            { icon: <DollarSign size={18} />, label: 'Cost Monitor', desc: 'Track WhatsApp costs', href: '/chatbot/cost' },
-            { icon: <Megaphone size={18} />, label: 'Marketing Tools', desc: 'Promotions, Loyalty, WhatsApp', href: '/marketing' },
-          ].map((action) => (
-            <motion.a
-              key={action.label}
-              href={action.href}
-              whileTap={{ scale: 0.97 }}
-              className={clsx('flex items-center gap-3 p-4 rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-200 group', isDarkMode ? 'bg-gray-800' : 'bg-white')}
-            >
-              <div className="w-10 h-10 bg-festac-green/10 rounded-xl flex items-center justify-center text-festac-green group-hover:bg-festac-green group-hover:text-white transition-colors flex-shrink-0">
-                {action.icon}
-              </div>
-              <div className="min-w-0">
-                <p className={clsx('font-semibold text-sm', isDarkMode ? 'text-white' : 'text-gray-900')}>{action.label}</p>
-                <p className={clsx('text-xs truncate', isDarkMode ? 'text-gray-400' : 'text-gray-400')}>{action.desc}</p>
-              </div>
-            </motion.a>
-          ))}
-        </div>
 
         {/* ─── PROFILE COMPLETENESS ──────────────────────────── */}
         <div className={clsx('rounded-2xl p-5 shadow-card', isDarkMode ? 'bg-gray-800' : 'bg-white')}>

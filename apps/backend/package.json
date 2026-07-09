@@ -1,5 +1,5 @@
 {
-  "name": "@discover-festac/backend",
+  "name": "@discover-smes/backend",
   "version": "1.0.0",
   "private": true,
   "main": "./dist/server.js",
@@ -18,7 +18,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.600.0",
     "@aws-sdk/s3-request-presigner": "^3.600.0",
-    "@discover-festac/shared": "*",
+    "@discover-smes/shared": "*",
     "@prisma/client": "^5.14.0",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",
@@ -27,6 +27,7 @@
     "express": "^4.19.2",
     "express-rate-limit": "^7.3.1",
     "express-validator": "^7.1.0",
+    "fuse.js": "^7.4.2",
     "helmet": "^7.1.0",
     "ioredis": "^5.4.1",
     "jsonwebtoken": "^9.0.2",
@@ -34,7 +35,7 @@
     "multer": "^1.4.5-lts.1",
     "node-cron": "^3.0.3",
     "openai": "^4.52.7",
-    "socket.io": "^4.7.5",
+    "socket.io": "^4.8.3",
     "twilio": "^6.0.2",
     "uuid": "^10.0.0",
     "winston": "^3.13.0",

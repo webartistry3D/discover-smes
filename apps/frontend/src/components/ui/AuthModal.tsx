@@ -8,11 +8,12 @@ import { useAuthStore } from '../../stores/auth.store';
 import { authApi } from '../../lib/api';
 import { Button } from '../ui/index';
 import { isValidNigerianPhone, formatPhoneNumber } from '../../lib/shared';
+import { clsx } from 'clsx';
 
 type Step = 'phone' | 'otp' | 'success';
 
 export function AuthModal() {
-  const { isAuthModalOpen, closeAuthModal } = useUIStore();
+  const { isAuthModalOpen, closeAuthModal, isDarkMode } = useUIStore();
   const { setUser } = useAuthStore();
   const [step, setStep] = useState<Step>('phone');
   const [phone, setPhone] = useState('');
@@ -92,25 +93,23 @@ export function AuthModal() {
   return (
     <AnimatePresence>
       {isAuthModalOpen && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={handleClose}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100]"
-          />
-
-          {/* Modal */}
+        <motion.div
+          key="auth-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={handleClose}
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+        >
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', duration: 0.4, bounce: 0.2 }}
-            className="fixed inset-x-4 bottom-4 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-md z-[101]"
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md max-h-[90vh] overflow-y-auto"
           >
-            <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+            <div className={clsx('rounded-3xl shadow-2xl overflow-hidden', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
               {/* Header */}
               <div className="relative bg-gradient-hero px-6 pt-8 pb-10 text-white overflow-hidden">
                 <div className="absolute -top-6 -right-6 w-32 h-32 bg-white/5 rounded-full" />
@@ -123,7 +122,7 @@ export function AuthModal() {
                     {step === 'success' ? <CheckCircle size={22} /> : <Phone size={22} />}
                   </div>
                   <h2 className="font-display font-bold text-xl">
-                    {step === 'phone' ? 'Welcome to Discover Festac' : step === 'otp' ? 'Verify your number' : 'You\'re in! 🎉'}
+                    {step === 'phone' ? 'Welcome to Discover SMEs' : step === 'otp' ? 'Verify your number' : 'You\'re in! 🎉'}
                   </h2>
                   <p className="text-white/70 text-sm mt-1">
                     {step === 'phone'
@@ -136,7 +135,7 @@ export function AuthModal() {
               </div>
 
               {/* Body */}
-              <div className="px-6 py-6">
+              <div className={clsx('px-6 py-6', isDarkMode ? 'bg-gray-800' : '')}>
                 <AnimatePresence mode="wait">
                   {step === 'phone' && (
                     <motion.form
@@ -148,9 +147,9 @@ export function AuthModal() {
                       className="space-y-4"
                     >
                       <div>
-                        <label className="text-sm font-medium text-gray-700 mb-1.5 block">Phone Number</label>
+                        <label className={clsx('text-sm font-medium mb-1.5 block', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Phone Number</label>
                         <div className="flex items-center gap-2">
-                          <div className="flex items-center gap-2 px-3 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-600 font-medium flex-shrink-0">
+                          <div className={clsx('flex items-center gap-2 px-3 py-3 rounded-xl text-sm font-medium flex-shrink-0', isDarkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'bg-gray-50 border-gray-200 text-gray-600')}>
                             🇳🇬 +234
                           </div>
                           <input
@@ -158,7 +157,7 @@ export function AuthModal() {
                             value={phone}
                             onChange={(e) => setPhone(e.target.value)}
                             placeholder="0801 234 5678"
-                            className="input flex-1"
+                            className={clsx('input flex-1', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : '')}
                             autoFocus
                           />
                         </div>
@@ -174,7 +173,7 @@ export function AuthModal() {
                       >
                         Send OTP
                       </Button>
-                      <p className="text-xs text-gray-400 text-center">
+                      <p className={clsx('text-xs text-center', isDarkMode ? 'text-gray-400' : 'text-gray-400')}>
                         By continuing, you agree to our Terms of Service and Privacy Policy
                       </p>
                     </motion.form>
@@ -189,8 +188,8 @@ export function AuthModal() {
                       className="space-y-5"
                     >
                       <div>
-                        <label className="text-sm font-medium text-gray-700 mb-3 block">Enter 6-digit code</label>
-                        <div className="flex gap-2 justify-between" onPaste={handleOtpPaste}>
+                        <label className={clsx('text-sm font-medium mb-4 block text-center', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Enter 6-digit code</label>
+                        <div className="flex justify-center gap-2 px-2" onPaste={handleOtpPaste}>
                           {otp.map((digit, i) => (
                             <input
                               key={i}
@@ -201,15 +200,15 @@ export function AuthModal() {
                               value={digit}
                               onChange={(e) => handleOtpChange(i, e.target.value)}
                               onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                              className="w-12 h-14 text-center text-xl font-bold border-2 rounded-2xl focus:outline-none focus:border-brand-500 transition-colors bg-gray-50 focus:bg-white"
-                              style={{ borderColor: digit ? '#1B5E20' : undefined }}
+                              className={clsx('w-11 h-14 text-center text-2xl font-bold border-2 rounded-xl focus:outline-none transition-all duration-200 shrink-0', isDarkMode ? 'bg-gray-700 border-gray-600 text-white focus:border-green-500 focus:ring-2 focus:ring-green-500/20' : 'bg-gray-50 focus:bg-white focus:border-green-500 focus:ring-2 focus:ring-green-500/20')}
+                              style={{ borderColor: digit ? '#22c55e' : undefined }}
                             />
                           ))}
                         </div>
                       </div>
 
                       {verifyOtpMutation.isPending && (
-                        <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+                        <div className={clsx('flex items-center justify-center gap-2 text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>
                           <div className="w-4 h-4 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
                           Verifying...
                         </div>
@@ -218,13 +217,13 @@ export function AuthModal() {
                       <button
                         onClick={() => sendOtpMutation.mutate(formatPhoneNumber(phone))}
                         disabled={sendOtpMutation.isPending}
-                        className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-festac-green transition-colors mx-auto"
+                        className={clsx('flex items-center gap-1.5 text-sm mx-auto transition-colors', isDarkMode ? 'text-gray-400 hover:text-festac-green' : 'text-gray-500 hover:text-festac-green')}
                       >
                         <RotateCcw size={13} />
                         Resend OTP
                       </button>
 
-                      <button onClick={() => setStep('phone')} className="text-xs text-gray-400 hover:text-gray-600 block text-center w-full">
+                      <button onClick={() => setStep('phone')} className={clsx('text-xs block text-center w-full transition-colors', isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600')}>
                         ← Change phone number
                       </button>
                     </motion.div>
@@ -237,17 +236,17 @@ export function AuthModal() {
                       animate={{ opacity: 1, scale: 1 }}
                       className="py-8 flex flex-col items-center gap-3"
                     >
-                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                        <CheckCircle size={32} className="text-green-600" />
+                      <div className={clsx('w-16 h-16 rounded-full flex items-center justify-center', isDarkMode ? 'bg-green-900/30' : 'bg-green-100')}>
+                        <CheckCircle size={32} className={clsx(isDarkMode ? 'text-green-400' : 'text-green-600')} />
                       </div>
-                      <p className="font-semibold text-gray-900">Successfully logged in!</p>
+                      <p className={clsx('font-semibold', isDarkMode ? 'text-white' : 'text-gray-900')}>Successfully logged in!</p>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
             </div>
           </motion.div>
-        </>
+        </motion.div>
       )}
     </AnimatePresence>
   );

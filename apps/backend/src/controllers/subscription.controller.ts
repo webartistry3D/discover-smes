@@ -7,8 +7,8 @@ import type {
   BillingCycle,
   CreateSubscriptionRequest,
   UpgradeSubscriptionRequest 
-} from '@discover-festac/shared';
-import { PRICING } from '@discover-festac/shared';
+} from '@discover-smes/shared';
+import { PRICING } from '@discover-smes/shared';
 
 const prisma = new PrismaClient();
 

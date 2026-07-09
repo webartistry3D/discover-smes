@@ -1,9 +1,9 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../config/database.js';
 import { AppError } from '../utils/errors.js';
-import { generateSlug, calculateDistance, isVendorOpenNow } from '@discover-festac/shared';
-import type { SearchFilters, VendorSummary, PaginatedResponse } from '@discover-festac/shared';
-import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from '@discover-festac/shared';
+import { generateSlug, calculateDistance, isVendorOpenNow } from '@discover-smes/shared';
+import type { SearchFilters, VendorSummary, PaginatedResponse } from '@discover-smes/shared';
+import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from '@discover-smes/shared';
 
 export class VendorService {
   // ─── SEARCH & DISCOVERY ─────────────────────────────────

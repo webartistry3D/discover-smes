@@ -1,4 +1,4 @@
-# Discover Festac — Executable Engineering Instruction File
+# Discover SMEs — Executable Engineering Instruction File
 
 ## 🚨 SYSTEM ROLE
 
@@ -31,7 +31,7 @@ This IS:
 
 Read and fully execute the attached specification:
 
-> DISCOVER FESTAC — Hyperlocal Commerce Infrastructure for Festac Town, Lagos
+> DISCOVER SMEs — Hyperlocal Commerce Infrastructure for Festac Town, Lagos
 
 Implement the system exactly as described.
 

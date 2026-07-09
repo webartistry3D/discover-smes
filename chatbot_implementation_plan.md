@@ -1,8 +1,8 @@
-# DISCOVER FESTAC — RULE-BASED VENDOR-PROGRAMMABLE CHATBOT SYSTEM
+# DISCOVER SMEs — RULE-BASED VENDOR-PROGRAMMABLE CHATBOT SYSTEM
  
 ## PROJECT UPDATE DIRECTIVE
  
-Implement a rule-based vendor-programmable chatbot system into the existing Discover Festac monorepo architecture.
+Implement a rule-based vendor-programmable chatbot system into the existing Discover SMEs monorepo architecture.
  
 This is a **purely rule-based chatbot engine** with NO AI, NO machine learning, NO OpenAI integration, NO external AI services.
  
@@ -26,7 +26,7 @@ The chatbot must support:
  
 ## CORE BUSINESS OBJECTIVE
  
-Each vendor on Discover Festac should be able to program their own chatbot behavior using simple keyword rules.
+Each vendor on Discover SMEs should be able to program their own chatbot behavior using simple keyword rules.
  
 Example:
  
@@ -503,7 +503,7 @@ Use existing UI components (Button, Badge, etc.) from apps/frontend/src/componen
 IMPLEMENTATION RULES
 Critical:
 
-Integrate into existing Discover Festac monorepo
+Integrate into existing Discover SMEs monorepo
 Do NOT rewrite existing architecture
 Follow existing project coding conventions
 Use existing backend stack (Express.js, Prisma)
@@ -538,7 +538,7 @@ Frontend FAQManager component
 Frontend ChatMonitor component
 Frontend HandoffControl component
 Add chatbot navigation to vendor dashboard
-Full integration into existing Discover Festac flow
+Full integration into existing Discover SMEs flow
 Test end-to-end
 Do not skip files.
 

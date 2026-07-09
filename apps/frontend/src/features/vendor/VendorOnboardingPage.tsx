@@ -119,7 +119,7 @@ export default function VendorOnboardingPage() {
       <div className="bg-gradient-hero text-white">
         <div className="max-w-2xl mx-auto px-4 py-8">
           <h1 className="font-display font-black text-2xl">List Your Business</h1>
-          <p className="text-white/70 text-sm mt-1">Join 2,400+ businesses on Discover Festac — Free forever</p>
+          <p className="text-white/70 text-sm mt-1">Join 2,400+ businesses on Discover SMEs — Free forever</p>
 
           {/* Progress */}
           <div className="mt-6">

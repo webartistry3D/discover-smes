@@ -5,8 +5,8 @@ import { config } from '../config/index.js';
 import { prisma } from '../config/database.js';
 import { AppError } from '../utils/errors.js';
 import { logger } from '../utils/logger.js';
-import { formatPhoneNumber } from '@discover-festac/shared';
-import type { AuthTokens, JwtPayload, UserRole } from '@discover-festac/shared';
+import { formatPhoneNumber } from '@discover-smes/shared';
+import type { AuthTokens, JwtPayload, UserRole } from '@discover-smes/shared';
 
 export class AuthService {
   // ─── OTP ───────────────────────────────────────────────
@@ -147,7 +147,7 @@ export class AuthService {
       data: { userId, token: await bcrypt.hash(refreshToken, 10), expiresAt },
     });
 
-    return { accessToken, refreshToken, expiresIn: 15 * 60 };
+    return { accessToken, refreshToken, expiresIn: 7 * 24 * 60 * 60 };
   }
 
   async refreshTokens(refreshToken: string): Promise<AuthTokens> {

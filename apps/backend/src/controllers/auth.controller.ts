@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { authService } from '../services/auth.service.js';
 import { sendSuccess, sendCreated } from '../utils/errors.js';
-import { isValidNigerianPhone } from '@discover-festac/shared';
+import { isValidNigerianPhone } from '@discover-smes/shared';
 
 const sendOtpSchema = z.object({
   phone: z

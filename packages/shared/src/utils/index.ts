@@ -80,7 +80,7 @@ export function generateWhatsAppUrl(phone: string, message?: string): string {
  * Generate WhatsApp greeting message for a vendor
  */
 export function generateWhatsAppGreeting(businessName: string): string {
-  return `Hello! I found ${businessName} on Discover Festac and I'd like to know more about your products/services.`;
+  return `Hello! I found ${businessName} on Discover SMEs and I'd like to know more about your products/services.`;
 }
 
 /**

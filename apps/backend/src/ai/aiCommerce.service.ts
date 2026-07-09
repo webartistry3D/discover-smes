@@ -2,8 +2,8 @@ import OpenAI from 'openai';
 import { config } from '../config/index.js';
 import { prisma } from '../config/database.js';
 import { logger } from '../utils/logger.js';
-import type { IntentType, VendorKnowledgeBase, AIResponse, DetectedIntent, LeadQualification } from '@discover-festac/shared';
-import { formatNaira } from '@discover-festac/shared';
+import type { IntentType, VendorKnowledgeBase, AIResponse, DetectedIntent, LeadQualification } from '@discover-smes/shared';
+import { formatNaira } from '@discover-smes/shared';
 
 const openai = config.openai.apiKey ? new OpenAI({ apiKey: config.openai.apiKey }) : null;
 

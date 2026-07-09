@@ -4,7 +4,7 @@ import { ZodError } from 'zod';
 import { AppError, sendError } from '../utils/errors.js';
 import { logger } from '../utils/logger.js';
 import { config } from '../config/index.js';
-import { ERROR_CODES } from '@discover-festac/shared';
+import { ERROR_CODES } from '@discover-smes/shared';
 
 export function errorHandler(
   err: Error,

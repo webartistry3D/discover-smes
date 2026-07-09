@@ -2,7 +2,7 @@ import multer, { type StorageEngine } from 'multer';
 import { extname } from 'path';
 import type { Request } from 'express';
 import { AppError } from '../utils/errors.js';
-import { MAX_IMAGE_SIZE_MB, ALLOWED_IMAGE_TYPES } from '@discover-festac/shared';
+import { MAX_IMAGE_SIZE_MB, ALLOWED_IMAGE_TYPES } from '@discover-smes/shared';
 
 // Memory storage — we pipe to S3/local after validation
 const memStorage: StorageEngine = multer.memoryStorage();

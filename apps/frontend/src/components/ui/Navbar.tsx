@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, MapPin, Bell, User, Menu, X, ChevronRight, Store, LayoutDashboard, LogOut, ShieldCheck, Settings, Sun, Moon } from 'lucide-react';
+import { Search, MapPin, X, Sun, Moon, User, LogOut, ChevronDown, Bell } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAuthStore } from '../../stores/auth.store';
 import { useUIStore } from '../../stores/ui.store';
@@ -10,32 +10,60 @@ import { Avatar } from '../ui/index';
 export function Navbar() {
   const [location] = useLocation();
   const { user, isAuthenticated, logout } = useAuthStore();
-  const { openAuthModal, isDarkMode, toggleDarkMode } = useUIStore();
+  const { openAuthModal, isDarkMode, toggleDarkMode, closeAllDropdowns } = useUIStore();
   const [searchQuery, setSearchQuery] = useState('');
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
-  const userMenuRef = useRef<HTMLDivElement>(null);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const [showSignoutModal, setShowSignoutModal] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, right: 0 });
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isProfileDropdownOpen && profileRef.current) {
+      const rect = profileRef.current.getBoundingClientRect();
+      setDropdownPos({ top: rect.bottom + 8, right: window.innerWidth - rect.right });
+    }
+  }, [isProfileDropdownOpen]);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (!isProfileDropdownOpen) return;
+      if (
+        dropdownRef.current && !dropdownRef.current.contains(e.target as Node) &&
+        profileRef.current && !profileRef.current.contains(e.target as Node)
+      ) {
+        setIsProfileDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [isProfileDropdownOpen]);
 
   const isHome = location === '/';
-
-  // Close user menu on outside click
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
-        setIsUserMenuOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       window.location.href = `/discover?q=${encodeURIComponent(searchQuery.trim())}`;
     }
+  };
+
+  const handleSignout = () => {
+    logout();
+    window.location.href = '/';
+  };
+
+  const toggleProfileDropdown = () => {
+    if (!isProfileDropdownOpen) {
+      closeAllDropdowns();
+    }
+    setIsProfileDropdownOpen(!isProfileDropdownOpen);
+  };
+
+  const closeProfileDropdown = () => {
+    setIsProfileDropdownOpen(false);
   };
 
   return (
@@ -50,11 +78,11 @@ export function Navbar() {
             <Link href="/">
               <motion.div whileTap={{ scale: 0.97 }} className="flex items-center gap-2 cursor-pointer">
                 <div className="w-8 h-8 bg-gradient-festac rounded-xl flex items-center justify-center shadow-glow">
-                  <span className="text-white font-black text-sm">DF</span>
+                  <span className="text-white font-black text-sm">D</span>
                 </div>
                 <div className="hidden sm:block">
                   <span className={clsx('font-display font-bold text-lg leading-none', isDarkMode ? 'text-white' : 'text-gray-900')}>Discover</span>
-                  <span className="font-display font-bold text-festac-green text-lg leading-none ml-1">Festac</span>
+                  <span className="font-display font-bold text-festac-green text-lg leading-none ml-1">SMEs</span>
                 </div>
               </motion.div>
             </Link>
@@ -90,16 +118,23 @@ export function Navbar() {
               {/* Mobile search */}
               <Link href="/discover">
                 <button className={clsx('md:hidden p-2 rounded-xl transition-colors', isDarkMode ? 'hover:bg-gray-800 text-gray-300' : 'hover:bg-gray-100 text-gray-700')}>
-                  <Search size={20} />
+                  <Search size={24} />
                 </button>
               </Link>
+
+              {/* Bell icon */}
+              <button
+                className={clsx('p-2 rounded-xl transition-colors', isDarkMode ? 'hover:bg-gray-800 text-gray-300' : 'hover:bg-gray-100 text-gray-700')}
+              >
+                <Bell size={24} />
+              </button>
 
               {/* Dark mode toggle */}
               <button
                 onClick={toggleDarkMode}
                 className={clsx('p-2 rounded-xl transition-colors', isDarkMode ? 'hover:bg-gray-800 text-yellow-400' : 'hover:bg-gray-100 text-gray-700')}
               >
-                {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+                {isDarkMode ? <Sun size={24} /> : <Moon size={24} />}
               </button>
 
               {/* Location pill */}
@@ -109,15 +144,17 @@ export function Navbar() {
               </div>
 
               {isAuthenticated && user ? (
-                <div className="relative" ref={userMenuRef}>
+                <div className="relative" ref={profileRef}>
                   <button
-                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className={clsx('flex items-center gap-2 p-1 rounded-xl transition-colors', isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100')}
+                    onClick={toggleProfileDropdown}
+                    className="flex items-center gap-2 p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
                   >
                     <Avatar src={user.avatar} name={`${user.firstName} ${user.lastName}`} size="sm" />
                     <span className={clsx('hidden sm:block text-sm font-medium', isDarkMode ? 'text-white' : 'text-gray-700')}>{user.firstName}</span>
+                    <ChevronDown size={14} className={clsx('hidden sm:block transition-transform', isDarkMode ? 'text-gray-400' : 'text-gray-500', isProfileDropdownOpen ? 'rotate-180' : '')} />
                   </button>
-                </div>
+
+                  </div>
               ) : (
                 <div className="flex items-center gap-2">
                   <button
@@ -128,97 +165,119 @@ export function Navbar() {
                   </button>
                 </div>
               )}
-
-              {/* Mobile Menu Toggle */}
-              <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className={clsx('p-2 rounded-xl transition-colors', isDarkMode ? 'hover:bg-gray-800 text-gray-300' : 'hover:bg-gray-100 text-gray-700')}
-              >
-                {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-              </button>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Mobile Menu - Outside nav to avoid stacking context issues */}
+      {/* Profile Dropdown — rendered outside nav so it appears behind sticky navbar */}
       <AnimatePresence>
-        {isMobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, x: '100%' }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: '100%' }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
-            className={clsx('fixed top-16 right-0 bottom-0 w-[50%] md:w-[30%] z-[9999] h-[30%] overflow-y-auto', isDarkMode ? 'bg-gray-900' : 'bg-white')}
-          >
-            <div className="px-4 py-4 space-y-1">
-              <MobileNavLink href="/discover" label="Discover" onClick={() => setIsMobileMenuOpen(false)} isDarkMode={isDarkMode} />
-              <MobileNavLink href="/map" label="Map View" onClick={() => setIsMobileMenuOpen(false)} isDarkMode={isDarkMode} />
-              {!isAuthenticated && (
-                <div className="pt-3 border-t border-gray-100">
-                  <button onClick={() => { openAuthModal(); setIsMobileMenuOpen(false); }} className="btn-primary w-full justify-center">
-                    List Your Business Free
-                  </button>
-                </div>
+        {isProfileDropdownOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.5 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="fixed inset-0 bg-black z-40"
+              onClick={closeProfileDropdown}
+            />
+            <motion.div
+              initial={{ opacity: 0, y: -20, scaleY: 0.9, originY: 0 }}
+              animate={{ opacity: 1, y: 0, scaleY: 1 }}
+              exit={{ opacity: 0, y: -16, scaleY: 0.9 }}
+              transition={{ type: 'spring', stiffness: 280, damping: 28, mass: 0.8 }}
+              ref={dropdownRef}
+              style={{ position: 'fixed', top: dropdownPos.top, right: dropdownPos.right, zIndex: 40 }}
+              className={clsx(
+                'w-max shadow-2xl overflow-hidden rounded-2xl',
+                isDarkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white border border-gray-200'
               )}
-            </div>
-          </motion.div>
+            >
+              <div className="p-2">
+                <Link
+                  href="/profile"
+                  onClick={closeProfileDropdown}
+                  className={clsx(
+                    'flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-[21px] font-medium whitespace-nowrap',
+                    isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
+                  )}
+                >
+                  <User size={18} />
+                  <span>Profile</span>
+                </Link>
+                <button
+                  onClick={() => {
+                    closeProfileDropdown();
+                    setShowSignoutModal(true);
+                  }}
+                  className={clsx(
+                    'w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-sm font-medium text-red-600 whitespace-nowrap',
+                    isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-red-50'
+                  )}
+                >
+                  <LogOut size={18} />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 
-      {/* Profile Menu - Outside nav to avoid stacking context issues */}
+      {/* Signout Confirmation Modal */}
       <AnimatePresence>
-        {isUserMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, x: '100%' }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: '100%' }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
-            className={clsx('fixed top-16 right-0 bottom-0 w-[60%] md:w-[30%] z-[9999] h-[35%] overflow-y-auto', isDarkMode ? 'bg-gray-900' : 'bg-white')}
-          >
-            <div className={clsx('px-4 py-3 border-b', isDarkMode ? 'border-gray-800' : 'border-gray-50')}>
-              <p className={clsx('font-semibold text-sm', isDarkMode ? 'text-white' : 'text-gray-900')}>{user?.firstName} {user?.lastName}</p>
-              <p className="text-xs text-gray-400 mt-0.5">{user?.phone}</p>
-            </div>
-            <div className="p-1.5">
-              <UserMenuItem icon={<User size={15} />} label="My Profile" href="/profile" onClick={() => setIsUserMenuOpen(false)} isDarkMode={isDarkMode} />
-              {(user?.role === 'VENDOR' || user?.role === 'SUPER_ADMIN') && (
-                <UserMenuItem icon={<Store size={15} />} label="Vendor Dashboard" href="/dashboard" onClick={() => setIsUserMenuOpen(false)} isDarkMode={isDarkMode} />
+        {showSignoutModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+              onClick={() => setShowSignoutModal(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              onClick={(e) => e.stopPropagation()}
+              className={clsx(
+                'fixed z-50 w-full max-w-md rounded-2xl shadow-2xl p-6',
+                isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
               )}
-              {(user?.role === 'SUPER_ADMIN' || user?.role === 'MODERATOR') && (
-                <UserMenuItem icon={<ShieldCheck size={15} />} label="Admin Panel" href="/admin" onClick={() => setIsUserMenuOpen(false)} isDarkMode={isDarkMode} />
-              )}
-              <UserMenuItem icon={<Settings size={15} />} label="Settings" href="/settings" onClick={() => setIsUserMenuOpen(false)} isDarkMode={isDarkMode} />
-              <button
-                onClick={() => { logout(); setIsUserMenuOpen(false); }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 rounded-xl hover:bg-red-50 transition-colors mt-1"
-              >
-                <LogOut size={15} />
+            >
+              <h3 className={clsx('text-xl font-semibold mb-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
                 Sign Out
-              </button>
-            </div>
-          </motion.div>
+              </h3>
+              <p className={clsx('text-sm mb-6', isDarkMode ? 'text-gray-400' : 'text-gray-600')}>
+                Are you sure you want to sign out? You'll need to sign in again to access your account.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowSignoutModal(false)}
+                  className={clsx(
+                    'flex-1 px-4 py-2.5 rounded-xl font-medium transition-colors',
+                    isDarkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  )}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    setShowSignoutModal(false);
+                    handleSignout();
+                  }}
+                  className="flex-1 px-4 py-2.5 rounded-xl font-medium bg-red-600 text-white hover:bg-red-700 transition-colors"
+                >
+                  Sign Out
+                </button>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </>
-  );
-}
-
-function UserMenuItem({ icon, label, href, onClick, isDarkMode }: { icon: React.ReactNode; label: string; href: string; onClick: () => void; isDarkMode?: boolean }) {
-  return (
-    <Link href={href} onClick={onClick} className={clsx('flex items-center gap-2.5 px-3 py-2 text-sm rounded-xl transition-colors', isDarkMode ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-700 hover:bg-gray-50')}>
-      <span className={isDarkMode ? 'text-gray-400' : 'text-gray-400'}>{icon}</span>
-      {label}
-      <ChevronRight size={13} className={isDarkMode ? 'ml-auto text-gray-500' : 'ml-auto text-gray-300'} />
-    </Link>
-  );
-}
-
-function MobileNavLink({ href, label, onClick, isDarkMode }: { href: string; label: string; onClick: () => void; isDarkMode?: boolean }) {
-  return (
-    <Link href={href} onClick={onClick} className={clsx('flex items-center justify-between px-3 py-3 font-medium rounded-xl transition-colors text-sm', isDarkMode ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-700 hover:bg-gray-50')}>
-      {label}
-      <ChevronRight size={14} className={isDarkMode ? 'text-gray-500' : 'text-gray-300'} />
-    </Link>
   );
 }

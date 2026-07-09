@@ -9,6 +9,7 @@ interface UIState {
   locationPermission: 'unknown' | 'granted' | 'denied';
   userLocation: { lat: number; lng: number } | null;
   isDarkMode: boolean;
+  dropdownCloseTrigger: number;
 
   openSearch: () => void;
   closeSearch: () => void;
@@ -20,6 +21,7 @@ interface UIState {
   setUserLocation: (location: { lat: number; lng: number }) => void;
   toggleDarkMode: () => void;
   setDarkMode: (isDark: boolean) => void;
+  closeAllDropdowns: () => void;
 }
 
 export const useUIStore = create<UIState>()(
@@ -32,6 +34,7 @@ export const useUIStore = create<UIState>()(
       locationPermission: 'unknown',
       userLocation: null,
       isDarkMode: false,
+      dropdownCloseTrigger: 0,
 
       openSearch: () => set({ isSearchOpen: true }),
       closeSearch: () => set({ isSearchOpen: false }),
@@ -43,6 +46,7 @@ export const useUIStore = create<UIState>()(
       setUserLocation: (userLocation) => set({ userLocation }),
       toggleDarkMode: () => set((s) => ({ isDarkMode: !s.isDarkMode })),
       setDarkMode: (isDark) => set({ isDarkMode: isDark }),
+      closeAllDropdowns: () => set((s) => ({ dropdownCloseTrigger: s.dropdownCloseTrigger + 1 })),
     }),
     {
       name: 'ui-storage',

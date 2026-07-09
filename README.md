@@ -1,4 +1,4 @@
-# 🏙️ Discover Festac
+# 🏙️ Discover SMEs
 
 > The digital operating system for hyperlocal commerce in Festac Town, Lagos.
 

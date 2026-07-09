@@ -5,7 +5,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Discover Festac brand colors — deep Lagos green + warm amber
+        // Discover SMEs brand colors — deep Lagos green + warm amber
         brand: {
           50: '#f0fdf4',
           100: '#dcfce7',
@@ -34,7 +34,7 @@ export default {
       },
       fontFamily: {
         display: ['"Plus Jakarta Sans"', 'sans-serif'],
-        body: ['"DM Sans"', 'sans-serif'],
+        body: ['"Inter"', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'monospace'],
       },
       fontSize: {

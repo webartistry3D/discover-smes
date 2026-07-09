@@ -1,5 +1,5 @@
 // Local shared utilities for frontend
-// Copied from @discover-festac/shared to avoid build issues
+// Copied from @discover-smes/shared to avoid build issues
 
 // Financial Types
 export type IncomeCategory = 'PRODUCT_SALE' | 'SERVICE_BOOKING' | 'CONSULTATION' | 'COMMISSION' | 'OTHER';
@@ -456,7 +456,7 @@ export function generateWhatsAppUrl(phone: string, message?: string): string {
 }
 
 export function generateWhatsAppGreeting(businessName: string): string {
-  return `Hello! I found ${businessName} on Discover Festac and I'd like to know more about your products/services.`;
+  return `Hello! I found ${businessName} on Discover SMEs and I'd like to know more about your products/services.`;
 }
 
 export function formatNaira(amount: number): string {
@@ -576,6 +576,18 @@ export enum ChatbotSessionStatus {
   CLOSED = 'CLOSED',
 }
 
+export enum ConversationState {
+  WELCOME = 'WELCOME',
+  MENU = 'MENU',
+  FAQ_SEARCH = 'FAQ_SEARCH',
+  PRODUCT_SEARCH = 'PRODUCT_SEARCH',
+  SERVICE_SEARCH = 'SERVICE_SEARCH',
+  WAITING_FOR_OPERATOR = 'WAITING_FOR_OPERATOR',
+  HUMAN_CHAT = 'HUMAN_CHAT',
+  BOT_RESUMED = 'BOT_RESUMED',
+  CLOSED = 'CLOSED',
+}
+
 export interface ChatbotSettings {
   id: string;
   vendorId: string;
@@ -609,6 +621,9 @@ export interface ChatbotSession {
   sessionStatus: ChatbotSessionStatus;
   lastMessage: string | null;
   lastMessageAt: Date | null;
+  currentState: ConversationState;
+  assignedOperatorId: string | null;
+  conversationContext: any;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -635,10 +650,17 @@ export interface UpdateChatbotSettingsRequest {
   greetingMessage?: string;
   fallbackMessage?: string;
   humanHandoffMessage?: string;
+  offlineMessage?: string;
+  handoffEnabled?: boolean;
+  businessHoursEnabled?: boolean;
+  businessHours?: any;
+  fuzzyMatchingEnabled?: boolean;
+  fuzzyThreshold?: number;
 }
 
 export interface TakeoverSessionRequest {
   sessionId: string;
+  assignedOperatorId?: string;
 }
 
 export interface ResumeSessionRequest {

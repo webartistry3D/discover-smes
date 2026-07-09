@@ -20,10 +20,13 @@ import {
 import { useChatbotRules, useCreateChatbotRule, useUpdateChatbotRule, useDeleteChatbotRule } from '../../hooks/useChatbot';
 import { Button, Skeleton, Badge } from '../../components/ui/index';
 import { useAuthStore } from '../../stores/auth.store';
+import { useUIStore } from '../../stores/ui.store';
+import { clsx } from 'clsx';
 import { ChatbotRuleType } from '../../lib/shared';
 import toast from 'react-hot-toast';
 
 export default function FAQManager() {
+  const { isDarkMode } = useUIStore();
   const { user } = useAuthStore();
   const { data: rules, isLoading, error } = useChatbotRules();
   const createRule = useCreateChatbotRule();
@@ -186,7 +189,7 @@ export default function FAQManager() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className={clsx('min-h-screen', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
         <div className="bg-gradient-hero text-white">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
             <Skeleton className="h-12 w-64 mb-4" />
@@ -205,20 +208,22 @@ export default function FAQManager() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className={clsx('min-h-screen pb-20', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       {/* Header */}
       <div className="bg-gradient-hero text-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-          <div className="flex items-center gap-4 mb-6">
+          <div className="flex items-center gap-4 mb-4">
             <Link href="/dashboard">
               <button className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors">
                 <ChevronLeft size={20} />
               </button>
             </Link>
             <div className="flex-1">
-              <h1 className="font-display font-bold text-2xl">FAQ Manager</h1>
-              <p className="text-white/60 text-sm mt-1">Manage your chatbot response rules</p>
+              <h1 className={clsx('font-display font-bold text-2xl', isDarkMode ? 'text-white' : 'text-gray-900')}>FAQ Manager</h1>
+              {/*<p className="text-white/60 text-sm mt-1">Manage your chatbot response rules</p>*/}
             </div>
+          </div>
+          <div className="flex justify-end mb-2">
             <Button onClick={() => setIsAdding(true)} variant="primary">
               <Plus size={18} className="mr-2" />
               Add Rule
@@ -226,38 +231,38 @@ export default function FAQManager() {
           </div>
 
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             <div className="bg-white/10 backdrop-blur rounded-xl p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-500/20 rounded-lg">
-                  <MessageSquare size={20} className="text-blue-300" />
-                </div>
-                <div>
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-start">
+                  <div className="p-2 bg-blue-500/20 rounded-lg">
+                    <MessageSquare size={20} className="text-blue-300" />
+                  </div>
                   <p className="text-white/60 text-xs">Total Rules</p>
-                  <p className="text-white font-bold text-xl">{rules?.length || 0}</p>
                 </div>
+                <p className="text-white font-bold text-6xl font-mono">{rules?.length || 0}</p>
               </div>
             </div>
             <div className="bg-white/10 backdrop-blur rounded-xl p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-500/20 rounded-lg">
-                  <Check size={20} className="text-green-300" />
-                </div>
-                <div>
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-start">
+                  <div className="p-2 bg-green-500/20 rounded-lg">
+                    <Check size={20} className="text-green-300" />
+                  </div>
                   <p className="text-white/60 text-xs">Active</p>
-                  <p className="text-white font-bold text-xl">{rules?.filter((r) => r.isActive).length || 0}</p>
                 </div>
+                <p className="text-white font-bold text-6xl font-mono">{rules?.filter((r) => r.isActive).length || 0}</p>
               </div>
             </div>
             <div className="bg-white/10 backdrop-blur rounded-xl p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-500/20 rounded-lg">
-                  <Zap size={20} className="text-purple-300" />
-                </div>
-                <div>
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-start">
+                  <div className="p-2 bg-purple-500/20 rounded-lg">
+                    <Zap size={20} className="text-purple-300" />
+                  </div>
                   <p className="text-white/60 text-xs">FAQ Type</p>
-                  <p className="text-white font-bold text-xl">{rules?.filter((r) => r.ruleType === ChatbotRuleType.FAQ).length || 0}</p>
                 </div>
+                <p className="text-white font-bold text-6xl font-mono">{rules?.filter((r) => r.ruleType === ChatbotRuleType.FAQ).length || 0}</p>
               </div>
             </div>
           </div>
@@ -274,14 +279,14 @@ export default function FAQManager() {
               placeholder="Search rules..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green"
+              className={clsx('w-full pl-10 pr-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green', isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200')}
             />
           </div>
           <div className="flex gap-2">
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value as ChatbotRuleType | 'ALL')}
-              className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green"
+              className={clsx('px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green', isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200')}
             >
               <option value="ALL">All Types</option>
               <option value={ChatbotRuleType.FAQ}>FAQ</option>
@@ -297,18 +302,18 @@ export default function FAQManager() {
 
         {/* Add/Edit Form */}
         {(isAdding || editingId) && (
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mb-6">
-            <h3 className="font-semibold text-gray-900 mb-4">
+          <div className={clsx('rounded-xl shadow-sm p-6 border mb-6', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200')}>
+            <h3 className={clsx('font-semibold mb-4', isDarkMode ? 'text-white' : 'text-gray-900')}>
               {editingId ? 'Edit Rule' : 'Add New Rule'}
             </h3>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Rule Type</label>
+                  <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Rule Type</label>
                   <select
                     value={formData.ruleType}
                     onChange={(e) => setFormData({ ...formData, ruleType: e.target.value as ChatbotRuleType })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className={clsx('w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300')}
                   >
                     <option value={ChatbotRuleType.FAQ}>FAQ</option>
                     <option value={ChatbotRuleType.PRICING}>Pricing</option>
@@ -320,43 +325,43 @@ export default function FAQManager() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+                  <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Priority</label>
                   <input
                     type="number"
                     value={formData.priority}
                     onChange={(e) => setFormData({ ...formData, priority: parseInt(e.target.value) || 0 })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className={clsx('w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300')}
                     placeholder="0"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Keyword</label>
+                <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Keyword</label>
                 <input
                   type="text"
                   value={formData.keyword}
                   onChange={(e) => setFormData({ ...formData, keyword: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={clsx('w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300')}
                   placeholder="e.g., delivery, pricing, hours"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Question Pattern (Optional)</label>
+                <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Question Pattern (Optional)</label>
                 <input
                   type="text"
                   value={formData.questionPattern}
                   onChange={(e) => setFormData({ ...formData, questionPattern: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={clsx('w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300')}
                   placeholder="e.g., how much, what is"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Response</label>
+                <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Response</label>
                 <textarea
                   value={formData.response}
                   onChange={(e) => setFormData({ ...formData, response: e.target.value })}
                   rows={3}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  className={clsx('w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300')}
                   placeholder="The response the chatbot will send"
                 />
               </div>
@@ -385,10 +390,10 @@ export default function FAQManager() {
         {/* Rules List */}
         <div className="space-y-3">
           {filteredRules.length === 0 ? (
-            <div className="bg-white rounded-xl shadow-sm p-12 border border-gray-200 text-center">
-              <MessageSquare size={48} className="text-gray-300 mx-auto mb-4" />
-              <h3 className="font-semibold text-gray-900 mb-2">No Rules Found</h3>
-              <p className="text-gray-600 mb-4">
+            <div className={clsx('rounded-xl shadow-sm p-12 border text-center', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200')}>
+              <MessageSquare size={48} className={clsx('mx-auto mb-4', isDarkMode ? 'text-gray-600' : 'text-gray-300')} />
+              <h3 className={clsx('font-semibold mb-2', isDarkMode ? 'text-white' : 'text-gray-900')}>No Rules Found</h3>
+              <p className={clsx('mb-4', isDarkMode ? 'text-gray-400' : 'text-gray-600')}>
                 {searchTerm || filterType !== 'ALL'
                   ? 'Try adjusting your search or filter'
                   : 'Create your first chatbot rule to get started'}
@@ -405,9 +410,7 @@ export default function FAQManager() {
                 key={rule.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`bg-white rounded-xl shadow-sm p-4 border ${
-                  !rule.isActive ? 'border-gray-200 opacity-60' : 'border-gray-200'
-                }`}
+                className={clsx('rounded-xl shadow-sm p-4 border', !rule.isActive ? 'opacity-60' : '', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200')}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
@@ -417,42 +420,42 @@ export default function FAQManager() {
                         {rule.isActive ? 'Active' : 'Inactive'}
                       </Badge>
                       {rule.priority > 0 && (
-                        <span className="text-xs text-gray-500">Priority: {rule.priority}</span>
+                        <span className={clsx('text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>Priority: {rule.priority}</span>
                       )}
                     </div>
                     <div className="mb-2">
-                      <span className="font-semibold text-gray-900">Keyword:</span>{' '}
-                      <span className="text-gray-700">{rule.keyword}</span>
+                      <span className={clsx('font-semibold', isDarkMode ? 'text-white' : 'text-gray-900')}>Keyword:</span>{' '}
+                      <span className={clsx(isDarkMode ? 'text-gray-300' : 'text-gray-700')}>{rule.keyword}</span>
                     </div>
                     {rule.questionPattern && (
                       <div className="mb-2">
-                        <span className="font-semibold text-gray-900">Pattern:</span>{' '}
-                        <span className="text-gray-700">{rule.questionPattern}</span>
+                        <span className={clsx('font-semibold', isDarkMode ? 'text-white' : 'text-gray-900')}>Pattern:</span>{' '}
+                        <span className={clsx(isDarkMode ? 'text-gray-300' : 'text-gray-700')}>{rule.questionPattern}</span>
                       </div>
                     )}
                     <div>
-                      <span className="font-semibold text-gray-900">Response:</span>{' '}
-                      <span className="text-gray-700">{rule.response}</span>
+                      <span className={clsx('font-semibold', isDarkMode ? 'text-white' : 'text-gray-900')}>Response:</span>{' '}
+                      <span className={clsx(isDarkMode ? 'text-gray-300' : 'text-gray-700')}>{rule.response}</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleToggleActive(rule)}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                      className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100')}
                       title={rule.isActive ? 'Disable' : 'Enable'}
                     >
                       {rule.isActive ? <Check size={18} className="text-green-600" /> : <X size={18} className="text-gray-400" />}
                     </button>
                     <button
                       onClick={() => startEdit(rule)}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                      className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100')}
                       title="Edit"
                     >
                       <Edit size={18} className="text-blue-600" />
                     </button>
                     <button
                       onClick={() => handleDelete(rule.id)}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                      className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100')}
                       title="Delete"
                     >
                       <Trash2 size={18} className="text-red-600" />

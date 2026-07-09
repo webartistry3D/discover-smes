@@ -6,8 +6,11 @@ import { Button, Skeleton } from '../../components/ui/index';
 import toast from 'react-hot-toast';
 import { useVendorVerificationStatus, useVerificationRequests, useSubmitVerificationRequest, getVerificationLevelStatus } from '../../hooks/useVerification';
 import type { VerificationLevel } from '../../lib/shared';
+import { useUIStore } from '../../stores/ui.store';
+import { clsx } from 'clsx';
 
 export default function VendorVerificationPage() {
+  const { isDarkMode } = useUIStore();
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -79,7 +82,7 @@ export default function VendorVerificationPage() {
 
   if (vendorLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className={clsx('min-h-screen', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
         <div className="bg-gradient-to-r from-festac-green to-emerald-600 text-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
             <Skeleton className="h-12 w-64 mb-4" />
@@ -95,7 +98,7 @@ export default function VendorVerificationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className={clsx('min-h-screen pb-20', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       {/* Header */}
       <div className="bg-gradient-hero text-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
@@ -107,7 +110,7 @@ export default function VendorVerificationPage() {
             </Link>
             <div className="flex-1">
               <h1 className="font-display font-bold text-2xl">Get Verified</h1>
-              <p className="text-white/60 text-sm mt-1">Build customer trust with verified badges</p>
+              {/*<p className="text-white/60 text-sm mt-1">Build customer trust with verified badges</p>*/}
             </div>
           </div>
 
@@ -174,9 +177,9 @@ export default function VendorVerificationPage() {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
         {/* Current Status */}
-        <div className="bg-white rounded-2xl p-6 shadow-card mb-6">
-          <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Star className="w-5 h-5 text-festac-green" />
+        <div className={clsx('rounded-2xl p-6 shadow-card mb-6', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+          <h2 className={clsx('font-semibold mb-4 flex items-center gap-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
+            <Star className={clsx('w-5 h-5 text-festac-green')} />
             Your Verification Status
           </h2>
           <div className="flex items-center gap-4">
@@ -184,26 +187,26 @@ export default function VendorVerificationPage() {
               currentLevel === 'PHONE_VERIFIED' ? 'bg-blue-100' :
               currentLevel === 'BUSINESS_VERIFIED' ? 'bg-purple-100' :
               currentLevel === 'GOVERNMENT_ENDORSED' ? 'bg-amber-100' :
-              'bg-gray-100'
+              isDarkMode ? 'bg-gray-700' : 'bg-gray-100'
             }`}>
               {currentLevel === 'PHONE_VERIFIED' ? (
-                <Phone className="w-8 h-8 text-blue-600" />
+                <Phone className={clsx('w-8 h-8 text-blue-600')} />
               ) : currentLevel === 'BUSINESS_VERIFIED' ? (
-                <Building2 className="w-8 h-8 text-purple-600" />
+                <Building2 className={clsx('w-8 h-8 text-purple-600')} />
               ) : currentLevel === 'GOVERNMENT_ENDORSED' ? (
-                <Shield className="w-8 h-8 text-amber-600" />
+                <Shield className={clsx('w-8 h-8 text-amber-600')} />
               ) : (
-                <AlertCircle className="w-8 h-8 text-gray-400" />
+                <AlertCircle className={clsx('w-8 h-8', isDarkMode ? 'text-gray-400' : 'text-gray-400')} />
               )}
             </div>
             <div>
-              <p className="font-bold text-gray-900">
+              <p className={clsx('font-bold', isDarkMode ? 'text-white' : 'text-gray-900')}>
                 {currentLevel === 'PHONE_VERIFIED' ? 'Phone Verified' :
                  currentLevel === 'BUSINESS_VERIFIED' ? 'Business Verified' :
                  currentLevel === 'GOVERNMENT_ENDORSED' ? 'Government Endorsed' :
                  'Not Verified'}
               </p>
-              <p className="text-sm text-gray-500">
+              <p className={clsx('text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>
                 {currentLevel === 'NONE' ? 'Complete business verification to continue' :
                  currentLevel === 'PHONE_VERIFIED' ? 'Your phone number is verified' :
                  currentLevel === 'BUSINESS_VERIFIED' ? 'Your business documents are verified' :
@@ -211,13 +214,13 @@ export default function VendorVerificationPage() {
               </p>
             </div>
             {currentLevel !== 'NONE' && (
-              <CheckCircle className="w-6 h-6 text-green-500 ml-auto" />
+              <CheckCircle className={clsx('w-6 h-6 text-green-500 ml-auto')} />
             )}
           </div>
         </div>
 
         {/* Verification Levels */}
-        <h2 className="font-semibold text-gray-900 mb-4">Verification Levels</h2>
+        <h2 className={clsx('font-semibold mb-4', isDarkMode ? 'text-white' : 'text-gray-900')}>Verification Levels</h2>
         <div className="space-y-4 mb-6">
           {levels.map((level, index) => {
             const status = getVerificationLevelStatus(
@@ -233,18 +236,18 @@ export default function VendorVerificationPage() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className={`bg-white rounded-2xl p-6 shadow-card border-2 ${
+                className={clsx('rounded-2xl p-6 shadow-card border-2', isDarkMode ? 'bg-gray-800' : 'bg-white',
                   status === 'completed' ? 'border-green-500' : 
                   status === 'in_review' ? 'border-amber-500' :
                   status === 'pending' ? 'border-purple-500' : 
-                  'border-gray-200'
-                }`}
+                  isDarkMode ? 'border-gray-700' : 'border-gray-200'
+                )}
               >
                 <div className="flex items-start gap-4">
                   <div className={`p-4 ${level.color} rounded-xl text-white`}>{level.icon}</div>
                   <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900">{level.name}</h3>
-                    <p className="text-sm text-gray-500 mb-3">{level.description}</p>
+                    <h3 className={clsx('font-semibold', isDarkMode ? 'text-white' : 'text-gray-900')}>{level.name}</h3>
+                    <p className={clsx('text-sm mb-3', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>{level.description}</p>
                     
                     {status === 'completed' && (
                       <div className="flex items-center gap-2 text-green-600">
@@ -281,17 +284,17 @@ export default function VendorVerificationPage() {
                               <AlertCircle size={16} />
                               <span className="text-sm font-medium">Business Not Verified</span>
                             </div>
-                            <p className="text-sm text-gray-500">Business documents not verified</p>
+                            <p className={clsx('text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>Business documents not verified</p>
                             {request?.rejectionReason && (
                               <div className="p-3 bg-red-50 rounded-lg">
                                 <p className="text-xs text-red-800">{request.rejectionReason}</p>
                               </div>
                             )}
                             <div className="space-y-2">
-                              <label className="block text-sm font-medium text-gray-700">Upload Business Documents</label>
-                              <div className="p-3 bg-gray-50 rounded-lg">
-                                <p className="text-xs text-gray-600 mb-2">Accepted document types:</p>
-                                <ul className="text-xs text-gray-600 space-y-1 list-disc list-inside">
+                              <label className={clsx('block text-sm font-medium', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Upload Business Documents</label>
+                              <div className={clsx('p-3 rounded-lg', isDarkMode ? 'bg-gray-700' : 'bg-gray-50')}>
+                                <p className={clsx('text-xs mb-2', isDarkMode ? 'text-gray-400' : 'text-gray-600')}>Accepted document types:</p>
+                                <ul className={clsx('text-xs space-y-1 list-disc list-inside', isDarkMode ? 'text-gray-400' : 'text-gray-600')}>
                                   <li>CAC Certificate</li>
                                   <li>Business License</li>
                                   <li>TIN Certificate</li>
@@ -299,10 +302,10 @@ export default function VendorVerificationPage() {
                                   <li>Utility Bill (not older than 3 months)</li>
                                 </ul>
                               </div>
-                              <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center">
-                                <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                                <p className="text-sm text-gray-500">Drag and drop files or click to upload</p>
-                                <p className="text-xs text-gray-400 mt-1">Max 5 files, PDF or images (JPG, PNG, WEBP)</p>
+                              <div className={clsx('border-2 border-dashed rounded-xl p-4 text-center', isDarkMode ? 'border-gray-600' : 'border-gray-300')}>
+                                <Upload className={clsx('w-8 h-8 mx-auto mb-2', isDarkMode ? 'text-gray-400' : 'text-gray-400')} />
+                                <p className={clsx('text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>Drag and drop files or click to upload</p>
+                                <p className={clsx('text-xs mt-1', isDarkMode ? 'text-gray-500' : 'text-gray-400')}>Max 5 files, PDF or images (JPG, PNG, WEBP)</p>
                                 <input
                                   type="file"
                                   multiple
@@ -320,11 +323,11 @@ export default function VendorVerificationPage() {
                               </div>
                               {selectedFiles.length > 0 && (
                                 <div className="space-y-2">
-                                  <p className="text-sm font-medium text-gray-700">Selected Files:</p>
+                                  <p className={clsx('text-sm font-medium', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Selected Files:</p>
                                   {selectedFiles.map((file, i) => (
-                                    <div key={i} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
-                                      <FileText size={16} className="text-gray-400" />
-                                      <span className="text-sm text-gray-700 flex-1 truncate">{file.name}</span>
+                                    <div key={i} className={clsx('flex items-center gap-2 p-2 rounded-lg', isDarkMode ? 'bg-gray-700' : 'bg-gray-50')}>
+                                      <FileText size={16} className={isDarkMode ? 'text-gray-400' : 'text-gray-400'} />
+                                      <span className={clsx('text-sm flex-1 truncate', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>{file.name}</span>
                                       <button
                                         onClick={() => handleRemoveFile(i)}
                                         className="text-red-500 hover:text-red-700"
@@ -356,10 +359,10 @@ export default function VendorVerificationPage() {
                               </div>
                             )}
                             <div className="space-y-2">
-                              <label className="block text-sm font-medium text-gray-700">Upload Government Endorsement Documents</label>
-                              <div className="p-3 bg-gray-50 rounded-lg">
-                                <p className="text-xs text-gray-600 mb-2">Accepted document types:</p>
-                                <ul className="text-xs text-gray-600 space-y-1 list-disc list-inside">
+                              <label className={clsx('block text-sm font-medium', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Upload Government Endorsement Documents</label>
+                              <div className={clsx('p-3 rounded-lg', isDarkMode ? 'bg-gray-700' : 'bg-gray-50')}>
+                                <p className={clsx('text-xs mb-2', isDarkMode ? 'text-gray-400' : 'text-gray-600')}>Accepted document types:</p>
+                                <ul className={clsx('text-xs space-y-1 list-disc list-inside', isDarkMode ? 'text-gray-400' : 'text-gray-600')}>
                                   <li>Government Approval Letter</li>
                                   <li>Ministry of Trade Certification</li>
                                   <li>Local Government Endorsement</li>
@@ -367,10 +370,10 @@ export default function VendorVerificationPage() {
                                   <li>Federal Agency Certification</li>
                                 </ul>
                               </div>
-                              <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center">
-                                <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                                <p className="text-sm text-gray-500">Drag and drop files or click to upload</p>
-                                <p className="text-xs text-gray-400 mt-1">Max 5 files, PDF or images (JPG, PNG, WEBP)</p>
+                              <div className={clsx('border-2 border-dashed rounded-xl p-4 text-center', isDarkMode ? 'border-gray-600' : 'border-gray-300')}>
+                                <Upload className={clsx('w-8 h-8 mx-auto mb-2', isDarkMode ? 'text-gray-400' : 'text-gray-400')} />
+                                <p className={clsx('text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>Drag and drop files or click to upload</p>
+                                <p className={clsx('text-xs mt-1', isDarkMode ? 'text-gray-500' : 'text-gray-400')}>Max 5 files, PDF or images (JPG, PNG, WEBP)</p>
                                 <input
                                   type="file"
                                   multiple
@@ -388,11 +391,11 @@ export default function VendorVerificationPage() {
                               </div>
                               {selectedFiles.length > 0 && (
                                 <div className="space-y-2">
-                                  <p className="text-sm font-medium text-gray-700">Selected Files:</p>
+                                  <p className={clsx('text-sm font-medium', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Selected Files:</p>
                                   {selectedFiles.map((file, i) => (
-                                    <div key={i} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
-                                      <FileText size={16} className="text-gray-400" />
-                                      <span className="text-sm text-gray-700 flex-1 truncate">{file.name}</span>
+                                    <div key={i} className={clsx('flex items-center gap-2 p-2 rounded-lg', isDarkMode ? 'bg-gray-700' : 'bg-gray-50')}>
+                                      <FileText size={16} className={isDarkMode ? 'text-gray-400' : 'text-gray-400'} />
+                                      <span className={clsx('text-sm flex-1 truncate', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>{file.name}</span>
                                       <button
                                         onClick={() => handleRemoveFile(i)}
                                         className="text-red-500 hover:text-red-700"
@@ -417,7 +420,7 @@ export default function VendorVerificationPage() {
                     )}
                     
                     {status === 'locked' && (
-                      <div className="flex items-center gap-2 text-gray-400">
+                      <div className={clsx('flex items-center gap-2', isDarkMode ? 'text-gray-400' : 'text-gray-400')}>
                         <AlertCircle size={16} />
                         <span className="text-sm">
                           {level.key === 'GOVERNMENT_ENDORSED' 

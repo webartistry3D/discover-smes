@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import type { CreateWhatsAppCampaignRequest, CreateLoyaltyProgramRequest, CreatePromotionRequest } from '@discover-festac/shared';
+import type { CreateWhatsAppCampaignRequest, CreateLoyaltyProgramRequest, CreatePromotionRequest } from '@discover-smes/shared';
 
 const prisma = new PrismaClient();
 

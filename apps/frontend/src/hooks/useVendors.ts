@@ -118,6 +118,16 @@ export function useCategories() {
   });
 }
 
+export function useCreateCategory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { name: string; description?: string }) => categoryApi.create(data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.categories });
+    },
+  });
+}
+
 // ─── REVIEWS ─────────────────────────────────────────────────
 
 export function useReviews(vendorId: string, page = 1) {

@@ -1,20 +1,63 @@
-import { PrismaClient, MessageType } from '@prisma/client';
-import type {
-  ChatbotSettings,
-  ChatbotRule,
-  ChatbotSession,
-  ChatbotRuleType,
-  ChatbotSessionStatus,
-  UpdateChatbotSettingsRequest,
-  CreateChatbotRuleRequest,
-  UpdateChatbotRuleRequest,
-  TakeoverSessionRequest,
-  ResumeSessionRequest,
-  ProcessMessageRequest,
-  ProcessMessageResponse,
-} from '@discover-festac/shared';
+import { PrismaClient, MessageType, ConversationState, ChatbotSettings, ChatbotRule, ChatbotSession, ChatbotRuleType, ChatbotSessionStatus } from '@prisma/client';
 import { prisma } from '../config/database.js';
 import { costControlService } from '../modules/cost-control/cost.service';
+import faqSearchService from './faq-search.service.js';
+import productSearchService from './product-search.service.js';
+import serviceSearchService from './service-search.service.js';
+import businessHoursService from './business-hours.service.js';
+
+// Local type definitions (will be moved to shared package later)
+interface UpdateChatbotSettingsRequest {
+  chatbotEnabled?: boolean;
+  greetingMessage?: string;
+  fallbackMessage?: string;
+  humanHandoffMessage?: string;
+  offlineMessage?: string;
+  handoffEnabled?: boolean;
+  businessHoursEnabled?: boolean;
+  businessHours?: any;
+  fuzzyMatchingEnabled?: boolean;
+  fuzzyThreshold?: number;
+}
+
+interface CreateChatbotRuleRequest {
+  ruleType: ChatbotRuleType;
+  keyword: string;
+  questionPattern?: string;
+  response: string;
+  priority?: number;
+}
+
+interface UpdateChatbotRuleRequest {
+  ruleType?: ChatbotRuleType;
+  keyword?: string;
+  questionPattern?: string;
+  response?: string;
+  priority?: number;
+  isActive?: boolean;
+}
+
+interface TakeoverSessionRequest {
+  sessionId: string;
+  assignedOperatorId?: string;
+}
+
+interface ResumeSessionRequest {
+  sessionId: string;
+}
+
+interface ProcessMessageRequest {
+  vendorId: string;
+  customerPhone: string;
+  message: string;
+}
+
+interface ProcessMessageResponse {
+  response: string;
+  shouldHandoff: boolean;
+  matchedRule?: ChatbotRule;
+  newState?: ConversationState;
+}
 
 export class ChatbotService {
   // ─── CHATBOT SETTINGS ────────────────────────────────────────────────
@@ -50,6 +93,12 @@ export class ChatbotService {
         greetingMessage: data.greetingMessage,
         fallbackMessage: data.fallbackMessage,
         humanHandoffMessage: data.humanHandoffMessage,
+        offlineMessage: data.offlineMessage,
+        handoffEnabled: data.handoffEnabled ?? true,
+        businessHoursEnabled: data.businessHoursEnabled ?? false,
+        businessHours: data.businessHours,
+        fuzzyMatchingEnabled: data.fuzzyMatchingEnabled ?? true,
+        fuzzyThreshold: data.fuzzyThreshold ?? 0.3,
       },
     });
   }
@@ -125,7 +174,7 @@ export class ChatbotService {
     });
   }
 
-  async takeoverSession(vendorId: string, sessionId: string): Promise<ChatbotSession> {
+  async takeoverSession(vendorId: string, sessionId: string, assignedOperatorId?: string): Promise<ChatbotSession> {
     // Verify session belongs to vendor
     const existingSession = await prisma.chatbotSession.findUnique({
       where: { id: sessionId },
@@ -141,6 +190,8 @@ export class ChatbotService {
         botActive: false,
         humanTakeover: true,
         sessionStatus: 'HUMAN_TAKEOVER',
+        currentState: 'HUMAN_CHAT',
+        assignedOperatorId,
         updatedAt: new Date(),
       },
     });
@@ -162,6 +213,8 @@ export class ChatbotService {
         botActive: true,
         humanTakeover: false,
         sessionStatus: 'ACTIVE',
+        currentState: 'BOT_RESUMED',
+        assignedOperatorId: null,
         updatedAt: new Date(),
       },
     });
@@ -177,6 +230,17 @@ export class ChatbotService {
 
     if (!settings || !settings.chatbotEnabled) {
       return { response: '', shouldHandoff: true };
+    }
+
+    // Check business hours
+    const isWithinHours = await businessHoursService.isWithinBusinessHours(vendorId);
+    if (!isWithinHours) {
+      const nextOpening = await businessHoursService.getNextOpeningTime(vendorId);
+      const offlineMessage = settings.offlineMessage || 'We are currently closed. ';
+      const response = nextOpening 
+        ? `${offlineMessage} We'll be open ${nextOpening}.`
+        : offlineMessage;
+      return { response, shouldHandoff: false };
     }
 
     // Get or create session
@@ -196,6 +260,7 @@ export class ChatbotService {
           botActive: true,
           humanTakeover: false,
           sessionStatus: 'ACTIVE',
+          currentState: 'WELCOME',
           lastMessage: message,
           lastMessageAt: new Date(),
         },
@@ -219,67 +284,143 @@ export class ChatbotService {
     // Normalize message
     const normalizedMessage = message.toLowerCase().trim().replace(/[^\w\s]/g, '');
 
-    // Get active rules
-    const rules = await prisma.chatbotRule.findMany({
-      where: {
-        vendorId,
-        isActive: true,
-      },
-      orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
-    });
-
-    // Find matching rule
-    let matchedRule: ChatbotRule | null = null;
+    // ─── STATE MACHINE LOGIC ───────────────────────────────────────────────
+    
+    let newState: ConversationState = session.currentState;
     let response = settings.fallbackMessage || 'Thank you for your message. A human agent will assist you shortly.';
+    let matchedRule: ChatbotRule | null = null;
     let matchedKeyword: string | null = null;
 
-    for (const rule of rules) {
-      const keyword = rule.keyword.toLowerCase().trim();
-      
-      // Exact match
-      if (normalizedMessage === keyword) {
-        matchedRule = rule;
-        response = rule.response;
-        matchedKeyword = keyword;
+    // Handle based on current state
+    switch (session.currentState) {
+      case 'WELCOME':
+        // Send greeting and transition to MENU
+        response = settings.greetingMessage || 'Hello! Welcome to our business. How can I help you today?';
+        newState = 'MENU';
         break;
-      }
 
-      // Partial match
-      if (normalizedMessage.includes(keyword)) {
-        matchedRule = rule;
-        response = rule.response;
-        matchedKeyword = keyword;
-        break;
-      }
+      case 'MENU':
+        // Determine intent and transition to appropriate state
+        if (normalizedMessage.includes('faq') || normalizedMessage.includes('question') || normalizedMessage.includes('help')) {
+          newState = 'FAQ_SEARCH';
+        } else if (normalizedMessage.includes('product') || normalizedMessage.includes('buy') || normalizedMessage.includes('price')) {
+          newState = 'PRODUCT_SEARCH';
+        } else if (normalizedMessage.includes('service') || normalizedMessage.includes('book') || normalizedMessage.includes('consultation')) {
+          newState = 'SERVICE_SEARCH';
+        } else if (normalizedMessage.includes('human') || normalizedMessage.includes('agent') || normalizedMessage.includes('person')) {
+          newState = 'WAITING_FOR_OPERATOR';
+        } else {
+          // Try fuzzy matching with FAQs, products, and services
+          const faqResults = settings.fuzzyMatchingEnabled 
+            ? await faqSearchService.searchFaqs(vendorId, normalizedMessage, settings.fuzzyThreshold || 0.3)
+            : [];
+          
+          if (faqResults.length > 0) {
+            response = faqResults[0].item.answer;
+            matchedRule = null;
+            newState = 'MENU';
+          } else {
+            // Fall back to keyword matching
+            const rules = await prisma.chatbotRule.findMany({
+              where: { vendorId, isActive: true },
+              orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
+            });
 
-      // Pattern match (if question pattern is set)
-      if (rule.questionPattern) {
-        const pattern = rule.questionPattern.toLowerCase().trim();
-        if (normalizedMessage.includes(pattern)) {
-          matchedRule = rule;
-          response = rule.response;
-          matchedKeyword = keyword;
-          break;
+            for (const rule of rules) {
+              const keyword = rule.keyword.toLowerCase().trim();
+              if (normalizedMessage === keyword || normalizedMessage.includes(keyword)) {
+                matchedRule = rule;
+                response = rule.response;
+                matchedKeyword = keyword;
+                break;
+              }
+            }
+          }
         }
-      }
+        break;
+
+      case 'FAQ_SEARCH':
+        // Search FAQs with fuzzy matching
+        const faqResults = settings.fuzzyMatchingEnabled
+          ? await faqSearchService.searchFaqs(vendorId, normalizedMessage, settings.fuzzyThreshold || 0.3)
+          : await faqSearchService.getExactMatch(vendorId, normalizedMessage);
+
+        if (Array.isArray(faqResults) && faqResults.length > 0) {
+          response = faqResults[0].item.answer;
+        } else if (faqResults && typeof faqResults === 'object' && 'answer' in faqResults) {
+          response = faqResults.answer;
+        } else {
+          response = 'I couldn\'t find an answer to that question. Try asking differently or type "menu" to see options.';
+        }
+        newState = 'MENU';
+        break;
+
+      case 'PRODUCT_SEARCH':
+        // Search products with fuzzy matching
+        const productResults = settings.fuzzyMatchingEnabled
+          ? await productSearchService.searchProducts(vendorId, normalizedMessage, settings.fuzzyThreshold || 0.3)
+          : await productSearchService.getProductByName(vendorId, normalizedMessage);
+
+        if (Array.isArray(productResults) && productResults.length > 0) {
+          response = productSearchService.formatProductForWhatsApp(productResults[0].item);
+        } else if (productResults) {
+          response = productSearchService.formatProductForWhatsApp(productResults);
+        } else {
+          response = 'I couldn\'t find that product. Try a different search or type "menu" to see options.';
+        }
+        newState = 'MENU';
+        break;
+
+      case 'SERVICE_SEARCH':
+        // Search services with fuzzy matching
+        const serviceResults = settings.fuzzyMatchingEnabled
+          ? await serviceSearchService.searchServices(vendorId, normalizedMessage, settings.fuzzyThreshold || 0.3)
+          : await serviceSearchService.getServiceByName(vendorId, normalizedMessage);
+
+        if (Array.isArray(serviceResults) && serviceResults.length > 0) {
+          response = serviceSearchService.formatServiceForWhatsApp(serviceResults[0].item);
+        } else if (serviceResults) {
+          response = serviceSearchService.formatServiceForWhatsApp(serviceResults);
+        } else {
+          response = 'I couldn\'t find that service. Try a different search or type "menu" to see options.';
+        }
+        newState = 'MENU';
+        break;
+
+      case 'WAITING_FOR_OPERATOR':
+        response = settings.humanHandoffMessage || 'A human agent is now attending to you.';
+        newState = 'HUMAN_CHAT';
+        
+        // Trigger handoff
+        await prisma.chatbotSession.update({
+          where: { id: session.id },
+          data: {
+            botActive: false,
+            humanTakeover: true,
+            sessionStatus: 'HUMAN_TAKEOVER',
+            currentState: 'HUMAN_CHAT',
+          },
+        });
+
+        return { response, shouldHandoff: true, matchedRule, newState };
+
+      case 'HUMAN_CHAT':
+        return { response: '', shouldHandoff: true };
+
+      case 'BOT_RESUMED':
+        newState = 'MENU';
+        response = 'I\'m back! How can I help you?';
+        break;
+
+      default:
+        newState = 'MENU';
     }
 
-    // Check if customer requested human
-    if (normalizedMessage.includes('human') || normalizedMessage.includes('agent') || normalizedMessage.includes('person')) {
-      response = settings.humanHandoffMessage || 'A human agent is now attending to you.';
-      
-      // Trigger handoff
-      await prisma.chatbotSession.update({
-        where: { id: session.id },
-        data: {
-          botActive: false,
-          humanTakeover: true,
-          sessionStatus: 'HUMAN_TAKEOVER',
-        },
-      });
-
-      return { response, shouldHandoff: true, matchedRule };
-    }
+    // Update session state
+    await prisma.chatbotSession.update({
+      where: { id: session.id },
+      data: { currentState: newState },
+    });
 
     // ─── COST CONTROL INTEGRATION ───────────────────────────────────────
     
@@ -302,7 +443,7 @@ export class ChatbotService {
         cached: true,
       });
 
-      return { response: costDecision.cachedResponse, shouldHandoff: false, matchedRule };
+      return { response: costDecision.cachedResponse, shouldHandoff: false, matchedRule, newState };
     }
 
     // If not allowed, return fallback response
@@ -310,7 +451,8 @@ export class ChatbotService {
       return { 
         response: costDecision.decision.fallbackResponse || response, 
         shouldHandoff: false,
-        matchedRule 
+        matchedRule,
+        newState
       };
     }
 
@@ -338,7 +480,7 @@ export class ChatbotService {
       cached: false,
     });
 
-    return { response, shouldHandoff: false, matchedRule };
+    return { response, shouldHandoff: false, matchedRule, newState };
   }
 }
 

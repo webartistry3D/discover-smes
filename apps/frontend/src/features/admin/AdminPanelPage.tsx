@@ -87,7 +87,7 @@ export default function AdminPanelPage() {
             </div>
             <div>
               <h1 className="font-display font-bold text-xl">Admin Control Panel</h1>
-              <p className="text-white/50 text-sm">Discover Festac — Platform Management</p>
+              <p className="text-white/50 text-sm">Discover SMEs — Platform Management</p>
             </div>
           </div>
         </div>

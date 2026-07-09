@@ -6,6 +6,9 @@ import { useInvoices, useCreateInvoice, useUpdateInvoice, useDeleteInvoice } fro
 import { Button, Skeleton, Badge } from '../../components/ui/index';
 import type { Invoice, InvoiceStatus } from '../../lib/shared';
 import toast from 'react-hot-toast';
+import { useUIStore } from '../../stores/ui.store';
+import { clsx } from 'clsx';
+import { formatCurrencyCompact } from '../../lib/utils';
 
 const INVOICE_STATUS: { value: InvoiceStatus; label: string; color: string; icon: any }[] = [
   { value: 'DRAFT', label: 'Draft', color: 'bg-gray-500', icon: FileText },
@@ -16,6 +19,7 @@ const INVOICE_STATUS: { value: InvoiceStatus; label: string; color: string; icon
 ];
 
 export default function InvoiceManagerPage() {
+  const { isDarkMode } = useUIStore();
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -142,11 +146,11 @@ export default function InvoiceManagerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className={clsx('min-h-screen pb-20', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       {/* Header */}
       <div className="bg-gradient-hero text-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-          <div className="flex items-center gap-4 mb-6">
+          <div className="flex items-center gap-4 mb-4">
             <Link href="/dashboard">
               <button className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors">
                 <ChevronLeft size={20} />
@@ -154,53 +158,51 @@ export default function InvoiceManagerPage() {
             </Link>
             <div className="flex-1">
               <h1 className="font-display font-bold text-2xl">Invoice Manager</h1>
-              <p className="text-white/60 text-sm mt-1">Create and manage customer invoices</p>
             </div>
-            <Button onClick={() => setIsAdding(true)} variant="primary">
-              <Plus size={18} className="mr-2" />
-              Invoice
+            <Button onClick={() => setIsAdding(true)} variant="primary" className="p-2">
+              <Plus size={20} />
             </Button>
           </div>
 
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             <div className="bg-white/10 backdrop-blur rounded-xl p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-500/20 rounded-lg">
-                  <FileText size={20} className="text-blue-300" />
-                </div>
-                <div>
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-start">
+                  <div className="p-2 bg-blue-500/20 rounded-lg">
+                    <FileText size={20} className="text-blue-300" />
+                  </div>
                   <p className="text-white/60 text-xs">Total Invoiced</p>
-                  <p className="text-white font-bold text-xl">
-                    ₦{totalInvoiced.toLocaleString()}
-                  </p>
                 </div>
+                <p className="text-white font-bold text-6xl font-mono">
+                  {formatCurrencyCompact(totalInvoiced)}
+                </p>
               </div>
             </div>
             <div className="bg-white/10 backdrop-blur rounded-xl p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-500/20 rounded-lg">
-                  <CheckCircle size={20} className="text-green-300" />
-                </div>
-                <div>
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-start">
+                  <div className="p-2 bg-green-500/20 rounded-lg">
+                    <CheckCircle size={20} className="text-green-300" />
+                  </div>
                   <p className="text-white/60 text-xs">Total Paid</p>
-                  <p className="text-white font-bold text-xl">
-                    ₦{totalPaid.toLocaleString()}
-                  </p>
                 </div>
+                <p className="text-white font-bold text-6xl font-mono">
+                  {formatCurrencyCompact(totalPaid)}
+                </p>
               </div>
             </div>
             <div className="bg-white/10 backdrop-blur rounded-xl p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-500/20 rounded-lg">
-                  <Clock size={20} className="text-purple-300" />
-                </div>
-                <div>
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-start">
+                  <div className="p-2 bg-purple-500/20 rounded-lg">
+                    <Clock size={20} className="text-purple-300" />
+                  </div>
                   <p className="text-white/60 text-xs">Pending</p>
-                  <p className="text-white font-bold text-xl">
-                    ₦{(totalInvoiced - totalPaid).toLocaleString()}
-                  </p>
                 </div>
+                <p className="text-white font-bold text-6xl font-mono">
+                  {formatCurrencyCompact(totalInvoiced - totalPaid)}
+                </p>
               </div>
             </div>
           </div>
@@ -214,7 +216,7 @@ export default function InvoiceManagerPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green"
+              className={clsx('px-4 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green', isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200')}
             >
               <option value="all">All Status</option>
               {INVOICE_STATUS.map((status) => (
@@ -225,13 +227,13 @@ export default function InvoiceManagerPage() {
             </select>
           </div>
           <div className="relative w-full sm:w-64">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search size={18} className={clsx('absolute left-3 top-1/2 -translate-y-1/2', isDarkMode ? 'text-gray-400' : 'text-gray-400')} />
             <input
               type="text"
               placeholder="Search invoices..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green"
+              className={clsx('w-full pl-10 pr-4 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green', isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200')}
             />
           </div>
         </div>
@@ -246,16 +248,16 @@ export default function InvoiceManagerPage() {
             ))}
           </div>
         ) : filteredInvoices.length === 0 ? (
-          <div className="bg-white rounded-xl p-8 text-center">
-            <FileText size={48} className="mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500">No invoices found</p>
+          <div className={clsx('rounded-xl p-8 text-center', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+            <FileText size={48} className={clsx('mx-auto mb-4', isDarkMode ? 'text-gray-600' : 'text-gray-300')} />
+            <p className={clsx(isDarkMode ? 'text-gray-400' : 'text-gray-500')}>No invoices found</p>
             <Button onClick={() => setIsAdding(true)} variant="primary" className="mt-4">
               Create Your First Invoice
             </Button>
           </div>
         ) : (
           <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-            
+            <div className="flex flex-col gap-4">
               {filteredInvoices.map((invoice: Invoice) => {
                 const statusInfo = getStatusInfo(invoice.status);
                 const StatusIcon = statusInfo.icon;
@@ -264,38 +266,38 @@ export default function InvoiceManagerPage() {
                     key={invoice.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="min-w-[320px] flex-shrink-0 sm:min-w-full bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
+                    className={clsx('w-full rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow', isDarkMode ? 'bg-gray-800' : 'bg-white')}
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div className="flex items-center gap-4">
                       <div className={`p-3 ${statusInfo.color} bg-opacity-10 rounded-lg`}>
                         <StatusIcon size={20} className={statusInfo.color.replace('bg-', 'text-')} />
                       </div>
                       <div>
-                        <p className="font-semibold text-gray-900">{invoice.customerName}</p>
-                        <div className="flex items-center gap-2 mt-1">
+                        <p className={clsx('font-semibold', isDarkMode ? 'text-white' : 'text-gray-900')}>{invoice.customerName}</p>
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
                           <Badge variant={invoice.status === 'PAID' ? 'green' : invoice.status === 'OVERDUE' ? 'red' : 'blue'} className="text-xs">
                             {statusInfo.label}
                           </Badge>
-                          <span className="text-xs text-gray-500">{invoice.invoiceNumber}</span>
-                          <span className="text-xs text-gray-500">
+                          <span className={clsx('text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>{invoice.invoiceNumber}</span>
+                          <span className={clsx('text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>
                             {new Date(invoice.createdAt).toLocaleDateString()}
                           </span>
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <p className="font-bold text-gray-900 text-lg">
-                          ₦{Number(invoice.total).toLocaleString()}
+                    <div className="flex items-center justify-between sm:gap-4">
+                      <div className="text-right sm:text-left">
+                        <p className={clsx('font-bold text-lg font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>
+                          {formatCurrencyCompact(Number(invoice.total))}
                         </p>
-                        <p className="text-xs text-gray-500">{invoice.lineItems.length} items</p>
+                        <p className={clsx('text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>{invoice.lineItems.length} items</p>
                       </div>
                       <div className="flex gap-2">
                         {invoice.status === 'DRAFT' && (
                           <button
                             onClick={() => handleStatusChange(invoice.id, 'SENT')}
-                            className="p-2 hover:bg-blue-50 rounded-lg transition-colors"
+                            className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-blue-900/30' : 'hover:bg-blue-50')}
                             title="Mark as Sent"
                           >
                             <Send size={18} className="text-blue-600" />
@@ -304,7 +306,7 @@ export default function InvoiceManagerPage() {
                         {invoice.status === 'SENT' && (
                           <button
                             onClick={() => handleStatusChange(invoice.id, 'PAID')}
-                            className="p-2 hover:bg-green-50 rounded-lg transition-colors"
+                            className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-green-900/30' : 'hover:bg-green-50')}
                             title="Mark as Paid"
                           >
                             <CheckCircle size={18} className="text-green-600" />
@@ -330,13 +332,13 @@ export default function InvoiceManagerPage() {
                             setEditingId(invoice.id);
                             setIsAdding(true);
                           }}
-                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                          className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100')}
                         >
-                          <Edit size={18} className="text-gray-600" />
+                          <Edit size={18} className={isDarkMode ? 'text-gray-400' : 'text-gray-600'} />
                         </button>
                         <button
                           onClick={() => handleDelete(invoice.id)}
-                          className="p-2 hover:bg-red-50 rounded-lg transition-colors"
+                          className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-red-900/30' : 'hover:bg-red-50')}
                         >
                           <Trash2 size={18} className="text-red-600" />
                         </button>
@@ -346,6 +348,7 @@ export default function InvoiceManagerPage() {
                 </motion.div>
               );
             })}
+            </div>
           </div>
         )}
       </div>
@@ -356,11 +359,11 @@ export default function InvoiceManagerPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+            className={clsx('rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto', isDarkMode ? 'bg-gray-800' : 'bg-white')}
           >
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold">{editingId ? 'Edit Invoice' : 'Create Invoice'}</h2>
+                <h2 className={clsx('text-xl font-bold', isDarkMode ? 'text-white' : 'text-gray-900')}>{editingId ? 'Edit Invoice' : 'Create Invoice'}</h2>
                 <button
                   onClick={() => {
                     setIsAdding(false);
@@ -377,7 +380,7 @@ export default function InvoiceManagerPage() {
                       notes: '',
                     });
                   }}
-                  className="p-2 hover:bg-gray-100 rounded-lg"
+                  className={clsx('p-2 rounded-lg', isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100')}
                 >
                   ✕
                 </button>
@@ -386,43 +389,43 @@ export default function InvoiceManagerPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Customer Name *</label>
+                    <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Customer Name *</label>
                     <input
                       type="text"
                       required
                       value={formData.customerName}
                       onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-festac-green"
+                      className={clsx('w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                       placeholder="Full name"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Email</label>
                     <input
                       type="email"
                       value={formData.customerEmail}
                       onChange={(e) => setFormData({ ...formData, customerEmail: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-festac-green"
+                      className={clsx('w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                       placeholder="email@example.com"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                    <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Phone</label>
                     <input
                       type="tel"
                       value={formData.customerPhone}
                       onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-festac-green"
+                      className={clsx('w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                       placeholder="+234..."
                     />
                   </div>
                   <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                    <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Address</label>
                     <input
                       type="text"
                       value={formData.customerAddress}
                       onChange={(e) => setFormData({ ...formData, customerAddress: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-festac-green"
+                      className={clsx('w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                       placeholder="Full address"
                     />
                   </div>
@@ -431,7 +434,7 @@ export default function InvoiceManagerPage() {
                 {/* Line Items */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <label className="block text-sm font-medium text-gray-700">Line Items</label>
+                    <label className={clsx('block text-sm font-medium', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Line Items</label>
                     <button type="button" onClick={handleAddLineItem} className="text-sm text-festac-green hover:underline">
                       + Add Item
                     </button>
@@ -445,7 +448,7 @@ export default function InvoiceManagerPage() {
                             required
                             value={item.description}
                             onChange={(e) => handleLineItemChange(index, 'description', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green"
+                            className={clsx('w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                             placeholder="Description"
                           />
                         </div>
@@ -456,7 +459,7 @@ export default function InvoiceManagerPage() {
                             min="1"
                             value={item.quantity}
                             onChange={(e) => handleLineItemChange(index, 'quantity', Number(e.target.value))}
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green"
+                            className={clsx('w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                             placeholder="Qty"
                           />
                         </div>
@@ -468,7 +471,7 @@ export default function InvoiceManagerPage() {
                             step="0.01"
                             value={item.unitPrice}
                             onChange={(e) => handleLineItemChange(index, 'unitPrice', Number(e.target.value))}
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green"
+                            className={clsx('w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                             placeholder="Price"
                           />
                         </div>
@@ -476,7 +479,7 @@ export default function InvoiceManagerPage() {
                           <button
                             type="button"
                             onClick={() => handleRemoveLineItem(index)}
-                            className="p-2 hover:bg-red-50 rounded-lg"
+                            className={clsx('p-2 rounded-lg', isDarkMode ? 'hover:bg-red-900/30' : 'hover:bg-red-50')}
                           >
                             <Trash2 size={16} className="text-red-600" />
                           </button>
@@ -487,59 +490,59 @@ export default function InvoiceManagerPage() {
                 </div>
 
                 {/* Totals */}
-                <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                <div className={clsx('rounded-lg p-4 space-y-2', isDarkMode ? 'bg-gray-700' : 'bg-gray-50')}>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Subtotal</span>
-                    <span className="font-medium">₦{calculateSubtotal().toLocaleString()}</span>
+                    <span className={clsx(isDarkMode ? 'text-gray-400' : 'text-gray-600')}>Subtotal</span>
+                    <span className="font-medium font-mono">{formatCurrencyCompact(calculateSubtotal())}</span>
                   </div>
                   <div className="flex justify-between text-sm items-center">
-                    <span className="text-gray-600">Tax Rate</span>
+                    <span className={clsx(isDarkMode ? 'text-gray-400' : 'text-gray-600')}>Tax Rate</span>
                     <input
                       type="number"
                       min="0"
                       max="100"
                       value={formData.taxRate}
                       onChange={(e) => setFormData({ ...formData, taxRate: Number(e.target.value) })}
-                      className="w-20 px-2 py-1 border border-gray-200 rounded text-sm text-right"
+                      className={clsx('w-20 px-2 py-1 rounded text-sm text-right', isDarkMode ? 'bg-gray-800 border-gray-600 text-white' : 'border-gray-200')}
                     />
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Tax Amount</span>
-                    <span className="font-medium">₦{calculateTax().toLocaleString()}</span>
+                    <span className={clsx(isDarkMode ? 'text-gray-400' : 'text-gray-600')}>Tax Amount</span>
+                    <span className="font-medium font-mono">{formatCurrencyCompact(calculateTax())}</span>
                   </div>
                   <div className="flex justify-between text-sm items-center">
-                    <span className="text-gray-600">Discount</span>
+                    <span className={clsx(isDarkMode ? 'text-gray-400' : 'text-gray-600')}>Discount</span>
                     <input
                       type="number"
                       min="0"
                       value={formData.discountAmount}
                       onChange={(e) => setFormData({ ...formData, discountAmount: Number(e.target.value) })}
-                      className="w-28 px-2 py-1 border border-gray-200 rounded text-sm text-right"
+                      className={clsx('w-28 px-2 py-1 rounded text-sm text-right', isDarkMode ? 'bg-gray-800 border-gray-600 text-white' : 'border-gray-200')}
                     />
                   </div>
                   <div className="flex justify-between text-lg font-bold border-t pt-2">
-                    <span>Total</span>
-                    <span className="text-festac-green">₦{calculateTotal().toLocaleString()}</span>
+                    <span className={isDarkMode ? 'text-white' : ''}>Total</span>
+                    <span className="text-festac-green font-mono">{formatCurrencyCompact(calculateTotal())}</span>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
+                    <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Due Date</label>
                     <input
                       type="date"
                       value={formData.dueDate}
                       onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-festac-green"
+                      className={clsx('w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                    <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Notes</label>
                     <input
                       type="text"
                       value={formData.notes}
                       onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-festac-green"
+                      className={clsx('w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                       placeholder="Payment terms..."
                     />
                   </div>

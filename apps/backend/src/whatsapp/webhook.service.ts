@@ -4,7 +4,7 @@ import { config } from '../config/index.js';
 import { logger } from '../utils/logger.js';
 import { aiCommerceService } from '../ai/aiCommerce.service.js';
 import { prisma } from '../config/database.js';
-import type { WhatsAppIncomingMessage } from '@discover-festac/shared';
+import type { WhatsAppIncomingMessage } from '@discover-smes/shared';
 
 const WA_API_URL = `https://graph.facebook.com/${config.whatsapp.apiVersion}`;
 

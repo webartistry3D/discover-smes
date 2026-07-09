@@ -6,6 +6,9 @@ import { useTaxRecords, useTaxRecord, useCreateTaxRecord, useUpdateTaxRecord, us
 import { Button, Skeleton, Badge } from '../../components/ui/index';
 import type { TaxRecord, TaxPayment, TaxType, TaxStatus } from '../../lib/shared';
 import toast from 'react-hot-toast';
+import { useUIStore } from '../../stores/ui.store';
+import { clsx } from 'clsx';
+import { formatCurrencyCompact } from '../../lib/utils';
 
 const TAX_TYPES: { value: TaxType; label: string; color: string }[] = [
   { value: 'VAT', label: 'VAT', color: 'bg-blue-500' },
@@ -28,6 +31,7 @@ const TAX_STATUS: { value: TaxStatus; label: string; color: string }[] = [
 ];
 
 export default function TaxManagerPage() {
+  const { isDarkMode } = useUIStore();
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
@@ -194,11 +198,11 @@ export default function TaxManagerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className={clsx('min-h-screen pb-20', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       {/* Header */}
       <div className="bg-gradient-hero text-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-          <div className="flex items-center gap-4 mb-6">
+          <div className="flex items-center gap-4 mb-4">
             <Link href="/dashboard">
               <button className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors">
                 <ChevronLeft size={20} />
@@ -206,58 +210,56 @@ export default function TaxManagerPage() {
             </Link>
             <div className="flex-1">
               <h1 className="font-display font-bold text-2xl">Tax Manager</h1>
-              <p className="text-white/60 text-sm mt-1">Track taxes, payments, and compliance</p>
             </div>
-            <Button onClick={() => setIsAdding(true)} variant="primary">
-              <Plus size={18} className="mr-2" />
-              Add Tax Record
+            <Button onClick={() => setIsAdding(true)} variant="primary" className="p-2">
+              <Plus size={20} />
             </Button>
           </div>
 
           {/* Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-white/10 backdrop-blur rounded-xl p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-500/20 rounded-lg">
-                  <DollarSign size={20} className="text-blue-300" />
-                </div>
-                <div>
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-start">
+                  <div className="p-2 bg-blue-500/20 rounded-lg">
+                    <DollarSign size={20} className="text-blue-300" />
+                  </div>
                   <p className="text-white/60 text-xs">Total Tax Liability</p>
-                  <p className="text-white font-bold text-xl">₦{summary?.totalTaxLiability?.toLocaleString() || 0}</p>
                 </div>
+                <p className="text-white font-bold text-6xl font-mono">{formatCurrencyCompact(summary?.totalTaxLiability || 0)}</p>
               </div>
             </div>
             <div className="bg-white/10 backdrop-blur rounded-xl p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-500/20 rounded-lg">
-                  <CheckCircle size={20} className="text-green-300" />
-                </div>
-                <div>
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-start">
+                  <div className="p-2 bg-green-500/20 rounded-lg">
+                    <CheckCircle size={20} className="text-green-300" />
+                  </div>
                   <p className="text-white/60 text-xs">Total Paid</p>
-                  <p className="text-white font-bold text-xl">₦{summary?.totalPaid?.toLocaleString() || 0}</p>
                 </div>
+                <p className="text-white font-bold text-6xl font-mono">{formatCurrencyCompact(summary?.totalPaid || 0)}</p>
               </div>
             </div>
             <div className="bg-white/10 backdrop-blur rounded-xl p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-yellow-500/20 rounded-lg">
-                  <Clock size={20} className="text-yellow-300" />
-                </div>
-                <div>
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-start">
+                  <div className="p-2 bg-yellow-500/20 rounded-lg">
+                    <Clock size={20} className="text-yellow-300" />
+                  </div>
                   <p className="text-white/60 text-xs">Pending</p>
-                  <p className="text-white font-bold text-xl">₦{summary?.totalPending?.toLocaleString() || 0}</p>
                 </div>
+                <p className="text-white font-bold text-6xl font-mono">{formatCurrencyCompact(summary?.totalPending || 0)}</p>
               </div>
             </div>
             <div className="bg-white/10 backdrop-blur rounded-xl p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-red-500/20 rounded-lg">
-                  <AlertTriangle size={20} className="text-red-300" />
-                </div>
-                <div>
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-start">
+                  <div className="p-2 bg-red-500/20 rounded-lg">
+                    <AlertTriangle size={20} className="text-red-300" />
+                  </div>
                   <p className="text-white/60 text-xs">Overdue</p>
-                  <p className="text-white font-bold text-xl">₦{summary?.totalOverdue?.toLocaleString() || 0}</p>
                 </div>
+                <p className="text-white font-bold text-6xl font-mono">{formatCurrencyCompact(summary?.totalOverdue || 0)}</p>
               </div>
             </div>
           </div>
@@ -266,11 +268,11 @@ export default function TaxManagerPage() {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         {/* Tabs */}
-        <div className="overflow-x-auto mb-6 border-b border-gray-200">
+        <div className={clsx('overflow-x-auto mb-6 border-b', isDarkMode ? 'border-gray-700' : 'border-gray-200')}>
           <div className="flex gap-4 min-w-max">
             <button
               onClick={() => setActiveTab('records')}
-              className={`px-4 py-2 font-medium whitespace-nowrap ${activeTab === 'records' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:text-gray-900'}`}
+              className={`px-4 py-2 font-medium whitespace-nowrap ${activeTab === 'records' ? 'text-blue-600 border-b-2 border-blue-600' : isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-900'}`}
             >
               Tax Records
             </button>
@@ -304,13 +306,13 @@ export default function TaxManagerPage() {
               placeholder="Search tax records..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={clsx('w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent', isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'border-gray-300')}
             />
           </div>
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className={clsx('px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent', isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'border-gray-300')}
           >
             <option value="all">All Types</option>
             {TAX_TYPES.map((type) => (
@@ -322,7 +324,7 @@ export default function TaxManagerPage() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className={clsx('px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent', isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'border-gray-300')}
           >
             <option value="all">All Status</option>
             {TAX_STATUS.map((status) => (
@@ -335,7 +337,7 @@ export default function TaxManagerPage() {
 
         {/* Tax Records Tab */}
         {activeTab === 'records' && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className={clsx('rounded-lg shadow-sm border', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200')}>
             {isLoading ? (
               <div className="p-6 space-y-4">
                 {[...Array(5)].map((_, i) => (
@@ -344,26 +346,26 @@ export default function TaxManagerPage() {
               </div>
             ) : filteredRecords.length === 0 ? (
               <div className="p-12 text-center">
-                <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No tax records found</h3>
-                <p className="text-gray-600 mb-4">Get started by adding your first tax record</p>
+                <FileText className={clsx('w-16 h-16 mx-auto mb-4', isDarkMode ? 'text-gray-600' : 'text-gray-300')} />
+                <h3 className={clsx('text-lg font-medium mb-2', isDarkMode ? 'text-white' : 'text-gray-900')}>No tax records found</h3>
+                <p className={clsx('mb-4', isDarkMode ? 'text-gray-400' : 'text-gray-600')}>Get started by adding your first tax record</p>
               </div>
             ) : (
               <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-                <div className="flex gap-4 min-w-max sm:block">
+                <div className="flex flex-col gap-4">
                   {filteredRecords.map((record) => (
                     <motion.div
                       key={record.id}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className="min-w-[340px] flex-shrink-0 sm:min-w-full p-6 hover:bg-gray-50 cursor-pointer"
+                      className={clsx('w-full p-6 cursor-pointer', isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50')}
                       onClick={() => setSelectedRecordId(record.id)}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
                             {getStatusIcon(record.status)}
-                            <h3 className="text-lg font-medium text-gray-900">{record.description || record.type}</h3>
+                            <h3 className={clsx('text-lg font-medium', isDarkMode ? 'text-white' : 'text-gray-900')}>{record.description || record.type}</h3>
                             <Badge className={TAX_TYPES.find((t) => t.value === record.type)?.color || 'bg-gray-500'}>
                               {TAX_TYPES.find((t) => t.value === record.type)?.label}
                             </Badge>
@@ -371,15 +373,15 @@ export default function TaxManagerPage() {
                               {TAX_STATUS.find((s) => s.value === record.status)?.label}
                             </Badge>
                           </div>
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
+                          <div className={clsx('grid grid-cols-2 md:grid-cols-4 gap-4 text-sm', isDarkMode ? 'text-gray-300' : 'text-gray-600')}>
                             <div>
                               <span className="font-medium">Period:</span> {record.period}
                             </div>
                             <div>
-                              <span className="font-medium">Base Amount:</span> ₦{Number(record.baseAmount).toLocaleString()}
+                              <span className="font-medium">Base Amount:</span> {formatCurrencyCompact(Number(record.baseAmount))}
                             </div>
                             <div>
-                              <span className="font-medium">Tax Amount:</span> ₦{Number(record.taxAmount).toLocaleString()}
+                              <span className="font-medium">Tax Amount:</span> {formatCurrencyCompact(Number(record.taxAmount))}
                             </div>
                             <div>
                               <span className="font-medium">Due Date:</span> {record.dueDate ? new Date(record.dueDate).toLocaleDateString() : 'N/A'}
@@ -433,55 +435,55 @@ export default function TaxManagerPage() {
         {/* Payments Tab */}
         {activeTab === 'payments' && selectedRecordId && (
           <div className="space-y-6">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Record Payment</h3>
+            <div className={clsx('rounded-lg shadow-sm border p-6', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200')}>
+              <h3 className={clsx('text-lg font-medium mb-4', isDarkMode ? 'text-white' : 'text-gray-900')}>Record Payment</h3>
               <form onSubmit={handleCreatePayment} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+                    <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Amount</label>
                     <input
                       type="number"
                       value={paymentFormData.amount}
                       onChange={(e) => setPaymentFormData({ ...paymentFormData, amount: Number(e.target.value) })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className={clsx('w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent', isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'border-gray-300')}
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Payment Date</label>
+                    <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Payment Date</label>
                     <input
                       type="date"
                       value={paymentFormData.paymentDate}
                       onChange={(e) => setPaymentFormData({ ...paymentFormData, paymentDate: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className={clsx('w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent', isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'border-gray-300')}
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                    <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Payment Method</label>
                     <input
                       type="text"
                       value={paymentFormData.paymentMethod}
                       onChange={(e) => setPaymentFormData({ ...paymentFormData, paymentMethod: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className={clsx('w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent', isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'border-gray-300')}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Reference</label>
+                    <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Reference</label>
                     <input
                       type="text"
                       value={paymentFormData.reference}
                       onChange={(e) => setPaymentFormData({ ...paymentFormData, reference: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className={clsx('w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent', isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'border-gray-300')}
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                  <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Notes</label>
                   <textarea
                     value={paymentFormData.notes}
                     onChange={(e) => setPaymentFormData({ ...paymentFormData, notes: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className={clsx('w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent', isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'border-gray-300')}
                     rows={2}
                   />
                 </div>
@@ -489,18 +491,18 @@ export default function TaxManagerPage() {
               </form>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-              <div className="p-6 border-b border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900">Payment History</h3>
+            <div className={clsx('rounded-lg shadow-sm border', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200')}>
+              <div className={clsx('p-6 border-b', isDarkMode ? 'border-gray-700' : 'border-gray-200')}>
+                <h3 className={clsx('text-lg font-medium', isDarkMode ? 'text-white' : 'text-gray-900')}>Payment History</h3>
               </div>
               {taxPayments && taxPayments.length > 0 ? (
-                <div className="divide-y divide-gray-200">
+                <div className={clsx('divide-y', isDarkMode ? 'divide-gray-700' : 'divide-gray-200')}>
                   {taxPayments.map((payment) => (
                     <div key={payment.id} className="p-6 flex items-center justify-between">
                       <div>
-                        <p className="font-medium text-gray-900">₦{Number(payment.amount).toLocaleString()}</p>
-                        <p className="text-sm text-gray-600">{new Date(payment.paymentDate).toLocaleDateString()}</p>
-                        {payment.reference && <p className="text-sm text-gray-500">Ref: {payment.reference}</p>}
+                        <p className={clsx('font-medium font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{formatCurrencyCompact(Number(payment.amount))}</p>
+                        <p className={clsx('text-sm', isDarkMode ? 'text-gray-300' : 'text-gray-600')}>{new Date(payment.paymentDate).toLocaleDateString()}</p>
+                        {payment.reference && <p className={clsx('text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>Ref: {payment.reference}</p>}
                       </div>
                       <Button
                         variant="ghost"
@@ -514,8 +516,8 @@ export default function TaxManagerPage() {
                 </div>
               ) : (
                 <div className="p-12 text-center">
-                  <Receipt className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No payments recorded</h3>
+                  <Receipt className={clsx('w-16 h-16 mx-auto mb-4', isDarkMode ? 'text-gray-600' : 'text-gray-300')} />
+                  <h3 className={clsx('text-lg font-medium mb-2', isDarkMode ? 'text-white' : 'text-gray-900')}>No payments recorded</h3>
                 </div>
               )}
             </div>
@@ -524,21 +526,21 @@ export default function TaxManagerPage() {
 
         {/* VAT Tracking Tab */}
         {activeTab === 'vat' && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">VAT Tracking</h3>
+          <div className={clsx('rounded-lg shadow-sm border p-6', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200')}>
+            <h3 className={clsx('text-lg font-medium mb-4', isDarkMode ? 'text-white' : 'text-gray-900')}>VAT Tracking</h3>
             {vatTracking ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="p-4 bg-blue-50 rounded-lg">
-                  <p className="text-sm font-medium text-gray-600">VAT Collected (Output)</p>
-                  <p className="text-2xl font-bold text-blue-600 mt-1">₦{vatTracking.vatCollected?.toLocaleString() || 0}</p>
+                <div className={clsx('p-4 rounded-lg', isDarkMode ? 'bg-blue-900/20' : 'bg-blue-50')}>
+                  <p className={clsx('text-sm font-medium', isDarkMode ? 'text-gray-300' : 'text-gray-600')}>VAT Collected (Output)</p>
+                  <p className="text-2xl font-bold text-blue-600 mt-1 font-mono">{formatCurrencyCompact(vatTracking.vatCollected || 0)}</p>
                 </div>
-                <div className="p-4 bg-green-50 rounded-lg">
-                  <p className="text-sm font-medium text-gray-600">VAT Paid (Input)</p>
-                  <p className="text-2xl font-bold text-green-600 mt-1">₦{vatTracking.vatPaid?.toLocaleString() || 0}</p>
+                <div className={clsx('p-4 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-50')}>
+                  <p className={clsx('text-sm font-medium', isDarkMode ? 'text-gray-300' : 'text-gray-600')}>VAT Paid (Input)</p>
+                  <p className="text-2xl font-bold text-green-600 mt-1 font-mono">{formatCurrencyCompact(vatTracking.vatPaid || 0)}</p>
                 </div>
-                <div className="p-4 bg-purple-50 rounded-lg">
-                  <p className="text-sm font-medium text-gray-600">Net VAT Payable</p>
-                  <p className="text-2xl font-bold text-purple-600 mt-1">₦{vatTracking.netVat?.toLocaleString() || 0}</p>
+                <div className={clsx('p-4 rounded-lg', isDarkMode ? 'bg-purple-900/20' : 'bg-purple-50')}>
+                  <p className={clsx('text-sm font-medium', isDarkMode ? 'text-gray-300' : 'text-gray-600')}>Net VAT Payable</p>
+                  <p className="text-2xl font-bold text-purple-600 mt-1 font-mono">{formatCurrencyCompact(vatTracking.netVat || 0)}</p>
                 </div>
               </div>
             ) : (
@@ -555,16 +557,16 @@ export default function TaxManagerPage() {
                 Generate Compliance Report
               </Button>
             </div>
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-              <div className="p-6 border-b border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900">Compliance Reports</h3>
+            <div className={clsx('rounded-lg shadow-sm border', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200')}>
+              <div className={clsx('p-6 border-b', isDarkMode ? 'border-gray-700' : 'border-gray-200')}>
+                <h3 className={clsx('text-lg font-medium', isDarkMode ? 'text-white' : 'text-gray-900')}>Compliance Reports</h3>
               </div>
               {complianceReports && complianceReports.length > 0 ? (
-                <div className="divide-y divide-gray-200">
+                <div className={clsx('divide-y', isDarkMode ? 'divide-gray-700' : 'divide-gray-200')}>
                   {complianceReports.map((report) => (
                     <div key={report.id} className="p-6">
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium text-gray-900">{report.reportType}</h4>
+                        <h4 className={clsx('font-medium', isDarkMode ? 'text-white' : 'text-gray-900')}>{report.reportType}</h4>
                         <Badge className={report.isCompliant ? 'bg-green-500' : 'bg-red-500'}>
                           {report.isCompliant ? 'Compliant' : 'Non-Compliant'}
                         </Badge>
@@ -574,13 +576,13 @@ export default function TaxManagerPage() {
                           <span className="font-medium">Period:</span> {report.period}
                         </div>
                         <div>
-                          <span className="font-medium">Total Tax:</span> ₦{Number(report.totalTax).toLocaleString()}
+                          <span className="font-medium">Total Tax:</span> {formatCurrencyCompact(Number(report.totalTax))}
                         </div>
                         <div>
-                          <span className="font-medium">Total Paid:</span> ₦{Number(report.totalPaid).toLocaleString()}
+                          <span className="font-medium">Total Paid:</span> {formatCurrencyCompact(Number(report.totalPaid))}
                         </div>
                         <div>
-                          <span className="font-medium">Balance:</span> ₦{Number(report.balance).toLocaleString()}
+                          <span className="font-medium">Balance:</span> {formatCurrencyCompact(Number(report.balance))}
                         </div>
                       </div>
                       {report.complianceNotes && (
@@ -591,9 +593,9 @@ export default function TaxManagerPage() {
                 </div>
               ) : (
                 <div className="p-12 text-center">
-                  <BarChart3 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No compliance reports generated</h3>
-                  <p className="text-gray-600">Select a tax record and generate a compliance report</p>
+                  <BarChart3 className={clsx('w-16 h-16 mx-auto mb-4', isDarkMode ? 'text-gray-600' : 'text-gray-300')} />
+                  <h3 className={clsx('text-lg font-medium mb-2', isDarkMode ? 'text-white' : 'text-gray-900')}>No compliance reports generated</h3>
+                  <p className={clsx(isDarkMode ? 'text-gray-400' : 'text-gray-600')}>Select a tax record and generate a compliance report</p>
                 </div>
               )}
             </div>
@@ -607,16 +609,16 @@ export default function TaxManagerPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+            className={clsx('rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto', isDarkMode ? 'bg-gray-800' : 'bg-white')}
           >
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-900">{editingId ? 'Edit Tax Record' : 'Add Tax Record'}</h2>
+            <div className={clsx('p-6 border-b flex items-center justify-between', isDarkMode ? 'border-gray-700' : 'border-gray-200')}>
+              <h2 className={clsx('text-xl font-bold', isDarkMode ? 'text-white' : 'text-gray-900')}>{editingId ? 'Edit Tax Record' : 'Add Tax Record'}</h2>
               <button
                 onClick={() => {
                   setIsAdding(false);
                   setEditingId(null);
                 }}
-                className="text-gray-400 hover:text-gray-600"
+                className={clsx('hover:text-gray-600', isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-400')}
               >
                 <X className="w-6 h-6" />
               </button>
@@ -624,11 +626,11 @@ export default function TaxManagerPage() {
             <form onSubmit={editingId ? handleUpdate : handleCreate} className="p-6 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tax Type</label>
+                  <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Tax Type</label>
                   <select
                     value={formData.type}
                     onChange={(e) => setFormData({ ...formData, type: e.target.value as TaxType })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className={clsx('w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent', isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'border-gray-300')}
                     required
                   >
                     {TAX_TYPES.map((type) => (
@@ -639,102 +641,102 @@ export default function TaxManagerPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Period</label>
+                  <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Period</label>
                   <input
                     type="text"
                     value={formData.period}
                     onChange={(e) => setFormData({ ...formData, period: e.target.value })}
                     placeholder="e.g., 2024-Q1"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className={clsx('w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent', isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'border-gray-300')}
                     required
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Description</label>
                   <input
                     type="text"
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className={clsx('w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent', isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'border-gray-300')}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Base Amount</label>
+                  <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Base Amount</label>
                   <input
                     type="number"
                     value={formData.baseAmount}
                     onChange={(e) => setFormData({ ...formData, baseAmount: Number(e.target.value) })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className={clsx('w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent', isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'border-gray-300')}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tax Rate (%)</label>
+                  <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Tax Rate (%)</label>
                   <input
                     type="number"
                     step="0.01"
                     value={formData.taxRate}
                     onChange={(e) => setFormData({ ...formData, taxRate: Number(e.target.value) })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className={clsx('w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent', isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'border-gray-300')}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tax Amount</label>
+                  <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Tax Amount</label>
                   <input
                     type="number"
                     value={formData.taxAmount}
                     onChange={(e) => setFormData({ ...formData, taxAmount: Number(e.target.value) })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className={clsx('w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent', isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'border-gray-300')}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
+                  <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Due Date</label>
                   <input
                     type="date"
                     value={formData.dueDate}
                     onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className={clsx('w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent', isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'border-gray-300')}
                   />
                 </div>
                 {formData.type === 'VAT' && (
                   <>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">VAT Input</label>
+                      <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>VAT Input</label>
                       <input
                         type="number"
                         value={formData.vatInput}
                         onChange={(e) => setFormData({ ...formData, vatInput: Number(e.target.value) })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className={clsx('w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent', isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'border-gray-300')}
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">VAT Output</label>
+                      <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>VAT Output</label>
                       <input
                         type="number"
                         value={formData.vatOutput}
                         onChange={(e) => setFormData({ ...formData, vatOutput: Number(e.target.value) })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className={clsx('w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent', isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'border-gray-300')}
                       />
                     </div>
                   </>
                 )}
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Reference</label>
+                  <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Reference</label>
                   <input
                     type="text"
                     value={formData.reference}
                     onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className={clsx('w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent', isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'border-gray-300')}
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                  <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Notes</label>
                   <textarea
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className={clsx('w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent', isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'border-gray-300')}
                     rows={3}
                   />
                 </div>

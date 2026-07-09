@@ -1,5 +1,5 @@
 // ============================================================
-// DISCOVER FESTAC — PRISMA DATABASE SCHEMA
+// DISCOVER SMEs — PRISMA DATABASE SCHEMA
 // PostgreSQL + Prisma ORM
 // Designed for multi-tenant, multi-LGA scalability
 // ============================================================
@@ -42,6 +42,7 @@ model User {
   refreshTokens    RefreshToken[]
   auditLogs        AuditLog[]
   payments         Payment[]
+  assignedSessions ChatbotSession[] @relation("SessionOperator")
 
   @@index([phone])
   @@index([email])
@@ -1390,6 +1391,18 @@ enum ChatbotSessionStatus {
   CLOSED
 }
 
+enum ConversationState {
+  WELCOME
+  MENU
+  FAQ_SEARCH
+  PRODUCT_SEARCH
+  SERVICE_SEARCH
+  WAITING_FOR_OPERATOR
+  HUMAN_CHAT
+  BOT_RESUMED
+  CLOSED
+}
+
 model ChatbotSettings {
   id                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   vendorId            String   @db.Uuid
@@ -1397,6 +1410,12 @@ model ChatbotSettings {
   greetingMessage     String?  @db.Text
   fallbackMessage     String?  @db.Text
   humanHandoffMessage String? @db.Text
+  offlineMessage      String?  @db.Text
+  handoffEnabled      Boolean  @default(true)
+  businessHoursEnabled Boolean @default(false)
+  businessHours       Json?    // Business hours configuration
+  fuzzyMatchingEnabled Boolean @default(true)
+  fuzzyThreshold      Float    @default(0.3)
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
@@ -1441,16 +1460,22 @@ model ChatbotSession {
   sessionStatus     ChatbotSessionStatus  @default(ACTIVE)
   lastMessage       String?               @db.Text
   lastMessageAt     DateTime?
+  currentState      ConversationState     @default(WELCOME)
+  assignedOperatorId String?              @db.Uuid
+  conversationContext Json?              // Store context for multi-turn conversations
   createdAt         DateTime              @default(now())
   updatedAt         DateTime              @updatedAt
 
   // Relations
   vendor            Vendor                @relation(fields: [vendorId], references: [id], onDelete: Cascade, map: "chatbot_sessions_vendor_fkey")
   settings          ChatbotSettings       @relation(fields: [vendorId], references: [id], onDelete: Cascade, map: "chatbot_sessions_settings_fkey")
+  assignedOperator  User?                 @relation("SessionOperator", fields: [assignedOperatorId], references: [id], onDelete: SetNull)
 
   @@index([vendorId])
   @@index([customerPhone])
   @@index([sessionStatus])
+  @@index([currentState])
+  @@index([assignedOperatorId])
   @@map("chatbot_sessions")
 }
 

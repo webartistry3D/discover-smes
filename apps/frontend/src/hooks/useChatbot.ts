@@ -19,6 +19,7 @@ export const chatbotQueryKeys = {
   settings: ['chatbot', 'settings'] as const,
   rules: ['chatbot', 'rules'] as const,
   sessions: ['chatbot', 'sessions'] as const,
+  analytics: ['chatbot', 'analytics'] as const,
 };
 
 // ─── CHATBOT SETTINGS ─────────────────────────────────────────
@@ -129,5 +130,15 @@ export function useProcessMessage() {
   return useMutation({
     mutationFn: (data: ProcessMessageRequest) =>
       chatbotApi.processMessage(data).then((r) => r.data.data),
+  });
+}
+
+// ─── ANALYTICS ───────────────────────────────────────────────
+
+export function useChatbotAnalytics(period: string = 'all') {
+  return useQuery({
+    queryKey: [...chatbotQueryKeys.analytics, period],
+    queryFn: () => chatbotApi.getAnalytics(period).then((r) => r.data.data),
+    staleTime: 5 * 60 * 1000, // 5 min
   });
 }

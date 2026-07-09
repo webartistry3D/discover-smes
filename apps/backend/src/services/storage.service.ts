@@ -5,7 +5,7 @@ import { join, dirname, extname } from 'path';
 import { randomUUID } from 'crypto';
 import { config } from '../config/index.js';
 import { logger } from '../utils/logger.js';
-import { ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE_MB } from '@discover-festac/shared';
+import { ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE_MB } from '@discover-smes/shared';
 
 export interface UploadResult {
   url: string;

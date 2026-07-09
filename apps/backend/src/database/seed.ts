@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { generateSlug } from '@discover-festac/shared';
+import { generateSlug } from '@discover-smes/shared';
 
 const prisma = new PrismaClient();
 
@@ -112,13 +112,6 @@ async function main() {
           friday: { open: '08:00', close: '22:00' },
           saturday: { open: '09:00', close: '22:00' },
           sunday: { open: '11:00', close: '20:00' },
-        },
-        faqs: {
-          create: [
-            { question: 'Do you offer delivery?', answer: 'Yes! We deliver within Festac Town and surrounding areas. Call us to arrange delivery.', sortOrder: 0 },
-            { question: 'Do you cater for events?', answer: 'Yes, we provide catering services for parties, celebrations, and corporate events. Please contact us at least 3 days in advance.', sortOrder: 1 },
-            { question: 'What is your minimum order for delivery?', answer: 'Our minimum delivery order is ₦2,000. Delivery fee varies by location.', sortOrder: 2 },
-          ],
         },
       },
     });

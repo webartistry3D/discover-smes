@@ -30,7 +30,7 @@ export default function VendorAnalyticsPage() {
             </Link>
             <div>
               <h1 className="font-display font-bold text-2xl">Full Analytics</h1>
-              <p className="text-white/60 text-sm mt-1">Detailed performance data and insights</p>
+              {/*<p className="text-white/60 text-sm mt-1">Detailed performance data and insights</p>*/}
             </div>
           </div>
 
@@ -96,15 +96,17 @@ export default function VendorAnalyticsPage() {
                 transition={{ delay: index * 0.05 }}
                 className={clsx('rounded-2xl p-4 shadow-card', isDarkMode ? 'bg-gray-800' : 'bg-white')}
               >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 bg-festac-green/10 rounded-xl text-festac-green">{stat.icon}</div>
-                  <div className={`flex items-center gap-1 text-xs font-medium ${stat.positive ? 'text-green-600' : 'text-red-600'}`}>
-                    {stat.positive ? <ArrowUp size={12} /> : <ArrowDown size={12} />}
-                    {stat.change}
+                <div className="flex flex-col gap-2">
+                  <div className="flex justify-between items-start">
+                    <div className="p-2 bg-festac-green/10 rounded-xl text-festac-green">{stat.icon}</div>
+                    <div className={`flex items-center gap-1 text-xs font-medium ${stat.positive ? 'text-green-600' : 'text-red-600'}`}>
+                      {stat.positive ? <ArrowUp size={12} /> : <ArrowDown size={12} />}
+                      {stat.change}
+                    </div>
                   </div>
+                  <p className={clsx('text-6xl font-bold font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{stat.value}</p>
+                  <p className={clsx('text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>{stat.label}</p>
                 </div>
-                <p className={clsx('text-xl font-bold', isDarkMode ? 'text-white' : 'text-gray-900')}>{stat.value}</p>
-                <p className={clsx('text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>{stat.label}</p>
               </motion.div>
             ))
           )}

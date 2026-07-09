@@ -4,7 +4,6 @@ import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
 import { createServer } from 'http';
-import { Server as SocketIOServer } from 'socket.io';
 import { join } from 'path';
 
 import { config } from './config/index.js';
@@ -13,31 +12,17 @@ import { logger } from './utils/logger.js';
 import { apiRouter } from './routes/index.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { globalRateLimit } from './middleware/rateLimiter.js';
+import socketService from './services/socket.service.js';
 
 async function bootstrap(): Promise<void> {
   const app = express();
   const httpServer = createServer(app);
 
   // ─── Socket.IO (Realtime) ────────────────────────────────
-  const io = new SocketIOServer(httpServer, {
-    cors: { origin: config.cors.origins, credentials: true },
-    transports: ['websocket', 'polling'],
-  });
+  socketService.initialize(httpServer, config.cors.origins[0]);
 
-  io.on('connection', (socket) => {
-    logger.debug(`Socket connected: ${socket.id}`);
-
-    socket.on('join:vendor', (vendorId: string) => {
-      socket.join(`vendor:${vendorId}`);
-    });
-
-    socket.on('disconnect', () => {
-      logger.debug(`Socket disconnected: ${socket.id}`);
-    });
-  });
-
-  // Make io accessible in routes
-  app.set('io', io);
+  // Make socketService accessible in routes
+  app.set('socketService', socketService);
 
   // ─── Security Middleware ─────────────────────────────────
   app.use(
@@ -105,7 +90,7 @@ async function bootstrap(): Promise<void> {
   // Root
   app.get('/', (_req, res) => {
     res.json({
-      name: 'Discover Festac API',
+      name: 'Discover SMEs API',
       version: '1.0.0',
       status: 'running',
       docs: `/api/${config.apiVersion}/health`,
@@ -126,7 +111,7 @@ async function bootstrap(): Promise<void> {
   // ─── Start Server ────────────────────────────────────────
   httpServer.listen(config.port, () => {
     logger.info(`
-🚀 Discover Festac API
+🚀 Discover SMEs API
    Environment: ${config.env}
    Port:        ${config.port}
    API:         ${config.appUrl}/api/${config.apiVersion}

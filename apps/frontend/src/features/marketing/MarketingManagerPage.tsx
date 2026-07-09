@@ -35,9 +35,12 @@ import {
 } from '../../hooks/useVendors';
 import { Button, Skeleton, Badge } from '../../components/ui/index';
 import { useAuthStore } from '../../stores/auth.store';
+import { useUIStore } from '../../stores/ui.store';
+import { clsx } from 'clsx';
 import toast from 'react-hot-toast';
 
 export default function MarketingManagerPage() {
+  const { isDarkMode } = useUIStore();
   const { user } = useAuthStore();
   const { data: promotions, isLoading: promotionsLoading } = usePromotions();
   const { data: loyaltyPrograms, isLoading: loyaltyLoading } = useLoyaltyPrograms();
@@ -67,7 +70,7 @@ export default function MarketingManagerPage() {
   // Show access denied if not a vendor
   if (!isVendor) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className={clsx('min-h-screen flex items-center justify-center', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
         <div className="text-center">
           <div className="p-4 bg-gray-100 rounded-full inline-flex mb-4">
             <Lock size={48} className="text-gray-400" />
@@ -83,7 +86,7 @@ export default function MarketingManagerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 overflow-x-hidden">
+    <div className={clsx('min-h-screen pb-20 overflow-x-hidden', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       {/* Header */}
       <div className="bg-gradient-hero text-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
@@ -94,26 +97,26 @@ export default function MarketingManagerPage() {
               </Button>
             </Link>
             <div className="flex-1">
-              <h1 className="text-2xl sm:text-3xl font-bold">Marketing Tools</h1>
-              <p className="text-white/80 text-sm sm:text-base mt-1">Manage promotions, loyalty programs, and WhatsApp campaigns</p>
+              <h1 className="font-display font-bold text-2xl">Marketing Tools</h1>
+              {/*<p className="text-white/60 text-sm mt-1">Manage promotions, loyalty programs, and WhatsApp campaigns</p>*/}
             </div>
           </div>
 
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="bg-white/10 backdrop-blur rounded-xl p-4"
             >
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-500/20 rounded-lg">
-                  <Megaphone size={20} className="text-blue-300" />
-                </div>
-                <div>
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-start">
+                  <div className="p-2 bg-blue-500/20 rounded-lg">
+                    <Megaphone size={20} className="text-blue-300" />
+                  </div>
                   <p className="text-white/60 text-xs">Active Promotions</p>
-                  <p className="text-white font-bold text-xl">{promotions?.length || 0}</p>
                 </div>
+                <p className="text-white font-bold text-6xl font-mono">{promotions?.length || 0}</p>
               </div>
             </motion.div>
 
@@ -123,14 +126,14 @@ export default function MarketingManagerPage() {
               transition={{ delay: 0.1 }}
               className="bg-white/10 backdrop-blur rounded-xl p-4"
             >
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-500/20 rounded-lg">
-                  <Gift size={20} className="text-purple-300" />
-                </div>
-                <div>
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-start">
+                  <div className="p-2 bg-purple-500/20 rounded-lg">
+                    <Gift size={20} className="text-purple-300" />
+                  </div>
                   <p className="text-white/60 text-xs">Loyalty Programs</p>
-                  <p className="text-white font-bold text-xl">{loyaltyPrograms?.length || 0}</p>
                 </div>
+                <p className="text-white font-bold text-6xl font-mono">{loyaltyPrograms?.length || 0}</p>
               </div>
             </motion.div>
 
@@ -140,14 +143,14 @@ export default function MarketingManagerPage() {
               transition={{ delay: 0.2 }}
               className="bg-white/10 backdrop-blur rounded-xl p-4"
             >
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-500/20 rounded-lg">
-                  <MessageSquare size={20} className="text-green-300" />
-                </div>
-                <div>
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-start">
+                  <div className="p-2 bg-green-500/20 rounded-lg">
+                    <MessageSquare size={20} className="text-green-300" />
+                  </div>
                   <p className="text-white/60 text-xs">WhatsApp Campaigns</p>
-                  <p className="text-white font-bold text-xl">{campaigns?.length || 0}</p>
                 </div>
+                <p className="text-white font-bold text-6xl font-mono">{campaigns?.length || 0}</p>
               </div>
             </motion.div>
           </div>
@@ -156,13 +159,13 @@ export default function MarketingManagerPage() {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         {/* Tab Navigation */}
-        <div className="flex gap-2 bg-white rounded-lg p-2 shadow-sm border border-gray-100 overflow-x-auto">
+        <div className={clsx('flex gap-2 rounded-lg p-2 shadow-sm border overflow-x-auto', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100')}>
           <button
             onClick={() => setActiveTab('promotions')}
             className={`flex-1 min-w-max px-3 sm:px-4 py-2 rounded-md font-medium text-sm transition-all ${
               activeTab === 'promotions'
                 ? 'bg-festac-green text-white'
-                : 'text-gray-600 hover:bg-gray-50'
+                : isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-50'
             }`}
           >
             Promotions
@@ -194,10 +197,10 @@ export default function MarketingManagerPage() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100"
+            className={clsx('rounded-xl p-4 sm:p-6 shadow-sm border', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100')}
           >
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
-              <h2 className="font-semibold text-gray-900 text-lg flex items-center gap-2">
+              <h2 className={clsx('font-semibold text-lg flex items-center gap-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
                 <Megaphone size={20} className="text-blue-500" />
                 Promotions & Discounts
               </h2>
@@ -214,11 +217,11 @@ export default function MarketingManagerPage() {
             ) : promotions && promotions.length > 0 ? (
               <div className="space-y-3">
                 {promotions.map((promo: any) => (
-                  <div key={promo.id} className="p-4 bg-gray-50 rounded-lg">
+                  <div key={promo.id} className={clsx('p-4 rounded-lg', isDarkMode ? 'bg-gray-700' : 'bg-gray-50')}>
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2 mb-2">
-                          <h4 className="font-medium text-gray-800 text-sm sm:text-base">{promo.title}</h4>
+                          <h4 className={clsx('font-medium text-sm sm:text-base', isDarkMode ? 'text-white' : 'text-gray-800')}>{promo.title}</h4>
                           {promo.discount && (
                             <Badge variant="green">{promo.discount}% OFF</Badge>
                           )}
@@ -227,9 +230,9 @@ export default function MarketingManagerPage() {
                           )}
                         </div>
                         {promo.description && (
-                          <p className="text-sm text-gray-600 mb-2">{promo.description}</p>
+                          <p className={clsx('text-sm mb-2', isDarkMode ? 'text-gray-400' : 'text-gray-600')}>{promo.description}</p>
                         )}
-                        <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500">
+                        <div className={clsx('flex flex-wrap items-center gap-4 text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>
                           <span className="flex items-center gap-1">
                             <Calendar size={12} />
                             {new Date(promo.startDate).toLocaleDateString()} - {new Date(promo.endDate).toLocaleDateString()}
@@ -273,10 +276,10 @@ export default function MarketingManagerPage() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100"
+            className={clsx('rounded-xl p-4 sm:p-6 shadow-sm border', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100')}
           >
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
-              <h2 className="font-semibold text-gray-900 text-lg flex items-center gap-2">
+              <h2 className={clsx('font-semibold text-lg flex items-center gap-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
                 <Gift size={20} className="text-purple-500" />
                 Loyalty Programs
               </h2>
@@ -293,22 +296,22 @@ export default function MarketingManagerPage() {
             ) : loyaltyPrograms && loyaltyPrograms.length > 0 ? (
               <div className="space-y-3">
                 {loyaltyPrograms.map((program: any) => (
-                  <div key={program.id} className="p-4 bg-gray-50 rounded-lg">
+                  <div key={program.id} className={clsx('p-4 rounded-lg', isDarkMode ? 'bg-gray-700' : 'bg-gray-50')}>
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2 mb-2">
-                          <h4 className="font-medium text-gray-800 text-sm sm:text-base">{program.name}</h4>
+                          <h4 className={clsx('font-medium text-sm sm:text-base', isDarkMode ? 'text-white' : 'text-gray-800')}>{program.name}</h4>
                           {!program.isActive && (
                             <Badge variant="gray">Inactive</Badge>
                           )}
                         </div>
                         {program.description && (
-                          <p className="text-sm text-gray-600 mb-2">{program.description}</p>
+                          <p className={clsx('text-sm mb-2', isDarkMode ? 'text-gray-400' : 'text-gray-600')}>{program.description}</p>
                         )}
-                        <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500">
+                        <div className={clsx('flex flex-wrap items-center gap-4 text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>
                           <span className="flex items-center gap-1">
                             <TrendingUp size={12} />
-                            {program.pointsPerNaira} points per ₦1
+                            <span className="font-mono">{program.pointsPerNaira}</span> points per ₦1
                           </span>
                           <span className="flex items-center gap-1">
                             <Gift size={12} />
@@ -353,10 +356,10 @@ export default function MarketingManagerPage() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100"
+            className={clsx('rounded-xl p-4 sm:p-6 shadow-sm border', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100')}
           >
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
-              <h2 className="font-semibold text-gray-900 text-lg flex items-center gap-2">
+              <h2 className={clsx('font-semibold text-lg flex items-center gap-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
                 <MessageSquare size={20} className="text-green-500" />
                 WhatsApp Campaigns
               </h2>
@@ -373,11 +376,11 @@ export default function MarketingManagerPage() {
             ) : campaigns && campaigns.length > 0 ? (
               <div className="space-y-3">
                 {campaigns.map((campaign: any) => (
-                  <div key={campaign.id} className="p-4 bg-gray-50 rounded-lg">
+                  <div key={campaign.id} className={clsx('p-4 rounded-lg', isDarkMode ? 'bg-gray-700' : 'bg-gray-50')}>
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2 mb-2">
-                          <h4 className="font-medium text-gray-800 text-sm sm:text-base">{campaign.name}</h4>
+                          <h4 className={clsx('font-medium text-sm sm:text-base', isDarkMode ? 'text-white' : 'text-gray-800')}>{campaign.name}</h4>
                           <Badge variant={
                             campaign.status === 'SENT' ? 'green' :
                             campaign.status === 'SCHEDULED' ? 'amber' :

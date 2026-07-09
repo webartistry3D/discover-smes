@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import { prisma } from '../config/database.js';
 import { logger } from '../utils/logger.js';
-import type { AIConfiguration, CreateAIConfigurationRequest } from '@discover-festac/shared';
+import type { AIConfiguration, CreateAIConfigurationRequest } from '@discover-smes/shared';
 
 export class AIController {
   // Get AI configuration for a vendor

@@ -16,7 +16,7 @@ const HERO_STATS = [
   { label: 'Areas Covered', value: '12 Wards' },
 ];
 
-const BUSINESS_TYPES = ['Restaurants', 'Pharmacies', 'Fashion Vendors', 'Electricians', 'Auto Mechanics', 'Beauty Salons', 'Technicians', ' Business People'];
+const BUSINESS_TYPES = ['Restaurants', 'Pharmacies', 'Grocery Stores', 'Gas Stations', 'Boutiques', 'Fashion Vendors', 'Food Vendors', 'Beauty Salons', 'Technicians', 'Electricians', 'Auto Mechanics', 'Plumbers', ' Business People'];
 
 export default function HomePage() {
   const [, navigate] = useLocation();
@@ -179,7 +179,7 @@ export default function HomePage() {
               subtitle="Businesses within 3km"
               href="/discover?sortBy=distance"
             />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-5">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-5">
               {nearby.slice(0, 4).map((v, i) => (
                 <VendorCard key={v.id} vendor={v} index={i} />
               ))}
@@ -233,7 +233,7 @@ export default function HomePage() {
           ) : null}
         </section>
 
-        {/* ─── WHY DISCOVER FESTAC ──────────────────────────── */}
+        {/* ─── WHY DISCOVER SMEs ──────────────────────────── */}
         <section className={clsx('rounded-3xl p-8 lg:p-12', isDarkMode ? 'bg-gradient-to-br from-gray-800 to-gray-900' : 'bg-gradient-to-br from-gray-50 to-white')}>
           <div className="text-center mb-10">
             <h2 className={clsx('font-display font-black text-3xl', isDarkMode ? 'text-white' : 'text-gray-900')}>

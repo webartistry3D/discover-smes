@@ -1,5 +1,5 @@
 {
-  "name": "@discover-festac/frontend",
+  "name": "@discover-smes/frontend",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -11,9 +11,11 @@
     "lint": "eslint src --ext .ts,.tsx"
   },
   "dependencies": {
-    "@discover-festac/shared": "*",
+    "@discover-smes/shared": "*",
     "@tanstack/react-query": "^5.48.0",
     "@tanstack/react-query-devtools": "^5.48.0",
+    "@zxing/browser": "^0.2.1",
+    "@zxing/library": "^0.23.0",
     "axios": "^1.7.2",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",

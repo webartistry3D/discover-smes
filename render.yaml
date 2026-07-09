@@ -1,5 +1,5 @@
 # ============================================================
-# DISCOVER FESTAC — RENDER DEPLOYMENT CONFIG
+# DISCOVER SMEs — RENDER DEPLOYMENT CONFIG
 # Push this file to GitHub, then connect your repo on Render.
 # Render will auto-detect and create all services below.
 # Docs: https://render.com/docs/infrastructure-as-code
@@ -8,7 +8,7 @@
 services:
   # ─── BACKEND API (Web Service) ─────────────────────────────
   - type: web
-    name: discover-festac-api
+    name: discover-smes-api
     runtime: node
     region: oregon             # Change to: frankfurt, singapore, ohio
     plan: starter              # free | starter | standard
@@ -34,7 +34,7 @@ services:
       # Auto-linked from the Postgres service below
       - key: DATABASE_URL
         fromDatabase:
-          name: discover-festac-db
+          name: discover-smes-db
           property: connectionString
 
       # Set these manually in Render dashboard → Environment
@@ -94,9 +94,9 @@ services:
 
   # ─── FRONTEND (Static Site) ────────────────────────────────
   - type: web
-    name: discover-festac-web
+    name: discover-smes-web
     runtime: static
-    # region: oregon
+    region: oregon
     rootDir: apps/frontend
     buildCommand: |
       cd ../../
@@ -123,8 +123,8 @@ services:
         sync: false            # e.g. https://discover-festac-api.onrender.com/api/v1
 
 # ─── POSTGRES DATABASE ────────────────────────────────────────
-#databases:
-#  - name: discover-festac-db
-#    databaseName: discover_festac
-#    plan: starter              # free | starter (free has 90-day expiry)
-#    region: oregon
+databases:
+  - name: discover-smes-db
+    databaseName: discover_smes
+    plan: starter              # free | starter (free has 90-day expiry)
+    region: oregon

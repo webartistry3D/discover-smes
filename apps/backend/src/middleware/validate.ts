@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { ZodSchema, ZodError } from 'zod';
-import { ERROR_CODES } from '@discover-festac/shared';
+import { ERROR_CODES } from '@discover-smes/shared';
 
 type ValidateTarget = 'body' | 'query' | 'params';
 

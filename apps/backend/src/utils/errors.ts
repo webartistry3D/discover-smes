@@ -1,5 +1,5 @@
 import type { Response } from 'express';
-import { ERROR_CODES } from '@discover-festac/shared';
+import { ERROR_CODES } from '@discover-smes/shared';
 
 export class AppError extends Error {
   public readonly statusCode: number;

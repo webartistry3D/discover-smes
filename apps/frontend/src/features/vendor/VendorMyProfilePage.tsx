@@ -8,20 +8,23 @@ import {
 } from 'lucide-react';
 import { useVendorDetail, useCreateProduct, useUpdateProduct, useDeleteProduct, useCreateService, useUpdateService, useDeleteService, useUploadProductImages } from '../../hooks/useVendors';
 import { useAuthStore } from '../../stores/auth.store';
+import { useUIStore } from '../../stores/ui.store';
 import { VerificationBadge } from '../../components/ui/VerificationBadge';
 import { StarRating, Skeleton, Avatar, Badge, Button } from '../../components/ui/index';
 import { generateWhatsAppUrl, generateWhatsAppGreeting, formatNaira, isVendorOpenNow } from '../../lib/shared';
 import toast from 'react-hot-toast';
+import { clsx } from 'clsx';
 
 export default function VendorMyProfilePage() {
   const { user } = useAuthStore();
+  const { isDarkMode } = useUIStore();
   const vendorId = user?.vendorId;
-  
+
   // Use vendor detail hook to fetch the vendor's own profile
   const { data: vendor, isLoading } = useVendorDetail(
     vendorId ?? ''
   );
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'services' | 'reviews'>('overview');
   const [showFullDesc, setShowFullDesc] = useState(false);
@@ -359,9 +362,9 @@ export default function VendorMyProfilePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
+    <div className={clsx('min-h-screen pb-24', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       {/* Cover Image */}
-      <div className="relative h-64 sm:h-80 bg-gradient-to-br from-gray-200 to-gray-300">
+      <div className={clsx('relative h-64 sm:h-80', isDarkMode ? 'bg-gradient-to-br from-gray-800 to-gray-700' : 'bg-gradient-to-br from-gray-200 to-gray-300')}>
         {vendor.coverImage ? (
           <img src={vendor.coverImage} alt={vendor.businessName} className="w-full h-full object-cover" />
         ) : (
@@ -396,10 +399,10 @@ export default function VendorMyProfilePage() {
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         {/* Business Header Card */}
-        <div className="bg-white rounded-3xl shadow-card -mt-10 relative z-10 p-6">
+        <div className={clsx('rounded-3xl shadow-card -mt-10 relative z-10 p-6', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
           <div className="flex items-start gap-4">
             {/* Logo */}
-            <div className="w-16 h-16 rounded-2xl bg-gray-100 border-2 border-white shadow-md overflow-hidden flex-shrink-0">
+            <div className={clsx('w-16 h-16 rounded-2xl border-2 shadow-md overflow-hidden flex-shrink-0', isDarkMode ? 'bg-gray-700 border-gray-700' : 'bg-gray-100 border-white')}>
               {vendor.logo ? (
                 <img src={vendor.logo} alt="" className="w-full h-full object-cover" />
               ) : (
@@ -410,7 +413,7 @@ export default function VendorMyProfilePage() {
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <h1 className="font-display font-bold text-xl text-gray-900 leading-tight">{vendor.businessName}</h1>
+                  <h1 className={clsx('font-display font-bold text-xl leading-tight', isDarkMode ? 'text-white' : 'text-gray-900')}>{vendor.businessName}</h1>
                   {vendor.category && (
                     <span className="text-xs text-festac-green font-semibold uppercase tracking-wider">{vendor.category.name}</span>
                   )}
@@ -423,7 +426,7 @@ export default function VendorMyProfilePage() {
                 {vendor.totalReviews > 0 && (
                   <StarRating rating={vendor.averageRating} showValue reviewCount={vendor.totalReviews} />
                 )}
-                <span className={`text-xs font-semibold flex items-center gap-1 ${isOpen ? 'text-green-600' : 'text-gray-400'}`}>
+                <span className={clsx('text-xs font-semibold flex items-center gap-1', isOpen ? 'text-green-600' : isDarkMode ? 'text-gray-500' : 'text-gray-400')}>
                   <Clock size={11} />
                   {isOpen ? 'Open Now' : 'Closed'}
                 </span>
@@ -438,12 +441,12 @@ export default function VendorMyProfilePage() {
 
           {/* Location + Phone */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
-            <div className="flex items-center gap-2 text-sm text-gray-500">
+            <div className={clsx('flex items-center gap-2 text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>
               <MapPin size={14} className="text-festac-green flex-shrink-0" />
               <span className="truncate">{vendor.address}</span>
             </div>
             {vendor.phone && (
-              <a href={`tel:${vendor.phone}`} className="flex items-center gap-2 text-sm text-gray-500 hover:text-festac-green transition-colors">
+              <a href={`tel:${vendor.phone}`} className={clsx('flex items-center gap-2 text-sm hover:text-festac-green transition-colors', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>
                 <Phone size={14} className="text-festac-green flex-shrink-0" />
                 {vendor.phone}
               </a>
@@ -459,7 +462,7 @@ export default function VendorMyProfilePage() {
               </a>
             )}
             <Link href="/dashboard">
-              <button className="flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 text-gray-800 font-semibold text-sm rounded-xl hover:bg-gray-200 active:scale-95 transition-all">
+              <button className={clsx('flex items-center justify-center gap-2 px-4 py-3 font-semibold text-sm rounded-xl active:scale-95 transition-all', isDarkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-800 hover:bg-gray-200')}>
                 <Edit size={15} />
                 Dashboard
               </button>
@@ -482,13 +485,13 @@ export default function VendorMyProfilePage() {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto"
+                className={clsx('rounded-2xl p-6 max-w-md w-full max-h-[60vh] sm:max-h-[90vh] overflow-y-auto', isDarkMode ? 'bg-gray-800' : 'bg-white')}
               >
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-bold text-lg text-gray-900">Edit Profile</h2>
+                  <h2 className={clsx('font-bold text-lg', isDarkMode ? 'text-white' : 'text-gray-900')}>Edit Profile</h2>
                   <button
                     onClick={() => setIsEditing(false)}
-                    className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                    className={clsx('p-1 rounded-lg transition-colors', isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100')}
                   >
                     <X size={20} />
                   </button>
@@ -496,7 +499,7 @@ export default function VendorMyProfilePage() {
 
                 <div className="space-y-3">
                   <div>
-                    <label className="text-xs font-semibold text-gray-700 block mb-1">Cover Photo</label>
+                    <label className={clsx('text-xs font-semibold block mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Cover Photo</label>
                     <div className="mt-2">
                       {editData.coverPhoto ? (
                         <div className="relative">
@@ -516,7 +519,7 @@ export default function VendorMyProfilePage() {
                           </button>
                         </div>
                       ) : (
-                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                        <div className={clsx('border-2 border-dashed rounded-lg p-4 text-center', isDarkMode ? 'border-gray-600' : 'border-gray-300')}>
                           <input
                             type="file"
                             accept="image/*"
@@ -538,8 +541,8 @@ export default function VendorMyProfilePage() {
                             htmlFor="coverPhotoInput"
                             className="cursor-pointer flex flex-col items-center"
                           >
-                            <Plus size={24} className="text-gray-400 mb-2" />
-                            <span className="text-sm text-gray-500">Upload cover photo</span>
+                            <Plus size={24} className={clsx('mb-2', isDarkMode ? 'text-gray-400' : 'text-gray-400')} />
+                            <span className={clsx('text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>Upload cover photo</span>
                           </label>
                         </div>
                       )}
@@ -547,52 +550,52 @@ export default function VendorMyProfilePage() {
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-gray-700 block mb-1">Business Name</label>
+                    <label className={clsx('text-xs font-semibold block mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Business Name</label>
                     <input
                       type="text"
                       value={editData.businessName}
                       onChange={(e) => setEditData({ ...editData, businessName: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green/20"
+                      className={clsx('w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green/20', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-gray-700 block mb-1">Description</label>
+                    <label className={clsx('text-xs font-semibold block mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Description</label>
                     <textarea
                       value={editData.description}
                       onChange={(e) => setEditData({ ...editData, description: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green/20 resize-none"
+                      className={clsx('w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green/20 resize-none', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                       rows={3}
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-gray-700 block mb-1">Phone</label>
+                    <label className={clsx('text-xs font-semibold block mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Phone</label>
                     <input
                       type="tel"
                       value={editData.phone}
                       onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green/20"
+                      className={clsx('w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green/20', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-gray-700 block mb-1">WhatsApp Phone</label>
+                    <label className={clsx('text-xs font-semibold block mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>WhatsApp Phone</label>
                     <input
                       type="tel"
                       value={editData.whatsappPhone}
                       onChange={(e) => setEditData({ ...editData, whatsappPhone: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green/20"
+                      className={clsx('w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green/20', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-gray-700 block mb-1">Address</label>
+                    <label className={clsx('text-xs font-semibold block mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Address</label>
                     <input
                       type="text"
                       value={editData.address}
                       onChange={(e) => setEditData({ ...editData, address: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green/20"
+                      className={clsx('w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green/20', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                     />
                   </div>
                 </div>
@@ -600,7 +603,7 @@ export default function VendorMyProfilePage() {
                 <div className="flex gap-2 mt-5">
                   <button
                     onClick={() => setIsEditing(false)}
-                    className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                    className={clsx('flex-1 px-4 py-2 text-sm font-medium rounded-lg transition-colors', isDarkMode ? 'text-gray-300 bg-gray-700 hover:bg-gray-600' : 'text-gray-700 bg-gray-100 hover:bg-gray-200')}
                   >
                     Cancel
                   </button>
@@ -632,62 +635,62 @@ export default function VendorMyProfilePage() {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto"
+                className={clsx('rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto', isDarkMode ? 'bg-gray-800' : 'bg-white')}
               >
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-bold text-lg text-gray-900">{editingProduct ? 'Edit Product' : 'Add Product'}</h2>
+                  <h2 className={clsx('font-bold text-lg', isDarkMode ? 'text-white' : 'text-gray-900')}>{editingProduct ? 'Edit Product' : 'Add Product'}</h2>
                   <button
                     onClick={() => { setIsAddingProduct(false); setEditingProduct(null); }}
-                    className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                    className={clsx('p-1 rounded-lg transition-colors', isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100')}
                   >
                     <X size={20} />
                   </button>
                 </div>
                 <div className="space-y-3">
                   <div>
-                    <label className="text-xs font-semibold text-gray-700 block mb-1">Product Name *</label>
+                    <label className={clsx('text-xs font-semibold block mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Product Name *</label>
                     <input
                       type="text"
                       value={productForm.name}
                       onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
                       placeholder="e.g., Jollof Rice"
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green/20"
+                      className={clsx('w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green/20', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-gray-700 block mb-1">Description</label>
+                    <label className={clsx('text-xs font-semibold block mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Description</label>
                     <textarea
                       value={productForm.description}
                       onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
                       placeholder="Describe your product..."
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green/20 resize-none"
+                      className={clsx('w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green/20 resize-none', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                       rows={3}
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-semibold text-gray-700 block mb-1">Price (₦) *</label>
+                      <label className={clsx('text-xs font-semibold block mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Price (₦) *</label>
                       <input
                         type="number"
                         value={productForm.price}
                         onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
                         placeholder="0"
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green/20"
+                        className={clsx('w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green/20', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-gray-700 block mb-1">Unit</label>
+                      <label className={clsx('text-xs font-semibold block mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Unit</label>
                       <input
                         type="text"
                         value={productForm.unit}
                         onChange={(e) => setProductForm({ ...productForm, unit: e.target.value })}
                         placeholder="plate, piece, etc."
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green/20"
+                        className={clsx('w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green/20', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-gray-700 block mb-1">Images (max 5)</label>
+                    <label className={clsx('text-xs font-semibold block mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Images (max 5)</label>
                     <div className="flex items-center gap-2">
                       <input
                         type="file"
@@ -699,12 +702,12 @@ export default function VendorMyProfilePage() {
                       />
                       <label
                         htmlFor="product-images"
-                        className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-festac-green transition-colors"
+                        className={clsx('flex items-center gap-2 px-4 py-2 border-2 border-dashed rounded-lg cursor-pointer hover:border-festac-green transition-colors', isDarkMode ? 'border-gray-600' : 'border-gray-300')}
                       >
-                        <Plus size={16} className="text-gray-400" />
-                        <span className="text-sm text-gray-600">Add Images</span>
+                        <Plus size={16} className={isDarkMode ? 'text-gray-400' : 'text-gray-400'} />
+                        <span className={clsx('text-sm', isDarkMode ? 'text-gray-300' : 'text-gray-600')}>Add Images</span>
                       </label>
-                      <span className="text-xs text-gray-400">{uploadedImageUrls.length + productImages.length}/5</span>
+                      <span className={clsx('text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-400')}>{uploadedImageUrls.length + productImages.length}/5</span>
                     </div>
                     <div className="grid grid-cols-5 gap-2 mt-2">
                       {uploadedImageUrls.map((url, index) => (
@@ -735,7 +738,7 @@ export default function VendorMyProfilePage() {
                 <div className="flex gap-2 mt-5">
                   <button
                     onClick={() => { setIsAddingProduct(false); setEditingProduct(null); setProductImages([]); setUploadedImageUrls([]); }}
-                    className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                    className={clsx('flex-1 px-4 py-2 text-sm font-medium rounded-lg transition-colors', isDarkMode ? 'text-gray-300 bg-gray-700 hover:bg-gray-600' : 'text-gray-700 bg-gray-100 hover:bg-gray-200')}
                   >
                     Cancel
                   </button>
@@ -767,68 +770,68 @@ export default function VendorMyProfilePage() {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto"
+                className={clsx('rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto', isDarkMode ? 'bg-gray-800' : 'bg-white')}
               >
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-bold text-lg text-gray-900">{editingService ? 'Edit Service' : 'Add Service'}</h2>
+                  <h2 className={clsx('font-bold text-lg', isDarkMode ? 'text-white' : 'text-gray-900')}>{editingService ? 'Edit Service' : 'Add Service'}</h2>
                   <button
                     onClick={() => { setIsAddingService(false); setEditingService(null); }}
-                    className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                    className={clsx('p-1 rounded-lg transition-colors', isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100')}
                   >
                     <X size={20} />
                   </button>
                 </div>
                 <div className="space-y-3">
                   <div>
-                    <label className="text-xs font-semibold text-gray-700 block mb-1">Service Name *</label>
+                    <label className={clsx('text-xs font-semibold block mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Service Name *</label>
                     <input
                       type="text"
                       value={serviceForm.name}
                       onChange={(e) => setServiceForm({ ...serviceForm, name: e.target.value })}
                       placeholder="e.g., Haircut"
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green/20"
+                      className={clsx('w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green/20', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-gray-700 block mb-1">Description</label>
+                    <label className={clsx('text-xs font-semibold block mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Description</label>
                     <textarea
                       value={serviceForm.description}
                       onChange={(e) => setServiceForm({ ...serviceForm, description: e.target.value })}
                       placeholder="Describe your service..."
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green/20 resize-none"
+                      className={clsx('w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green/20 resize-none', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                       rows={3}
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-semibold text-gray-700 block mb-1">Price (₦)</label>
+                      <label className={clsx('text-xs font-semibold block mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Price (₦)</label>
                       <input
                         type="number"
                         value={serviceForm.price}
                         onChange={(e) => setServiceForm({ ...serviceForm, price: e.target.value })}
                         placeholder="0"
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green/20"
+                        className={clsx('w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green/20', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-gray-700 block mb-1">Duration (mins)</label>
+                      <label className={clsx('text-xs font-semibold block mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Duration (mins)</label>
                       <input
                         type="number"
                         value={serviceForm.durationMinutes}
                         onChange={(e) => setServiceForm({ ...serviceForm, durationMinutes: e.target.value })}
                         placeholder="30"
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green/20"
+                        className={clsx('w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green/20', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-gray-700 block mb-1">Price Label (optional)</label>
+                    <label className={clsx('text-xs font-semibold block mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Price Label (optional)</label>
                     <input
                       type="text"
                       value={serviceForm.priceLabel}
                       onChange={(e) => setServiceForm({ ...serviceForm, priceLabel: e.target.value })}
                       placeholder="e.g., Starting from"
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green/20"
+                      className={clsx('w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-festac-green/20', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                     />
                   </div>
                   <div className="flex items-center gap-2">
@@ -839,13 +842,13 @@ export default function VendorMyProfilePage() {
                       onChange={(e) => setServiceForm({ ...serviceForm, bookingRequired: e.target.checked })}
                       className="rounded text-festac-green"
                     />
-                    <label htmlFor="booking" className="text-sm text-gray-700">Requires booking</label>
+                    <label htmlFor="booking" className={clsx('text-sm', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Requires booking</label>
                   </div>
                 </div>
                 <div className="flex gap-2 mt-5">
                   <button
                     onClick={() => { setIsAddingService(false); setEditingService(null); }}
-                    className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                    className={clsx('flex-1 px-4 py-2 text-sm font-medium rounded-lg transition-colors', isDarkMode ? 'text-gray-300 bg-gray-700 hover:bg-gray-600' : 'text-gray-700 bg-gray-100 hover:bg-gray-200')}
                   >
                     Cancel
                   </button>
@@ -914,9 +917,16 @@ export default function VendorMyProfilePage() {
                 )}
 
                 {/* FAQs */}
-                {vendor.faqs?.length > 0 && (
-                  <div className="bg-white rounded-2xl p-5 shadow-card">
-                    <h3 className="font-semibold text-gray-900 mb-3">Frequently Asked Questions</h3>
+                <div className="bg-white rounded-2xl p-5 shadow-card">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-gray-900">Frequently Asked Questions</h3>
+                    <Link href="/chatbot/faq">
+                      <button className="text-xs font-medium text-festac-green hover:underline flex items-center gap-1">
+                        Manage FAQs <ExternalLink size={12} />
+                      </button>
+                    </Link>
+                  </div>
+                  {vendor.faqs?.length > 0 ? (
                     <div className="space-y-3">
                       {vendor.faqs.map((faq: any) => (
                         <div key={faq.id} className="border-b border-gray-50 last:border-0 pb-3 last:pb-0">
@@ -925,8 +935,10 @@ export default function VendorMyProfilePage() {
                         </div>
                       ))}
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <p className="text-sm text-gray-500">No FAQs yet. Manage them on the FAQ page.</p>
+                  )}
+                </div>
 
                 {/* Current Promotions */}
                 {vendor.promotions?.length > 0 && (

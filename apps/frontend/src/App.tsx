@@ -1,10 +1,11 @@
 import { Suspense, lazy, useEffect } from 'react';
-import { Route, Switch } from 'wouter';
+import { Route, Switch, useLocation } from 'wouter';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Toaster } from 'react-hot-toast';
 import { clsx } from 'clsx';
 import { Navbar } from './components/ui/Navbar';
+import { MobileBottomNav } from './components/ui/MobileBottomNav';
 import { AuthModal } from './components/ui/AuthModal';
 import { Spinner } from './components/ui/index';
 import { useAuthStore } from './stores/auth.store';
@@ -37,6 +38,8 @@ const SettingsPage = lazy(() => import('./features/settings/SettingsPage'));
 const FAQManagerPage = lazy(() => import('./features/chatbot/FAQManager'));
 const ChatMonitorPage = lazy(() => import('./features/chatbot/ChatMonitor'));
 const CostMonitorPage = lazy(() => import('./features/chatbot/CostMonitor'));
+const OperatorDashboard = lazy(() => import('./features/chatbot/OperatorDashboard'));
+const POSPage = lazy(() => import('./features/pos/POSPage'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -86,14 +89,18 @@ function ProtectedRoute({ children, roles }: { children: React.ReactNode; roles?
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const { isDarkMode } = useUIStore();
+  const [location] = useLocation();
+  const { isAuthenticated } = useAuthStore();
+  const isLandingPage = location === '/';
 
   return (
     <div className={clsx('min-h-screen flex flex-col', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       <Navbar />
-      <main className="flex-1">
+      <main className={clsx('flex-1', isAuthenticated ? 'pb-20' : '')}>
         {children}
       </main>
-      <footer className={clsx('text-white', isDarkMode ? 'bg-gray-800' : 'bg-gray-900')}>
+      {isAuthenticated && <MobileBottomNav />}
+      <footer className={clsx('text-white hidden', isDarkMode ? 'bg-gray-800' : 'bg-gray-900')}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2">
           {/*<div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="col-span-2 md:col-span-1">
@@ -101,7 +108,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                 <div className="w-8 h-8 bg-gradient-festac rounded-xl flex items-center justify-center">
                   <span className="text-white font-black text-sm">DF</span>
                 </div>
-                <span className="font-display font-bold text-lg">Discover Festac</span>
+                <span className="font-display font-bold text-lg">Discover SMEs</span>
               </div>
               <p className="text-gray-400 text-sm leading-relaxed">
                 The digital operating system for hyperlocal commerce in Festac Town, Lagos.
@@ -206,6 +213,13 @@ export default function App() {
                 </ProtectedRoute>
               )}
             </Route>
+            <Route path="/pos">
+              {() => (
+                <ProtectedRoute roles={['VENDOR', 'SUPER_ADMIN']}>
+                  <POSPage />
+                </ProtectedRoute>
+              )}
+            </Route>
             <Route path="/financial/income">
               {() => (
                 <ProtectedRoute roles={['VENDOR', 'SUPER_ADMIN']}>
@@ -297,6 +311,13 @@ export default function App() {
                 </ProtectedRoute>
               )}
             </Route>
+            <Route path="/chatbot/operator">
+              {() => (
+                <ProtectedRoute roles={['VENDOR', 'SUPER_ADMIN']}>
+                  <OperatorDashboard />
+                </ProtectedRoute>
+              )}
+            </Route>
             <Route path="/admin">
               {() => (
                 <ProtectedRoute roles={['SUPER_ADMIN', 'MODERATOR']}>
@@ -330,7 +351,6 @@ export default function App() {
           error: { iconTheme: { primary: '#ef4444', secondary: '#fff' } },
         }}
       />
-      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
 }

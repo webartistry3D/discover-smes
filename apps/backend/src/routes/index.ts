@@ -369,6 +369,9 @@ admin.get('/analytics', async (_req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// Conversation Analytics (Global)
+admin.get('/conversation-analytics', chatbotController.getGlobalAnalytics.bind(chatbotController));
+
 admin.get('/verification-requests', async (_req, res, next) => {
   try {
     const requests = await prisma.verificationRequest.findMany({
@@ -639,6 +642,9 @@ chatbot.delete('/rules/:id', chatbotController.deleteRule.bind(chatbotController
 chatbot.get('/sessions', chatbotController.getSessions.bind(chatbotController));
 chatbot.post('/session/takeover', chatbotController.takeoverSession.bind(chatbotController));
 chatbot.post('/session/resume', chatbotController.resumeSession.bind(chatbotController));
+
+// Conversation Analytics
+chatbot.get('/analytics', chatbotController.getAnalytics.bind(chatbotController));
 
 // Message Processing (public endpoint for WhatsApp webhook)
 chatbot.post('/process-message', chatbotController.processMessage.bind(chatbotController));

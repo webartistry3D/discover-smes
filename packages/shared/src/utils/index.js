@@ -80,7 +80,7 @@ function generateWhatsAppUrl(phone, message) {
  * Generate WhatsApp greeting message for a vendor
  */
 function generateWhatsAppGreeting(businessName) {
-    return `Hello! I found ${businessName} on Discover Festac and I'd like to know more about your products/services.`;
+    return `Hello! I found ${businessName} on Discover SMEs and I'd like to know more about your products/services.`;
 }
 /**
  * Format Nigerian Naira

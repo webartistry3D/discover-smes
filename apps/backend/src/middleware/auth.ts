@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { config } from '../config/index.js';
 import { AppError } from '../utils/errors.js';
 import { prisma } from '../config/database.js';
-import type { UserRole, JwtPayload } from '@discover-festac/shared';
+import type { UserRole, JwtPayload } from '@discover-smes/shared';
 
 // Augment Express Request
 declare global {

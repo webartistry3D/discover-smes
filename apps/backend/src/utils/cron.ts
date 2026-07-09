@@ -37,7 +37,7 @@ export function startCronJobs(): void {
           `🕐 Time: ${booking.scheduledAt.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' })}\n` +
           `📍 Location: ${booking.vendor.address}\n\n` +
           `To reschedule or cancel, please contact the business directly.\n\n` +
-          `_Discover Festac — Connecting you to local businesses_`;
+          `_Discover SMEs — Connecting you to local businesses_`;
 
         try {
           await sendWhatsAppMessage(booking.customerPhone, message);

@@ -52,14 +52,14 @@ export default function BookingsPage() {
       <div className="bg-gradient-hero text-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
           <div className="flex items-center gap-4 mb-6">
-            <Link href="/profile">
+            <Link href="/dashboard">
               <button className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors">
                 <ChevronLeft size={20} />
               </button>
             </Link>
             <div>
               <h1 className="font-display font-bold text-2xl">My Bookings</h1>
-              <p className="text-white/60 text-sm mt-1">Manage your appointments and reservations</p>
+              {/*<p className="text-white/60 text-sm mt-1">Manage your appointments and reservations</p>*/}
             </div>
           </div>
 

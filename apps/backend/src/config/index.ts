@@ -79,7 +79,7 @@ export const config = {
       region: optionalEnv('AWS_REGION', 'eu-west-1'),
       accessKeyId: optionalEnv('AWS_ACCESS_KEY_ID', ''),
       secretAccessKey: optionalEnv('AWS_SECRET_ACCESS_KEY', ''),
-      bucket: optionalEnv('AWS_S3_BUCKET', 'discover-festac-media'),
+      bucket: optionalEnv('AWS_S3_BUCKET', 'discover-smes-media'),
     },
     localUploadDir: path.resolve(process.cwd(), 'uploads'),
   },

@@ -1,8 +1,8 @@
-# Discover Festac
+# Discover SMEs
 
 ## Overview
 
-Discover Festac is a hyperlocal commerce platform built as a digital operating system for Festac Town, Lagos. It connects residents, Small and Medium Enterprises (SMEs), and local government through trusted local business discovery, WhatsApp-native customer communication, intelligent booking flows, and community-level economic insights.
+Discover SMEs is a hyperlocal commerce platform built as a digital operating system for Festac Town, Lagos. It connects residents, Small and Medium Enterprises (SMEs), and local government through trusted local business discovery, WhatsApp-native customer communication, intelligent booking flows, and community-level economic insights.
 
 The platform is designed for:
 - Local vendors who want better visibility, bookings, and customer management
@@ -11,7 +11,7 @@ The platform is designed for:
 
 ---
 
-## Why Discover Festac?
+## Why Discover SMEs?
 
 ### For vendors
 - Get discovered by nearby customers through category search and featured placements
@@ -117,7 +117,7 @@ Local government and civic stakeholders gain insight into the local economy thro
 
 ## Current Product Status
 
-Discover Festac is implemented as a full-stack platform with:
+Discover SMEs is implemented as a full-stack platform with:
 - Backend: Node.js, Express.js, TypeScript, PostgreSQL, Prisma
 - Frontend: React, TypeScript, Vite, Tailwind CSS
 - Shared code and types in a monorepo using workspaces
@@ -142,13 +142,13 @@ A local government officer monitors vendor verification status, emerging service
 
 ## Why this matters for Festac Town
 
-Festac Town is home to thousands of informal businesses. Discover Festac helps these businesses move from phone-based, manual operations into a digital ecosystem that is:
+Festac Town is home to thousands of informal businesses. Discover SMEs helps these businesses move from phone-based, manual operations into a digital ecosystem that is:
 - mobile-first and WhatsApp-friendly
 - trust-driven and easy to access
 - supportive of micro-SME growth
 - connected to local civic infrastructure
 
-By making local commerce discoverable and manageable, Discover Festac can help raise incomes, reduce friction, and strengthen Festac’s local marketplace.
+By making local commerce discoverable and manageable, Discover SMEs can help raise incomes, reduce friction, and strengthen Festac’s local marketplace.
 
 ---
 

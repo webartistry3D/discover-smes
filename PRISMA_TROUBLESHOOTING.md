@@ -246,7 +246,7 @@ PORT=4000
 ### Frontend (.env)
 ```env
 VITE_API_URL=/api/v1
-VITE_APP_NAME=Discover Festac
+VITE_APP_NAME=Discover SMEs
 VITE_APP_VERSION=1.0.0
 ```
 
