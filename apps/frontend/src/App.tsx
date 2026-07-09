@@ -6,6 +6,7 @@ import { Toaster } from 'react-hot-toast';
 import { clsx } from 'clsx';
 import { Navbar } from './components/ui/Navbar';
 import { MobileBottomNav } from './components/ui/MobileBottomNav';
+import PWAInstallPrompt from './components/ui/PWAInstallPrompt';
 import { AuthModal } from './components/ui/AuthModal';
 import { Spinner } from './components/ui/index';
 import { useAuthStore } from './stores/auth.store';
@@ -100,6 +101,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
         {children}
       </main>
       {isAuthenticated && <MobileBottomNav />}
+      <PWAInstallPrompt />
       <footer className={clsx('text-white hidden', isDarkMode ? 'bg-gray-800' : 'bg-gray-900')}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2">
           {/*<div className="grid grid-cols-2 md:grid-cols-4 gap-8">
