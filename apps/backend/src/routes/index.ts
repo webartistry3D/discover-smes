@@ -40,8 +40,8 @@ router.get('/health', async (_req, res) => {
 
 // ─── AUTH ────────────────────────────────────────────────────
 const auth = Router();
-auth.post('/otp/send', otpRateLimit, authController.sendOtp.bind(authController));
-auth.post('/otp/verify', authRateLimit, authController.verifyOtp.bind(authController));
+auth.post('/register', authRateLimit, authController.register.bind(authController));
+auth.post('/login', authRateLimit, authController.login.bind(authController));
 auth.post('/refresh', authController.refresh.bind(authController));
 auth.post('/logout', authenticate, authController.logout.bind(authController));
 auth.get('/me', authenticate, authController.me.bind(authController));

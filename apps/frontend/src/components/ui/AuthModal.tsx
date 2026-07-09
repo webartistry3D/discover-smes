@@ -1,52 +1,75 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Phone, ArrowRight, RotateCcw, CheckCircle } from 'lucide-react';
+import { X, Phone, ArrowRight, CheckCircle, Lock } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useUIStore } from '../../stores/ui.store';
 import { useAuthStore } from '../../stores/auth.store';
-import { authApi } from '../../lib/api';
 import { Button } from '../ui/index';
 import { isValidNigerianPhone, formatPhoneNumber } from '../../lib/shared';
 import { clsx } from 'clsx';
 
-type Step = 'phone' | 'otp' | 'success';
+type Mode = 'login' | 'register';
+type Step = 'form' | 'success';
 
 export function AuthModal() {
   const { isAuthModalOpen, closeAuthModal, isDarkMode } = useUIStore();
   const { setUser } = useAuthStore();
-  const [step, setStep] = useState<Step>('phone');
+  const [mode, setMode] = useState<Mode>('login');
+  const [step, setStep] = useState<Step>('form');
   const [phone, setPhone] = useState('');
-  const [otp, setOtp] = useState(['', '', '', '', '', '']);
-  const otpRefs = Array.from({ length: 6 }, () => null as HTMLInputElement | null);
+  const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
 
-  const sendOtpMutation = useMutation({
-    mutationFn: (p: string) => authApi.sendOtp(p),
-    onSuccess: () => {
-      setStep('otp');
-      toast.success('OTP sent to your phone');
+  const loginMutation = useMutation({
+    mutationFn: async ({ phone, password }: { phone: string; password: string }) => {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, password }),
+      });
+      if (!response.ok) throw new Error('Login failed');
+      return response.json();
     },
-    onError: () => toast.error('Failed to send OTP. Please try again.'),
-  });
-
-  const verifyOtpMutation = useMutation({
-    mutationFn: ({ p, code }: { p: string; code: string }) => authApi.verifyOtp(p, code),
     onSuccess: (res) => {
-      const { user, tokens } = res.data.data;
-      setUser(user, tokens);
+      setUser(res.data.user, res.data.tokens);
       setStep('success');
       setTimeout(() => {
         closeAuthModal();
         resetForm();
       }, 1500);
     },
-    onError: () => toast.error('Invalid OTP. Please try again.'),
+    onError: () => toast.error('Invalid credentials'),
+  });
+
+  const registerMutation = useMutation({
+    mutationFn: async ({ phone, password, firstName, lastName }: { phone: string; password: string; firstName: string; lastName: string }) => {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, password, firstName, lastName }),
+      });
+      if (!response.ok) throw new Error('Registration failed');
+      return response.json();
+    },
+    onSuccess: (res) => {
+      setUser(res.data.user, res.data.tokens);
+      setStep('success');
+      setTimeout(() => {
+        closeAuthModal();
+        resetForm();
+      }, 1500);
+    },
+    onError: () => toast.error('Registration failed'),
   });
 
   const resetForm = () => {
-    setStep('phone');
+    setStep('form');
     setPhone('');
-    setOtp(['', '', '', '', '', '']);
+    setPassword('');
+    setFirstName('');
+    setLastName('');
   };
 
   const handleClose = () => {
@@ -54,39 +77,26 @@ export function AuthModal() {
     setTimeout(resetForm, 300);
   };
 
-  const handlePhoneSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValidNigerianPhone(phone)) {
       toast.error('Please enter a valid Nigerian phone number');
       return;
     }
-    sendOtpMutation.mutate(formatPhoneNumber(phone));
-  };
-
-  const handleOtpChange = (index: number, value: string) => {
-    if (!/^\d*$/.test(value)) return;
-    const newOtp = [...otp];
-    newOtp[index] = value.slice(-1);
-    setOtp(newOtp);
-    if (value && index < 5) otpRefs[index + 1]?.focus();
-
-    // Auto-submit when all 6 digits entered
-    if (newOtp.every((d) => d) && value) {
-      verifyOtpMutation.mutate({ p: formatPhoneNumber(phone), code: newOtp.join('') });
+    if (password.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
     }
-  };
-
-  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      otpRefs[index - 1]?.focus();
+    if (mode === 'register' && (!firstName || !lastName)) {
+      toast.error('Please enter your first and last name');
+      return;
     }
-  };
 
-  const handleOtpPaste = (e: React.ClipboardEvent) => {
-    const paste = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
-    if (paste.length === 6) {
-      setOtp(paste.split(''));
-      verifyOtpMutation.mutate({ p: formatPhoneNumber(phone), code: paste });
+    const formattedPhone = formatPhoneNumber(phone);
+    if (mode === 'login') {
+      loginMutation.mutate({ phone: formattedPhone, password });
+    } else {
+      registerMutation.mutate({ phone: formattedPhone, password, firstName, lastName });
     }
   };
 
@@ -119,16 +129,14 @@ export function AuthModal() {
                 </button>
                 <div className="relative">
                   <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mb-3">
-                    {step === 'success' ? <CheckCircle size={22} /> : <Phone size={22} />}
+                    {step === 'success' ? <CheckCircle size={22} /> : <Lock size={22} />}
                   </div>
                   <h2 className="font-display font-bold text-xl">
-                    {step === 'phone' ? 'Welcome to Discover SMEs' : step === 'otp' ? 'Verify your number' : 'You\'re in! 🎉'}
+                    {step === 'form' ? (mode === 'login' ? 'Welcome back' : 'Create account') : 'You\'re in! 🎉'}
                   </h2>
                   <p className="text-white/70 text-sm mt-1">
-                    {step === 'phone'
-                      ? 'Enter your phone number to continue'
-                      : step === 'otp'
-                      ? `OTP sent to ${phone}`
+                    {step === 'form'
+                      ? (mode === 'login' ? 'Sign in to your account' : 'Join Discover SMEs today')
                       : 'Redirecting you now...'}
                   </p>
                 </div>
@@ -137,15 +145,39 @@ export function AuthModal() {
               {/* Body */}
               <div className={clsx('px-6 py-6', isDarkMode ? 'bg-gray-800' : '')}>
                 <AnimatePresence mode="wait">
-                  {step === 'phone' && (
+                  {step === 'form' && (
                     <motion.form
-                      key="phone"
+                      key="form"
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 20 }}
-                      onSubmit={handlePhoneSubmit}
+                      onSubmit={handleSubmit}
                       className="space-y-4"
                     >
+                      {mode === 'register' && (
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className={clsx('text-sm font-medium mb-1.5 block', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>First Name</label>
+                            <input
+                              type="text"
+                              value={firstName}
+                              onChange={(e) => setFirstName(e.target.value)}
+                              placeholder="John"
+                              className={clsx('input w-full', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : '')}
+                            />
+                          </div>
+                          <div>
+                            <label className={clsx('text-sm font-medium mb-1.5 block', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Last Name</label>
+                            <input
+                              type="text"
+                              value={lastName}
+                              onChange={(e) => setLastName(e.target.value)}
+                              placeholder="Doe"
+                              className={clsx('input w-full', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : '')}
+                            />
+                          </div>
+                        </div>
+                      )}
                       <div>
                         <label className={clsx('text-sm font-medium mb-1.5 block', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Phone Number</label>
                         <div className="flex items-center gap-2">
@@ -162,71 +194,40 @@ export function AuthModal() {
                           />
                         </div>
                       </div>
+                      <div>
+                        <label className={clsx('text-sm font-medium mb-1.5 block', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Password</label>
+                        <input
+                          type="password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="••••••••"
+                          className={clsx('input w-full', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : '')}
+                        />
+                      </div>
                       <Button
                         type="submit"
                         variant="primary"
                         size="lg"
-                        loading={sendOtpMutation.isPending}
+                        loading={loginMutation.isPending || registerMutation.isPending}
                         icon={<ArrowRight size={16} />}
                         iconPosition="right"
                         className="w-full"
                       >
-                        Send OTP
+                        {mode === 'login' ? 'Sign In' : 'Create Account'}
                       </Button>
                       <p className={clsx('text-xs text-center', isDarkMode ? 'text-gray-400' : 'text-gray-400')}>
                         By continuing, you agree to our Terms of Service and Privacy Policy
                       </p>
-                    </motion.form>
-                  )}
-
-                  {step === 'otp' && (
-                    <motion.div
-                      key="otp"
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -20 }}
-                      className="space-y-5"
-                    >
-                      <div>
-                        <label className={clsx('text-sm font-medium mb-4 block text-center', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Enter 6-digit code</label>
-                        <div className="flex justify-center gap-2 px-2" onPaste={handleOtpPaste}>
-                          {otp.map((digit, i) => (
-                            <input
-                              key={i}
-                              ref={(el) => { otpRefs[i] = el; }}
-                              type="text"
-                              inputMode="numeric"
-                              maxLength={1}
-                              value={digit}
-                              onChange={(e) => handleOtpChange(i, e.target.value)}
-                              onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                              className={clsx('w-11 h-14 text-center text-2xl font-bold border-2 rounded-xl focus:outline-none transition-all duration-200 shrink-0', isDarkMode ? 'bg-gray-700 border-gray-600 text-white focus:border-green-500 focus:ring-2 focus:ring-green-500/20' : 'bg-gray-50 focus:bg-white focus:border-green-500 focus:ring-2 focus:ring-green-500/20')}
-                              style={{ borderColor: digit ? '#22c55e' : undefined }}
-                            />
-                          ))}
-                        </div>
+                      <div className="text-center">
+                        <button
+                          type="button"
+                          onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
+                          className={clsx('text-sm transition-colors', isDarkMode ? 'text-festac-green hover:text-festac-green/80' : 'text-festac-green hover:text-festac-green/80')}
+                        >
+                          {mode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+                        </button>
                       </div>
-
-                      {verifyOtpMutation.isPending && (
-                        <div className={clsx('flex items-center justify-center gap-2 text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>
-                          <div className="w-4 h-4 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
-                          Verifying...
-                        </div>
-                      )}
-
-                      <button
-                        onClick={() => sendOtpMutation.mutate(formatPhoneNumber(phone))}
-                        disabled={sendOtpMutation.isPending}
-                        className={clsx('flex items-center gap-1.5 text-sm mx-auto transition-colors', isDarkMode ? 'text-gray-400 hover:text-festac-green' : 'text-gray-500 hover:text-festac-green')}
-                      >
-                        <RotateCcw size={13} />
-                        Resend OTP
-                      </button>
-
-                      <button onClick={() => setStep('phone')} className={clsx('text-xs block text-center w-full transition-colors', isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600')}>
-                        ← Change phone number
-                      </button>
-                    </motion.div>
+                    </motion.form>
                   )}
 
                   {step === 'success' && (

@@ -112,8 +112,8 @@ export default api;
 // ─── Typed API methods ───────────────────────────────────────
 
 export const authApi = {
-  sendOtp: (phone: string) => api.post('/auth/otp/send', { phone }),
-  verifyOtp: (phone: string, code: string) => api.post('/auth/otp/verify', { phone, code }),
+  register: (data: { phone: string; password: string; firstName: string; lastName: string }) => api.post('/auth/register', data),
+  login: (phone: string, password: string) => api.post('/auth/login', { phone, password }),
   refresh: (refreshToken: string) => api.post('/auth/refresh', { refreshToken }),
   logout: () => api.post('/auth/logout'),
   me: () => api.get('/auth/me'),

@@ -4,17 +4,16 @@ import { authService } from '../services/auth.service.js';
 import { sendSuccess, sendCreated } from '../utils/errors.js';
 import { isValidNigerianPhone } from '@discover-smes/shared';
 
-const sendOtpSchema = z.object({
-  phone: z
-    .string()
-    .min(10)
-    .refine(isValidNigerianPhone, 'Invalid Nigerian phone number'),
-  channel: z.enum(['sms', 'whatsapp']).default('sms'),
+const registerSchema = z.object({
+  phone: z.string().min(10).refine(isValidNigerianPhone, 'Invalid Nigerian phone number'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  firstName: z.string().min(1),
+  lastName: z.string().min(1),
 });
 
-const verifyOtpSchema = z.object({
+const loginSchema = z.object({
   phone: z.string().min(10).refine(isValidNigerianPhone, 'Invalid Nigerian phone number'),
-  code: z.string().length(6, 'OTP must be 6 digits').regex(/^\d+$/),
+  password: z.string().min(1),
 });
 
 const refreshSchema = z.object({
@@ -22,20 +21,20 @@ const refreshSchema = z.object({
 });
 
 export class AuthController {
-  async sendOtp(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async register(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { phone } = sendOtpSchema.parse(req.body);
-      const result = await authService.sendOtp(phone);
-      sendSuccess(res, result, 'OTP sent');
+      const { phone, password, firstName, lastName } = registerSchema.parse(req.body);
+      const result = await authService.register(phone, password, firstName, lastName);
+      sendCreated(res, result, 'Registration successful');
     } catch (err) {
       next(err);
     }
   }
 
-  async verifyOtp(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async login(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { phone, code } = verifyOtpSchema.parse(req.body);
-      const result = await authService.verifyOtp(phone, code);
+      const { phone, password } = loginSchema.parse(req.body);
+      const result = await authService.login(phone, password);
       sendSuccess(res, result, 'Login successful');
     } catch (err) {
       next(err);

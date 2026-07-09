@@ -1,6 +1,5 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import { randomInt } from 'crypto';
 import { config } from '../config/index.js';
 import { prisma } from '../config/database.js';
 import { AppError } from '../utils/errors.js';
@@ -9,102 +8,28 @@ import { formatPhoneNumber } from '@discover-smes/shared';
 import type { AuthTokens, JwtPayload, UserRole } from '@discover-smes/shared';
 
 export class AuthService {
-  // ─── OTP ───────────────────────────────────────────────
+  // ─── PASSWORD AUTH ───────────────────────────────────────
 
-  async sendOtp(phone: string): Promise<{ message: string; expiresIn: number }> {
+  async register(phone: string, password: string, firstName: string, lastName: string): Promise<{ user: object; tokens: AuthTokens }> {
     const normalizedPhone = formatPhoneNumber(phone);
 
-    // Find or create user
-    let user = await prisma.user.findUnique({ where: { phone: normalizedPhone } });
-    if (!user) {
-      user = await prisma.user.create({
-        data: {
-          phone: normalizedPhone,
-          firstName: 'User',
-          lastName: normalizedPhone.slice(-4),
-        },
-      });
-    }
+    // Check if user exists
+    const existingUser = await prisma.user.findUnique({ where: { phone: normalizedPhone } });
+    if (existingUser) throw AppError.badRequest('User already exists');
 
-    if (!user.isActive) throw AppError.forbidden('Account is deactivated');
+    // Hash password
+    const passwordHash = await bcrypt.hash(password, 10);
 
-    // Invalidate old OTPs
-    await prisma.otpCode.updateMany({
-      where: { userId: user.id, isUsed: false },
-      data: { isUsed: true },
-    });
-
-    // Generate OTP
-    const code = String(randomInt(100000, 999999));
-    const expiresAt = new Date(Date.now() + config.otp.expiryMinutes * 60 * 1000);
-
-    await prisma.otpCode.create({
-      data: { userId: user.id, code, phone: normalizedPhone, expiresAt },
-    });
-
-    // In production, send via SMS/WhatsApp
-    if (config.isDev) {
-      logger.info(`🔑 OTP for ${normalizedPhone}: ${code}`);
-    } else {
-      await this.dispatchOtp(normalizedPhone, code);
-    }
-
-    return {
-      message: 'OTP sent successfully',
-      expiresIn: config.otp.expiryMinutes * 60,
-    };
-  }
-
-  async verifyOtp(
-    phone: string,
-    code: string,
-  ): Promise<{ user: object; tokens: AuthTokens }> {
-    const normalizedPhone = formatPhoneNumber(phone);
-
-    const user = await prisma.user.findUnique({
-      where: { phone: normalizedPhone },
-      include: { vendor: { select: { id: true } } },
-    });
-    if (!user) throw AppError.notFound('User');
-
-    const otpRecord = await prisma.otpCode.findFirst({
-      where: {
-        userId: user.id,
-        isUsed: false,
-        expiresAt: { gt: new Date() },
+    // Create user
+    const user = await prisma.user.create({
+      data: {
+        phone: normalizedPhone,
+        firstName,
+        lastName,
+        passwordHash,
+        isPhoneVerified: true,
       },
-      orderBy: { createdAt: 'desc' },
     });
-
-    if (!otpRecord) throw AppError.badRequest('OTP expired or not found');
-
-    // Increment attempts
-    await prisma.otpCode.update({
-      where: { id: otpRecord.id },
-      data: { attempts: { increment: 1 } },
-    });
-
-    if (otpRecord.attempts >= 5) {
-      await prisma.otpCode.update({ where: { id: otpRecord.id }, data: { isUsed: true } });
-      throw AppError.badRequest('Too many failed attempts. Request a new OTP.');
-    }
-
-    if (otpRecord.code !== code) {
-      throw new AppError('Invalid OTP code', 401, 'INVALID_OTP');
-    }
-
-    // Mark OTP used
-    await prisma.otpCode.update({ where: { id: otpRecord.id }, data: { isUsed: true } });
-
-    // Mark phone verified
-    if (!user.isPhoneVerified) {
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { isPhoneVerified: true, lastLoginAt: new Date() },
-      });
-    } else {
-      await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
-    }
 
     const tokens = await this.generateTokens(user.id, user.role as UserRole, user.phone);
 
@@ -118,6 +43,45 @@ export class AuthService {
         avatar: user.avatar,
         role: user.role,
         isPhoneVerified: true,
+        vendorId: null,
+      },
+      tokens,
+    };
+  }
+
+  async login(phone: string, password: string): Promise<{ user: object; tokens: AuthTokens }> {
+    const normalizedPhone = formatPhoneNumber(phone);
+
+    const user = await prisma.user.findUnique({
+      where: { phone: normalizedPhone },
+      include: { vendor: { select: { id: true } } },
+    });
+    if (!user) throw AppError.unauthorized('Invalid credentials');
+    if (!user.passwordHash) throw AppError.unauthorized('User registered with OTP, please reset password');
+    if (!user.isActive) throw AppError.forbidden('Account is deactivated');
+
+    // Verify password
+    const isValidPassword = await bcrypt.compare(password, user.passwordHash);
+    if (!isValidPassword) throw AppError.unauthorized('Invalid credentials');
+
+    // Update last login
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date() },
+    });
+
+    const tokens = await this.generateTokens(user.id, user.role as UserRole, user.phone);
+
+    return {
+      user: {
+        id: user.id,
+        phone: user.phone,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        avatar: user.avatar,
+        role: user.role,
+        isPhoneVerified: user.isPhoneVerified,
         vendorId: user.vendor?.id,
       },
       tokens,
@@ -199,12 +163,6 @@ export class AuthService {
       // Revoke all sessions
       await prisma.refreshToken.updateMany({ where: { userId }, data: { isRevoked: true } });
     }
-  }
-
-  private async dispatchOtp(phone: string, _code: string): Promise<void> {
-    // Production: integrate Termii / Africa's Talking / WhatsApp OTP
-    logger.info(`Dispatching OTP to ${phone}`);
-    // TODO: implement SMS/WhatsApp dispatch
   }
 }
 
