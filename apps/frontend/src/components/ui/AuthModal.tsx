@@ -29,7 +29,10 @@ export function AuthModal() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone, password }),
       });
-      if (!response.ok) throw new Error('Login failed');
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error?.message || 'Login failed');
+      }
       return response.json();
     },
     onSuccess: (res) => {
@@ -40,7 +43,7 @@ export function AuthModal() {
         resetForm();
       }, 1500);
     },
-    onError: () => toast.error('Invalid credentials'),
+    onError: (error: Error) => toast.error(error.message),
   });
 
   const registerMutation = useMutation({
@@ -50,7 +53,10 @@ export function AuthModal() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone, password, firstName, lastName }),
       });
-      if (!response.ok) throw new Error('Registration failed');
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error?.message || 'Registration failed');
+      }
       return response.json();
     },
     onSuccess: (res) => {
@@ -61,7 +67,7 @@ export function AuthModal() {
         resetForm();
       }, 1500);
     },
-    onError: () => toast.error('Registration failed'),
+    onError: (error: Error) => toast.error(error.message),
   });
 
   const resetForm = () => {
