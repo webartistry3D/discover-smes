@@ -243,7 +243,7 @@ export default function MapPage() {
       <div className="max-w-6xl mx-auto">
         <div
           className={clsx(
-            'rounded-3xl overflow-hidden shadow-card border relative',
+            'overflow-hidden shadow-card border relative',
             isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200',
             'h-[calc(100vh-140px)] sm:h-[calc(100vh-160px)]'
           )}

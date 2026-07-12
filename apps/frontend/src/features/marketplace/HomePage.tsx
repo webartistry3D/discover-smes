@@ -16,7 +16,7 @@ const HERO_STATS = [
   { label: 'Areas Covered', value: '12 Wards' },
 ];
 
-const BUSINESS_TYPES = ['Restaurants', 'Pharmacies', 'Grocery Stores', 'Gas Stations', 'Boutiques', 'Fashion Vendors', 'Food Vendors', 'Beauty Salons', 'Technicians', 'Electricians', 'Auto Mechanics', 'Plumbers', ' Business People'];
+const BUSINESS_TYPES = ['Restaurants', 'Pharmacies', 'Grocery Stores', 'Gas Stations', 'Boutiques', 'Fashion Vendors', 'Food Vendors', 'Beauty Salons', 'Pro Engineers', 'Technicians', 'Electricians', 'Auto Mechanics', 'Pro Plumbers', ' Business People'];
 
 export default function HomePage() {
   const [, navigate] = useLocation();
@@ -45,7 +45,7 @@ export default function HomePage() {
   return (
     <div className={clsx('min-h-screen', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       {/* ─── HERO ─────────────────────────────────────────── */}
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-hidden -mt-16 pt-16">
         {/* Video Background */}
         <video
           autoPlay
@@ -58,7 +58,7 @@ export default function HomePage() {
         </video>
         
         {/* Dark Overlay for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black/70" />
         
         {/* Background patterns */}
         <div className="absolute inset-0 opacity-10">

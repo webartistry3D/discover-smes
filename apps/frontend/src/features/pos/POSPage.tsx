@@ -96,6 +96,7 @@ export default function POSPage() {
       if (!q) return null;
       return inventoryItems.find(
         (item: InventoryItem) =>
+          item.barcode?.toLowerCase() === q ||
           item.sku?.toLowerCase() === q ||
           item.name.toLowerCase() === q ||
           item.id === q
@@ -381,37 +382,37 @@ export default function POSPage() {
 
   // ─── MAIN POS VIEW ──────────────────────────────────────────
   return (
-    <div className={clsx('min-h-screen flex flex-col', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
-
-      {/* Header */}
-      <div className="bg-gradient-hero text-white">
-        <div className="max-w-6xl mx-auto px-4 py-5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/financial/invoices">
-              <button className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors">
-                <ChevronLeft size={20} />
-              </button>
-            </Link>
-            <div>
-              <h1 className="font-display font-bold text-xl">Point of Sale</h1>
-              <p className="text-white/60 text-xs">Scan or search items to record a sale</p>
+    <div className={clsx('min-h-[calc(100vh-64px)] w-full p-4 sm:p-6', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="bg-gradient-hero text-white rounded-2xl shadow-card mb-4">
+          <div className="px-6 py-5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Link href="/financial/invoices">
+                <button className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors">
+                  <ChevronLeft size={20} />
+                </button>
+              </Link>
+              <div>
+                <h1 className="font-display font-bold text-xl">Point of Sale</h1>
+                <p className="text-white/60 text-xs">Scan or search items to record a sale</p>
+              </div>
             </div>
+            <button
+              onClick={() => setView(view === 'cart' ? 'scan' : 'cart')}
+              className="relative p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors"
+            >
+              <ShoppingCart size={22} />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-festac-green text-white text-xs rounded-full flex items-center justify-center font-bold font-mono">
+                  {cartCount}
+                </span>
+              )}
+            </button>
           </div>
-          <button
-            onClick={() => setView(view === 'cart' ? 'scan' : 'cart')}
-            className="relative p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors"
-          >
-            <ShoppingCart size={22} />
-            {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-festac-green text-white text-xs rounded-full flex items-center justify-center font-bold font-mono">
-                {cartCount}
-              </span>
-            )}
-          </button>
         </div>
-      </div>
 
-      <div className="max-w-6xl mx-auto w-full px-4 py-4 flex-1 flex flex-col lg:flex-row gap-4">
+        <div className="flex-1 flex flex-col lg:flex-row gap-4">
 
         {/* ── LEFT: SCAN + SEARCH ── */}
         <div className={clsx('flex-1 flex flex-col gap-4', view === 'cart' ? 'hidden lg:flex' : 'flex')}>
@@ -758,6 +759,7 @@ export default function POSPage() {
           onClose={() => setShowCamera(false)}
         />
       )}
+      </div>
     </div>
   );
 }

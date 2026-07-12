@@ -985,6 +985,7 @@ model InventoryItem {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   vendorId    String   @db.Uuid
   sku         String?  @unique
+  barcode     String?  @unique
   name        String
   description String?
   category    String?

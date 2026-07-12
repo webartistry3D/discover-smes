@@ -119,6 +119,6 @@ export default defineConfig({
     chunkSizeWarningLimit: 600,
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'zustand', 'wouter'],
+    include: ['react', 'react-dom', 'zustand', 'wouter', '@zxing/browser', '@zxing/library'],
   },
 });

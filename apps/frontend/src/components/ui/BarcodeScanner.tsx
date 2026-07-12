@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import { NotFoundException } from '@zxing/library';
 import { clsx } from 'clsx';
-import { Camera, CameraOff, RefreshCw, ScanLine, ChevronDown } from 'lucide-react';
+import { Camera, CameraOff, RefreshCw, ScanLine, ChevronDown, Search } from 'lucide-react';
 
 interface BarcodeScannerProps {
   onDetected: (barcode: string) => void;
@@ -20,12 +20,50 @@ export function BarcodeScanner({ onDetected, onClose, isDarkMode = false }: Barc
   const [lastResult, setLastResult] = useState<string | null>(null);
   const [showCamSelect, setShowCamSelect] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const startTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
   const onDetectedRef = useRef(onDetected);
   useEffect(() => { onDetectedRef.current = onDetected; }, [onDetected]);
 
+  // Suppress ZXing internal debug messages
+  useEffect(() => {
+    const originalConsoleLog = console.log;
+    const originalConsoleWarn = console.warn;
+    
+    console.log = (...args: any[]) => {
+      const message = args[0];
+      if (typeof message === 'string' && 
+          (message.includes('MultiFormatReader: non-ReaderException') ||
+           message.includes('NotFoundException2') ||
+           message.includes('ChecksumException2'))) {
+        return; // Suppress these specific ZXing messages
+      }
+      originalConsoleLog.apply(console, args);
+    };
+    
+    console.warn = (...args: any[]) => {
+      const message = args[0];
+      if (typeof message === 'string' && 
+          (message.includes('MultiFormatReader: non-ReaderException') ||
+           message.includes('NotFoundException2') ||
+           message.includes('ChecksumException2'))) {
+        return; // Suppress these specific ZXing messages
+      }
+      originalConsoleWarn.apply(console, args);
+    };
+    
+    return () => {
+      console.log = originalConsoleLog;
+      console.warn = originalConsoleWarn;
+    };
+  }, []);
+
   // ── Stop active scanner ─────────────────────────────────────
   const stopScanner = useCallback(() => { // eslint-disable-line react-hooks/exhaustive-deps
+    if (startTimeoutRef.current) {
+      clearTimeout(startTimeoutRef.current);
+      startTimeoutRef.current = null;
+    }
     if (controlsRef.current) {
       controlsRef.current.stop();
       controlsRef.current = null;
@@ -39,9 +77,11 @@ export function BarcodeScanner({ onDetected, onClose, isDarkMode = false }: Barc
   // ── Enumerate cameras ──────────────────────────────────────
   useEffect(() => {
     mountedRef.current = true;
+    console.log('[BarcodeScanner] Starting camera enumeration...');
     BrowserMultiFormatReader.listVideoInputDevices()
       .then((devices) => {
         if (!mountedRef.current) return;
+        console.log('[BarcodeScanner] Found devices:', devices.map(d => ({ id: d.deviceId, label: d.label })));
         setCameras(devices);
         const rear = devices.find(
           (d) =>
@@ -49,32 +89,75 @@ export function BarcodeScanner({ onDetected, onClose, isDarkMode = false }: Barc
             d.label.toLowerCase().includes('rear') ||
             d.label.toLowerCase().includes('environment')
         );
-        setSelectedCamera(rear?.deviceId ?? devices[0]?.deviceId);
+        const selected = rear?.deviceId ?? devices[0]?.deviceId;
+        console.log('[BarcodeScanner] Selected camera:', selected);
+        setSelectedCamera(selected);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('[BarcodeScanner] Camera enumeration failed:', err);
         if (mountedRef.current) setError('Camera access denied. Please allow camera permissions.');
       });
-    return () => { mountedRef.current = false; };
+    return () => { 
+      console.log('[BarcodeScanner] Cleanup: unmounting enumeration');
+      mountedRef.current = false; 
+    };
   }, []);
 
   // ── Start scanner ──────────────────────────────────────────
   const startScanner = useCallback(async (deviceId?: string) => {
-    if (!videoRef.current) return;
+    console.log('[BarcodeScanner] startScanner called with deviceId:', deviceId);
+    if (!videoRef.current) {
+      console.log('[BarcodeScanner] No video ref, exiting');
+      return;
+    }
 
+    console.log('[BarcodeScanner] Stopping any existing scanner...');
     stopScanner();
+    console.log('[BarcodeScanner] Setting starting state to true');
     setIsStarting(true);
     setError(null);
 
     try {
+      console.log('[BarcodeScanner] Creating BrowserMultiFormatReader...');
+      
+      // Check if ZXing is properly available
+      if (typeof BrowserMultiFormatReader === 'undefined') {
+        throw new Error('ZXing library not loaded. Please refresh the page and try again.');
+      }
+      
       const reader = new BrowserMultiFormatReader();
 
+      // Some browsers/devices never resolve if the camera is busy or unavailable
+      console.log('[BarcodeScanner] Setting 10s timeout...');
+      startTimeoutRef.current = setTimeout(() => {
+        console.log('[BarcodeScanner] TIMEOUT reached - camera never started');
+        if (!mountedRef.current) return;
+        stopScanner();
+        setIsStarting(false);
+        setError('Camera is taking too long to start. Make sure it is not in use by another app and permissions are allowed.');
+      }, 10000);
+
       // decodeFromVideoDevice handles getUserMedia internally
+      console.log('[BarcodeScanner] Calling decodeFromVideoDevice...');
+      const startTime = Date.now();
       const controls = await reader.decodeFromVideoDevice(
         deviceId ?? undefined,
         videoRef.current,
         (result, err) => {
+          // Only log when there's a result or unexpected error
+          if (result) {
+            console.log('[BarcodeScanner] decodeFromVideoDevice callback called:', { result: !!result, error: err?.name, time: Date.now() - startTime });
+          } else if (err && !(err instanceof NotFoundException) && err?.name !== 'ChecksumException' && err?.name !== 'NotFoundException2') {
+            console.log('[BarcodeScanner] decodeFromVideoDevice callback called:', { result: !!result, error: err?.name, time: Date.now() - startTime });
+          }
+          
+          if (startTimeoutRef.current) {
+            clearTimeout(startTimeoutRef.current);
+            startTimeoutRef.current = null;
+          }
           if (result) {
             const text = result.getText();
+            console.log('[BarcodeScanner] Barcode detected:', text);
             if (debounceRef.current) clearTimeout(debounceRef.current);
             debounceRef.current = setTimeout(() => {
               if (!mountedRef.current) return;
@@ -85,20 +168,34 @@ export function BarcodeScanner({ onDetected, onClose, isDarkMode = false }: Barc
               }, 2000);
             }, 100);
           }
-          // NotFoundException fires every frame without a barcode — ignore
-          if (err && !(err instanceof NotFoundException)) {
+          // NotFoundException, ChecksumException, and NotFoundException2 fire every frame without a barcode — ignore
+          if (err && !(err instanceof NotFoundException) && err?.name !== 'ChecksumException' && err?.name !== 'NotFoundException2') {
+            console.log('[BarcodeScanner] Unexpected error:', err);
             // other errors are also ignorable during continuous scan
           }
         }
       );
+      console.log('[BarcodeScanner] decodeFromVideoDevice returned controls, time:', Date.now() - startTime);
+
+      if (startTimeoutRef.current) {
+        clearTimeout(startTimeoutRef.current);
+        startTimeoutRef.current = null;
+      }
 
       if (mountedRef.current) {
+        console.log('[BarcodeScanner] Scanner started successfully, setting controls');
         controlsRef.current = controls;
         setIsStarting(false);
       } else {
+        console.log('[BarcodeScanner] Component unmounted, stopping scanner');
         controls.stop();
       }
     } catch (e: any) {
+      console.error('[BarcodeScanner] Exception in startScanner:', { name: e?.name, message: e?.message, stack: e?.stack });
+      if (startTimeoutRef.current) {
+        clearTimeout(startTimeoutRef.current);
+        startTimeoutRef.current = null;
+      }
       if (!mountedRef.current) return;
       setIsStarting(false);
       if (e?.name === 'NotAllowedError' || e?.message?.includes('Permission')) {
@@ -113,10 +210,13 @@ export function BarcodeScanner({ onDetected, onClose, isDarkMode = false }: Barc
 
   // ── Start/restart when camera changes ─────────────────────
   useEffect(() => {
+    console.log('[BarcodeScanner] useEffect triggered, selectedCamera:', selectedCamera);
     if (selectedCamera !== undefined) {
+      console.log('[BarcodeScanner] Starting scanner with camera:', selectedCamera);
       startScanner(selectedCamera);
     }
     return () => {
+      console.log('[BarcodeScanner] Cleanup: stopping scanner and clearing debounce');
       stopScanner();
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
@@ -139,7 +239,10 @@ export function BarcodeScanner({ onDetected, onClose, isDarkMode = false }: Barc
           {cameras.length > 1 && (
             <div className="relative">
               <button
-                onClick={() => setShowCamSelect(!showCamSelect)}
+                onClick={() => {
+                  console.log('[BarcodeScanner] Camera selector clicked');
+                  setShowCamSelect(!showCamSelect);
+                }}
                 className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-xs px-3 py-1.5 rounded-lg transition-colors"
               >
                 <Camera size={14} />
@@ -152,6 +255,7 @@ export function BarcodeScanner({ onDetected, onClose, isDarkMode = false }: Barc
                     <button
                       key={cam.deviceId}
                       onClick={() => {
+                        console.log('[BarcodeScanner] Camera selected:', cam.deviceId, cam.label);
                         setSelectedCamera(cam.deviceId);
                         setShowCamSelect(false);
                       }}
@@ -171,7 +275,10 @@ export function BarcodeScanner({ onDetected, onClose, isDarkMode = false }: Barc
           )}
           {/* Restart */}
           <button
-            onClick={() => startScanner(selectedCamera)}
+            onClick={() => {
+              console.log('[BarcodeScanner] Restart camera clicked');
+              startScanner(selectedCamera);
+            }}
             className="bg-white/10 hover:bg-white/20 text-white p-1.5 rounded-lg transition-colors"
             title="Restart camera"
           >
@@ -195,6 +302,30 @@ export function BarcodeScanner({ onDetected, onClose, isDarkMode = false }: Barc
           className="w-full h-full object-cover"
           playsInline
           muted
+          onLoadedData={() => {
+            console.log('[BarcodeScanner] Video onLoadedData fired - stream ready');
+            if (startTimeoutRef.current) {
+              clearTimeout(startTimeoutRef.current);
+              startTimeoutRef.current = null;
+            }
+            setIsStarting(false);
+          }}
+          onError={(e) => {
+            console.error('[BarcodeScanner] Video onError fired:', e);
+            if (startTimeoutRef.current) {
+              clearTimeout(startTimeoutRef.current);
+              startTimeoutRef.current = null;
+            }
+            setIsStarting(false);
+            setError('Camera stream failed to load. Try another camera or restart.');
+            stopScanner();
+          }}
+          onPlay={() => {
+            console.log('[BarcodeScanner] Video onPlay fired');
+          }}
+          onCanPlay={() => {
+            console.log('[BarcodeScanner] Video onCanPlay fired');
+          }}
         />
 
         {/* Scan overlay */}
@@ -259,11 +390,47 @@ export function BarcodeScanner({ onDetected, onClose, isDarkMode = false }: Barc
         )}
       </div>
 
-      {/* Footer hint */}
-      <div className="px-4 py-4 text-center safe-area-bottom">
-        <p className="text-white/50 text-xs">
-          Point camera at a barcode — EAN, QR, Code128 supported
-        </p>
+      {/* Footer with navigation buttons */}
+      <div className="px-4 py-4 pb-20 safe-area-bottom">
+        <div className="flex flex-col gap-3">
+          {/* Navigation buttons */}
+          <div className="flex gap-2 justify-center">
+            <button
+              onClick={() => {
+                console.log('[BarcodeScanner] Manual entry clicked');
+                // Close scanner and focus on manual input
+                onClose();
+                // Focus on the scan input after a short delay
+                setTimeout(() => {
+                  const scanInput = document.querySelector('input[placeholder*="Scan barcode"]') as HTMLInputElement;
+                  if (scanInput) {
+                    scanInput.focus();
+                    scanInput.click();
+                  }
+                }, 100);
+              }}
+              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white text-sm px-4 py-2 rounded-xl transition-colors"
+            >
+              <ScanLine size={16} />
+              Manual Entry
+            </button>
+            <button
+              onClick={() => {
+                console.log('[BarcodeScanner] Exit clicked');
+                onClose();
+              }}
+              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white text-sm px-4 py-2 rounded-xl transition-colors"
+            >
+              <CameraOff size={16} />
+              Exit
+            </button>
+          </div>
+          
+          {/* Hint text */}
+          <p className="text-white/50 text-xs text-center">
+            Point camera at a barcode — EAN, QR, Code128 supported
+          </p>
+        </div>
       </div>
 
       {/* Scanline CSS animation */}

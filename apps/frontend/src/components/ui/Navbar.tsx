@@ -116,7 +116,7 @@ export function Navbar() {
                   <span className="text-white font-black text-sm">D</span>
                 </div>
                 <div className="hidden sm:block">
-                  <span className={clsx('font-display font-bold text-lg leading-none', isDarkMode ? 'text-white' : 'text-gray-900')}>Discover</span>
+                  <span className="font-display font-bold text-lg leading-none text-gray-900">Discover</span>
                   <span className="font-display font-bold text-festac-green text-lg leading-none ml-1">SMEs</span>
                 </div>
               </motion.div>
@@ -125,9 +125,9 @@ export function Navbar() {
             {/* Search Bar — Desktop */}
             <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-lg mx-6">
               <div className={clsx(
-                'flex items-center gap-2 w-full rounded-2xl px-4 py-2.5 transition-all duration-200',
-                isSearchFocused ? 'ring-2 ring-brand-500/20 shadow-sm' : '',
-                isDarkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900',
+                'flex items-center gap-2 w-full rounded-2xl px-4 py-2.5 transition-all duration-200 shadow-sm',
+                isSearchFocused ? 'ring-2 ring-brand-500/20 shadow-md' : '',
+                isDarkMode ? 'bg-gray-800/70 text-white' : 'bg-white/80 text-gray-900',
               )}>
                 <Search size={16} className={isDarkMode ? 'text-gray-400' : 'text-gray-400 flex-shrink-0'} />
                 <input
@@ -152,14 +152,14 @@ export function Navbar() {
             <div className="flex items-center gap-2">
               {/* Mobile search */}
               <Link href="/discover">
-                <button className={clsx('md:hidden p-2 rounded-xl transition-colors', isDarkMode ? 'hover:bg-gray-800 text-gray-300' : 'hover:bg-gray-100 text-gray-700')}>
+                <button className={clsx('md:hidden p-2 rounded-xl transition-colors', isDarkMode ? 'bg-gray-800/70 hover:bg-gray-700 text-gray-300' : 'bg-white/80 hover:bg-gray-100 text-gray-700 shadow-sm')}>
                   <Search size={24} />
                 </button>
               </Link>
 
               {/* Bell icon */}
               <button
-                className={clsx('p-2 rounded-xl transition-colors', isDarkMode ? 'hover:bg-gray-800 text-gray-300' : 'hover:bg-gray-100 text-gray-700')}
+                className={clsx('p-2 rounded-xl transition-colors', isDarkMode ? 'bg-gray-800/70 hover:bg-gray-700 text-gray-300' : 'bg-white/80 hover:bg-gray-100 text-gray-700 shadow-sm')}
               >
                 <Bell size={24} />
               </button>
@@ -167,13 +167,13 @@ export function Navbar() {
               {/* Dark mode toggle */}
               <button
                 onClick={toggleDarkMode}
-                className={clsx('p-2 rounded-xl transition-colors', isDarkMode ? 'hover:bg-gray-800 text-yellow-400' : 'hover:bg-gray-100 text-gray-700')}
+                className={clsx('p-2 rounded-xl transition-colors', isDarkMode ? 'bg-gray-800/70 hover:bg-gray-700 text-yellow-400' : 'bg-white/80 hover:bg-gray-100 text-gray-700 shadow-sm')}
               >
                 {isDarkMode ? <Sun size={24} /> : <Moon size={24} />}
               </button>
 
               {/* Location pill */}
-              <div className={clsx('hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium cursor-pointer transition-colors', isDarkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')}>
+              <div className={clsx('hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium cursor-pointer transition-colors shadow-sm', isDarkMode ? 'bg-gray-800/70 text-gray-300 hover:bg-gray-700' : 'bg-white/80 text-gray-600 hover:bg-gray-100')}>
                 <MapPin size={12} className="text-festac-green" />
                 Festac Town
               </div>
@@ -182,7 +182,7 @@ export function Navbar() {
                 <div className="relative" ref={profileRef}>
                   <button
                     onClick={toggleProfileDropdown}
-                    className="flex items-center gap-2 p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
+                    className={clsx('flex items-center gap-2 p-1 rounded-xl transition-colors', isDarkMode ? 'bg-gray-800/70 hover:bg-gray-700' : 'bg-white/80 hover:bg-gray-100 shadow-sm')}
                   >
                     <Avatar src={user.avatar} name={`${user.firstName} ${user.lastName}`} size="sm" />
                     <span className={clsx('hidden sm:block text-sm font-medium', isDarkMode ? 'text-white' : 'text-gray-700')}>{user.firstName}</span>
@@ -194,7 +194,7 @@ export function Navbar() {
                 <div className="relative" ref={authRef}>
                   <button
                     onClick={toggleAuthDropdown}
-                    className={clsx('p-2 rounded-xl transition-colors', isDarkMode ? 'hover:bg-gray-800 text-gray-300' : 'hover:bg-gray-100 text-gray-700')}
+                    className={clsx('p-2 rounded-xl transition-colors', isDarkMode ? 'bg-gray-800/70 hover:bg-gray-700 text-gray-300' : 'bg-white/80 hover:bg-gray-100 text-gray-700 shadow-sm')}
                   >
                     <Lock size={24} />
                   </button>
