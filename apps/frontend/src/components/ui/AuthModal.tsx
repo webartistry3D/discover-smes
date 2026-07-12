@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Phone, ArrowRight, CheckCircle, Lock } from 'lucide-react';
+import { X, Phone, ArrowRight, CheckCircle, Lock, Eye, EyeOff } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useUIStore } from '../../stores/ui.store';
@@ -21,6 +21,7 @@ export function AuthModal() {
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const loginMutation = useMutation({
     mutationFn: async ({ phone, password }: { phone: string; password: string }) => {
@@ -206,13 +207,22 @@ export function AuthModal() {
                       </div>
                       <div>
                         <label className={clsx('text-sm font-medium mb-1.5 block', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Password</label>
-                        <input
-                          type="password"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          placeholder="••••••••"
-                          className={clsx('input w-full', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : '')}
-                        />
+                        <div className="relative">
+                          <input
+                            type={showPassword ? 'text' : 'password'}
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="••••••••"
+                            className={clsx('input w-full pr-10', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : '')}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className={clsx('absolute right-3 top-1/2 -translate-y-1/2 transition-colors', isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600')}
+                          >
+                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                          </button>
+                        </div>
                       </div>
                       <Button
                         type="submit"
