@@ -89,7 +89,10 @@ export function BarcodeScanner({ onDetected, onClose, isDarkMode = false }: Barc
             d.label.toLowerCase().includes('rear') ||
             d.label.toLowerCase().includes('environment')
         );
-        const selected = rear?.deviceId ?? devices[0]?.deviceId;
+        // Production browsers may report a single camera with an empty deviceId
+        // before permission is granted. Use a 'default' sentinel so the scanner
+        // effect always fires and ZXing can request the default camera.
+        const selected = rear?.deviceId || devices[0]?.deviceId || 'default';
         console.log('[BarcodeScanner] Selected camera:', selected);
         setSelectedCamera(selected);
       })
@@ -141,7 +144,7 @@ export function BarcodeScanner({ onDetected, onClose, isDarkMode = false }: Barc
       console.log('[BarcodeScanner] Calling decodeFromVideoDevice...');
       const startTime = Date.now();
       const controls = await reader.decodeFromVideoDevice(
-        deviceId ?? undefined,
+        deviceId && deviceId !== 'default' ? deviceId : undefined,
         videoRef.current,
         (result, err) => {
           // Only log when there's a result or unexpected error
