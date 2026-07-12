@@ -287,7 +287,6 @@ export default function VendorOnboardingPage() {
                   <p className={clsx('text-xs font-medium', isDarkMode ? 'text-amber-400' : 'text-amber-700')}>📋 What happens next?</p>
                   <ul className={clsx('text-xs mt-1 space-y-0.5 list-disc list-inside', isDarkMode ? 'text-amber-300' : 'text-amber-600')}>
                     <li>Your listing will be reviewed within 24 hours</li>
-                    <li>You'll receive an OTP confirmation on your phone</li>
                     <li>Once approved, you can add photos, products & services</li>
                     <li>Get verified to build more customer trust</li>
                   </ul>
