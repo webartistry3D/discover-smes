@@ -48,11 +48,27 @@ export default function MapPage() {
         zoom: 14,
       });
 
-      // OpenStreetMap tiles
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      // CartoDB Voyager tiles as primary, OpenStreetMap DE mirror as fallback
+      const primaryTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: ['a', 'b', 'c', 'd'],
+        maxZoom: 20,
+      });
+
+      const fallbackTiles = L.tileLayer('https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        subdomains: ['a', 'b', 'c'],
         maxZoom: 19,
-      }).addTo(map);
+      });
+
+      primaryTiles.addTo(map);
+
+      primaryTiles.on('tileerror', () => {
+        if (map.hasLayer(primaryTiles)) {
+          map.removeLayer(primaryTiles);
+          fallbackTiles.addTo(map);
+        }
+      });
 
       // Custom zoom control position
       L.control.zoom({ position: 'bottomright' }).addTo(map);
