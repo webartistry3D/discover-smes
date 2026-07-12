@@ -41,6 +41,16 @@ export const config = {
   otp: {
     expiryMinutes: parseInt(optionalEnv('OTP_EXPIRY_MINUTES', '10'), 10),
     length: parseInt(optionalEnv('OTP_LENGTH', '6'), 10),
+    deliveryMethod: optionalEnv('OTP_DELIVERY_METHOD', 'sms') as 'sms' | 'email',
+  },
+
+  email: {
+    host: optionalEnv('SMTP_HOST', 'smtp.gmail.com'),
+    port: parseInt(optionalEnv('SMTP_PORT', '587'), 10),
+    secure: optionalEnv('SMTP_SECURE', 'false') === 'true',
+    user: optionalEnv('SMTP_USER', ''),
+    pass: optionalEnv('SMTP_PASS', ''),
+    from: optionalEnv('SMTP_FROM', 'noreply@discoversmes.com'),
   },
 
   whatsapp: {

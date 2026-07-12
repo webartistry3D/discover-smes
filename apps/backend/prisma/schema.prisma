@@ -21,7 +21,7 @@ datasource db {
 
 model User {
   id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  phone            String    @unique
+  phone            String?   @unique
   email            String?   @unique
   firstName        String
   lastName         String
@@ -29,6 +29,7 @@ model User {
   role             UserRole  @default(USER)
   isActive         Boolean   @default(true)
   isPhoneVerified  Boolean   @default(false)
+  isEmailVerified  Boolean   @default(false)
   passwordHash     String?
   lastLoginAt      DateTime?
   createdAt        DateTime  @default(now())
@@ -54,7 +55,8 @@ model OtpCode {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId    String   @db.Uuid
   code      String
-  phone     String
+  phone     String?
+  email     String?
   expiresAt DateTime
   isUsed    Boolean  @default(false)
   attempts  Int      @default(0)
@@ -63,6 +65,7 @@ model OtpCode {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([phone, code])
+  @@index([email, code])
   @@index([expiresAt])
   @@map("otp_codes")
 }
