@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Store, MapPin, Phone, Tag, ChevronRight, ChevronLeft, CheckCircle, Upload } from 'lucide-react';
@@ -70,9 +70,51 @@ export default function VendorOnboardingPage() {
     },
   });
 
+  const [addressSuggestions, setAddressSuggestions] = useState<Array<{ display_name: string; lat: string; lon: string }>>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isSearchingAddress, setIsSearchingAddress] = useState(false);
+  const addressAbortRef = useRef<AbortController | null>(null);
+
   const update = (key: keyof FormData, value: string | boolean) => {
     setForm((f) => ({ ...f, [key]: value }));
   };
+
+  const searchAddress = useCallback(async (query: string) => {
+    if (!query.trim() || query.length < 3) {
+      setAddressSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    setIsSearchingAddress(true);
+    addressAbortRef.current?.abort();
+    addressAbortRef.current = new AbortController();
+
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&countrycodes=ng&accept-language=en`;
+      const response = await fetch(url, {
+        signal: addressAbortRef.current.signal,
+        headers: { 'Accept-Language': 'en' },
+      });
+      const data = await response.json();
+      setAddressSuggestions(data ?? []);
+      setShowSuggestions(true);
+    } catch (err) {
+      if ((err as Error).name !== 'AbortError') {
+        console.error('Address search failed:', err);
+      }
+      setAddressSuggestions([]);
+    } finally {
+      setIsSearchingAddress(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      searchAddress(form.address);
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [form.address, searchAddress]);
 
   const validateStep = (): boolean => {
     switch (step) {
@@ -201,8 +243,45 @@ export default function VendorOnboardingPage() {
               <StepCard title="Location Details" icon={<MapPin size={18} className="text-festac-green" />} isDarkMode={isDarkMode}>
                 <div className="space-y-4">
                   <Field label="Street Address *" isDarkMode={isDarkMode}>
-                    <input type="text" value={form.address} onChange={(e) => update('address', e.target.value)}
-                      placeholder="e.g. 21 Avenue Road, Festac Town" className="input" />
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={form.address}
+                        onChange={(e) => update('address', e.target.value)}
+                        onFocus={() => form.address.length >= 3 && setShowSuggestions(true)}
+                        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                        placeholder="e.g. 21 Avenue Road, Festac Town"
+                        className={clsx('input w-full pr-10', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : '')}
+                        autoComplete="off"
+                      />
+                      {isSearchingAddress && (
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">searching...</span>
+                      )}
+                      {showSuggestions && addressSuggestions.length > 0 && (
+                        <ul className={clsx(
+                          'absolute z-10 left-0 right-0 mt-1 max-h-60 overflow-auto rounded-xl border shadow-lg text-sm',
+                          isDarkMode ? 'bg-gray-800 border-gray-700 text-gray-200' : 'bg-white border-gray-200 text-gray-900'
+                        )}>
+                          {addressSuggestions.map((suggestion, index) => (
+                            <li key={index}>
+                              <button
+                                type="button"
+                                onMouseDown={() => {
+                                  update('address', suggestion.display_name);
+                                  setShowSuggestions(false);
+                                }}
+                                className={clsx(
+                                  'w-full text-left px-3 py-2.5 transition-colors',
+                                  isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'
+                                )}
+                              >
+                                {suggestion.display_name}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
                   </Field>
 
                   <Field label="Ward / Area" isDarkMode={isDarkMode}>

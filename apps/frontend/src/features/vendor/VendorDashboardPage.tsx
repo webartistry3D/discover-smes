@@ -63,7 +63,7 @@ export default function VendorDashboardPage() {
             */}
             {/* Welcome Section */}
             <div className="rounded-lg p-0">
-              <h1 className="text-xl font-inter font-regular text-white mb-0">
+              <h1 className="text-2xl font-inter font-regular text-white mb-0">
                 {getGreeting()} {user?.firstName}! 
               </h1>
               <p className="font-inter text-white/80 text-sm mt-0">

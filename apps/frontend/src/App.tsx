@@ -12,6 +12,7 @@ import { AuthModal } from './components/ui/AuthModal';
 import { Spinner } from './components/ui/index';
 import { useAuthStore } from './stores/auth.store';
 import { useUIStore } from './stores/ui.store';
+import { usePendingVendor } from './hooks/usePendingVendor';
 
 // Lazy-loaded pages — code splitting for performance
 const HomePage = lazy(() => import('./features/marketplace/HomePage'));
@@ -65,9 +66,32 @@ function PageLoader() {
   );
 }
 
+function PendingApprovalMessage() {
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center px-4">
+      <div className="max-w-md w-full text-center">
+        <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <span className="text-2xl">⏳</span>
+        </div>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Application Pending Approval</h2>
+        <p className="text-gray-600 mb-6">
+          Your vendor application has been submitted and is currently under review. You'll be notified once it's approved.
+        </p>
+        <div className="text-sm text-gray-500 bg-gray-50 rounded-lg p-4">
+          <p>This usually takes up to 24 hours. Thank you for your patience.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ProtectedRoute({ children, roles }: { children: React.ReactNode; roles?: string[] }) {
   const { isAuthenticated, user } = useAuthStore();
   const { openAuthModal } = useUIStore();
+  const isVendorPage = roles?.includes('VENDOR') ?? false;
+  const { data: pendingVendor, isLoading: checkingPending } = usePendingVendor(
+    isVendorPage && !!user && user.role !== 'VENDOR'
+  );
 
   if (!isAuthenticated) {
     return (
@@ -79,6 +103,18 @@ function ProtectedRoute({ children, roles }: { children: React.ReactNode; roles?
   }
 
   if (roles && user && !roles.includes(user.role)) {
+    if (checkingPending) {
+      return (
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <Spinner size="lg" />
+        </div>
+      );
+    }
+
+    if (pendingVendor?.status === 'PENDING') {
+      return <PendingApprovalMessage />;
+    }
+
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <p className="text-gray-500">You don't have permission to view this page</p>

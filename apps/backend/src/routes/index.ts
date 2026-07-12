@@ -113,6 +113,59 @@ router.get('/categories', async (_req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// ─── MAP TILE PROXY ──────────────────────────────────────────
+// Proxies map tiles through our own domain to avoid client DNS/ad-blocker issues
+const TILE_PROVIDERS = [
+  'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+  'https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png',
+];
+
+router.get('/tiles/:z/:x/:y', async (req, res, next) => {
+  try {
+    const { z, x, y } = req.params;
+    const dpr = req.query['dpr'] === '2' ? '@2x' : '';
+
+    for (let i = 0; i < TILE_PROVIDERS.length; i++) {
+      const url = TILE_PROVIDERS[i]
+        .replace('{s}', ['a', 'b', 'c', 'd'][i] ?? 'a')
+        .replace('{z}', z)
+        .replace('{x}', x)
+        .replace('{y}', y)
+        .replace('{r}', dpr);
+
+      try {
+        const response = await fetch(url, {
+          headers: { 'User-Agent': 'Discover-SMEs/1.0' },
+        });
+
+        if (!response.ok) continue;
+
+        const contentType = response.headers.get('content-type') ?? 'image/png';
+        res.setHeader('Content-Type', contentType);
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        res.setHeader('Access-Control-Allow-Origin', '*');
+
+        if (response.body) {
+          const reader = response.body.getReader();
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            res.write(Buffer.from(value));
+          }
+        }
+        return res.end();
+      } catch (err) {
+        logger.warn(`Tile provider ${i + 1} failed for ${z}/${x}/${y}: ${(err as Error).message}`);
+        continue;
+      }
+    }
+
+    res.status(502).json({ success: false, error: { message: 'All tile providers failed' } });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // ─── REVIEWS ─────────────────────────────────────────────────
 const reviews = Router();
 reviews.get('/vendor/:vendorId', async (req, res, next) => {
