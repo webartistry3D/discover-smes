@@ -32,6 +32,8 @@ interface Receipt {
   items: CartItem[];
   subtotal: number;
   discount: number;
+  taxRate: number;
+  taxAmount: number;
   total: number;
   paymentMethod: PaymentMethod;
   customerName?: string;
@@ -68,6 +70,7 @@ export default function POSPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showItemSearch, setShowItemSearch] = useState(false);
   const [discountPercent, setDiscountPercent] = useState(0);
+  const [taxPercent, setTaxPercent] = useState(0);
   const [customerName, setCustomerName] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CASH');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -86,7 +89,9 @@ export default function POSPage() {
   // ── Cart Calculations ──
   const subtotal = cart.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
   const discountAmount = subtotal * (discountPercent / 100);
-  const total = subtotal - discountAmount;
+  const taxableAmount = subtotal - discountAmount;
+  const taxAmount = taxableAmount * (taxPercent / 100);
+  const total = taxableAmount + taxAmount;
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   // ── Lookup item by SKU / barcode ──
@@ -196,6 +201,8 @@ export default function POSPage() {
           unitPrice: c.unitPrice,
         })),
         discountAmount,
+        taxRate: taxPercent,
+        taxAmount,
         status: 'PAID',
         paymentMethod,
         notes: `POS Sale — ${paymentMethod}`,
@@ -226,6 +233,8 @@ export default function POSPage() {
         items: cart,
         subtotal,
         discount: discountAmount,
+        taxRate: taxPercent,
+        taxAmount,
         total,
         paymentMethod,
         customerName: customerName || 'Walk-in Customer',
@@ -246,6 +255,7 @@ export default function POSPage() {
   const handleNewSale = () => {
     setCart([]);
     setDiscountPercent(0);
+    setTaxPercent(0);
     setCustomerName('');
     setPaymentMethod('CASH');
     setReceipt(null);
@@ -329,6 +339,12 @@ export default function POSPage() {
                 <div className="flex justify-between">
                   <span className="text-sm text-green-500">Discount</span>
                   <span className="text-sm font-mono text-green-500">-{formatNaira(receipt.discount)}</span>
+                </div>
+              )}
+              {receipt.taxAmount > 0 && (
+                <div className="flex justify-between">
+                  <span className={clsx('text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>Tax ({receipt.taxRate}%)</span>
+                  <span className={clsx('text-sm font-mono', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>{formatNaira(receipt.taxAmount)}</span>
                 </div>
               )}
               <div className={clsx('flex justify-between pt-2 border-t', isDarkMode ? 'border-gray-700' : 'border-gray-200')}>
@@ -681,6 +697,30 @@ export default function POSPage() {
               </div>
             </div>
 
+            {/* Tax */}
+            <div>
+              <label className={clsx('text-xs font-medium mb-1 block', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>
+                Tax %
+              </label>
+              <div className="relative">
+                <Receipt size={14} className={clsx('absolute left-3 top-1/2 -translate-y-1/2', isDarkMode ? 'text-gray-500' : 'text-gray-400')} />
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={taxPercent || ''}
+                  onChange={(e) => setTaxPercent(Math.min(100, Math.max(0, Number(e.target.value))))}
+                  placeholder="0"
+                  className={clsx(
+                    'w-full pl-8 pr-3 py-2.5 rounded-xl border text-sm font-mono focus:outline-none focus:ring-2 focus:ring-festac-green/50',
+                    isDarkMode
+                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500'
+                      : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400'
+                  )}
+                />
+              </div>
+            </div>
+
             {/* Payment Method */}
             <div>
               <label className={clsx('text-xs font-medium mb-2 block', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>
@@ -717,6 +757,12 @@ export default function POSPage() {
                 <div className="flex justify-between text-sm">
                   <span className="text-green-500">Discount ({discountPercent}%)</span>
                   <span className="text-green-500 font-mono">-{formatNaira(discountAmount)}</span>
+                </div>
+              )}
+              {taxAmount > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Tax ({taxPercent}%)</span>
+                  <span className={clsx('font-mono', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>{formatNaira(taxAmount)}</span>
                 </div>
               )}
               <div className={clsx('flex justify-between pt-1.5 border-t', isDarkMode ? 'border-gray-600' : 'border-gray-200')}>
