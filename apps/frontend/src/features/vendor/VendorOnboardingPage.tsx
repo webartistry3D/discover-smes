@@ -10,6 +10,7 @@ import { useUIStore } from '../../stores/ui.store';
 import { Button } from '../../components/ui/index';
 import { vendorApi } from '../../lib/api';
 import { FESTAC_WARDS, isValidNigerianPhone, formatPhoneNumber } from '../../lib/shared';
+import { clsx } from 'clsx';
 
 const STEPS = [
   { id: 1, title: 'Business Info', icon: <Store size={16} /> },
@@ -53,7 +54,7 @@ const INITIAL_FORM: FormData = {
 export default function VendorOnboardingPage() {
   const [, navigate] = useLocation();
   const { isAuthenticated } = useAuthStore();
-  const { openAuthModal } = useUIStore();
+  const { openAuthModal, isDarkMode } = useUIStore();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<FormData>(INITIAL_FORM);
   const { data: categories } = useCategories();
@@ -114,7 +115,7 @@ export default function VendorOnboardingPage() {
   const progress = ((step - 1) / (STEPS.length - 1)) * 100;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-10">
+    <div className={clsx('min-h-screen pb-10', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       {/* Header */}
       <div className="bg-gradient-hero text-white">
         <div className="max-w-2xl mx-auto px-4 py-8">
@@ -149,32 +150,32 @@ export default function VendorOnboardingPage() {
           {/* ─── STEP 1: Business Info ─────────────────────── */}
           {step === 1 && (
             <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
-              <StepCard title="Business Information" icon={<Store size={18} className="text-festac-green" />}>
+              <StepCard title="Business Information" icon={<Store size={18} className="text-festac-green" />} isDarkMode={isDarkMode}>
                 <div className="space-y-4">
-                  <Field label="Business Name *" hint="As it appears on your signage">
+                  <Field label="Business Name *" hint="As it appears on your signage" isDarkMode={isDarkMode}>
                     <input type="text" value={form.businessName} onChange={(e) => update('businessName', e.target.value)}
                       placeholder="e.g. Mama Ngozi's Kitchen" className="input" maxLength={100} />
                   </Field>
 
-                  <Field label="Business Description *" hint="Min 20 characters — describe what you offer">
+                  <Field label="Business Description *" hint="Min 20 characters — describe what you offer" isDarkMode={isDarkMode}>
                     <textarea value={form.description} onChange={(e) => update('description', e.target.value)}
                       placeholder="Tell potential customers what you do, what makes you special, what products/services you offer..."
                       rows={4} className="input resize-none" maxLength={2000} />
-                    <p className="text-xs text-gray-400 mt-1">{form.description.length}/2000</p>
+                    <p className={clsx('text-xs mt-1', isDarkMode ? 'text-gray-500' : 'text-gray-400')}>{form.description.length}/2000</p>
                   </Field>
 
-                  <Field label="Business Type *">
+                  <Field label="Business Type *" isDarkMode={isDarkMode}>
                     <div className="grid grid-cols-3 gap-2">
                       {(['PRODUCT', 'SERVICE', 'HYBRID'] as const).map((type) => (
                         <button key={type} onClick={() => update('businessType', type)}
-                          className={`py-2.5 rounded-xl text-xs font-semibold border-2 transition-colors ${form.businessType === type ? 'border-festac-green bg-green-50 text-festac-green' : 'border-gray-100 text-gray-600 hover:border-gray-200'}`}>
+                          className={clsx('py-2.5 rounded-xl text-xs font-semibold border-2 transition-colors', form.businessType === type ? 'border-festac-green bg-green-50 text-festac-green' : isDarkMode ? 'border-gray-700 text-gray-400 hover:border-gray-600' : 'border-gray-100 text-gray-600 hover:border-gray-200')}>
                           {type === 'HYBRID' ? 'Both' : type.charAt(0) + type.slice(1).toLowerCase()}
                         </button>
                       ))}
                     </div>
                   </Field>
 
-                  <Field label="Price Range *">
+                  <Field label="Price Range *" isDarkMode={isDarkMode}>
                     <div className="grid grid-cols-3 gap-2">
                       {[
                         { value: 'BUDGET', label: 'Budget', desc: '₦1,000 - ₦10,000' },
@@ -182,7 +183,7 @@ export default function VendorOnboardingPage() {
                         { value: 'PREMIUM', label: 'Premium', desc: '₦40,000+' },
                       ].map((pr) => (
                         <button key={pr.value} onClick={() => update('priceRange', pr.value as any)}
-                          className={`py-2.5 px-2 rounded-xl text-xs font-semibold border-2 transition-colors text-center ${form.priceRange === pr.value ? 'border-festac-green bg-green-50 text-festac-green' : 'border-gray-100 text-gray-600 hover:border-gray-200'}`}>
+                          className={clsx('py-2.5 px-2 rounded-xl text-xs font-semibold border-2 transition-colors text-center', form.priceRange === pr.value ? 'border-festac-green bg-green-50 text-festac-green' : isDarkMode ? 'border-gray-700 text-gray-400 hover:border-gray-600' : 'border-gray-100 text-gray-600 hover:border-gray-200')}>
                           <div>{pr.label}</div>
                           <div className="text-2xs opacity-70">{pr.desc}</div>
                         </button>
@@ -197,32 +198,32 @@ export default function VendorOnboardingPage() {
           {/* ─── STEP 2: Location ─────────────────────────── */}
           {step === 2 && (
             <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
-              <StepCard title="Location Details" icon={<MapPin size={18} className="text-festac-green" />}>
+              <StepCard title="Location Details" icon={<MapPin size={18} className="text-festac-green" />} isDarkMode={isDarkMode}>
                 <div className="space-y-4">
-                  <Field label="Street Address *">
+                  <Field label="Street Address *" isDarkMode={isDarkMode}>
                     <input type="text" value={form.address} onChange={(e) => update('address', e.target.value)}
                       placeholder="e.g. 21 Avenue Road, Festac Town" className="input" />
                   </Field>
 
-                  <Field label="Ward / Area">
+                  <Field label="Ward / Area" isDarkMode={isDarkMode}>
                     <select value={form.ward} onChange={(e) => update('ward', e.target.value)} className="input">
                       <option value="">Select ward/area</option>
                       {FESTAC_WARDS.map((w) => <option key={w} value={w}>{w}</option>)}
                     </select>
                   </Field>
 
-                  <Field label="LGA">
+                  <Field label="LGA" isDarkMode={isDarkMode}>
                     <input type="text" value={form.lga} onChange={(e) => update('lga', e.target.value)}
                       placeholder="e.g. Amuwo-Odofin" className="input" defaultValue="Amuwo-Odofin" />
                   </Field>
 
-                  <Field label="Delivery Available">
+                  <Field label="Delivery Available" isDarkMode={isDarkMode}>
                     <label className="flex items-center gap-3 cursor-pointer">
-                      <div className={`relative w-11 h-6 rounded-full transition-colors ${form.deliveryAvailable ? 'bg-festac-green' : 'bg-gray-200'}`}
+                      <div className={clsx('relative w-11 h-6 rounded-full transition-colors', form.deliveryAvailable ? 'bg-festac-green' : isDarkMode ? 'bg-gray-700' : 'bg-gray-200')}
                         onClick={() => update('deliveryAvailable', !form.deliveryAvailable)}>
                         <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.deliveryAvailable ? 'translate-x-5' : 'translate-x-0.5'}`} />
                       </div>
-                      <span className="text-sm text-gray-700">{form.deliveryAvailable ? 'Yes, I deliver' : 'No delivery'}</span>
+                      <span className={clsx('text-sm', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>{form.deliveryAvailable ? 'Yes, I deliver' : 'No delivery'}</span>
                     </label>
                   </Field>
                 </div>
@@ -233,24 +234,24 @@ export default function VendorOnboardingPage() {
           {/* ─── STEP 3: Contact & Category ───────────────── */}
           {step === 3 && (
             <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
-              <StepCard title="Contact & Category" icon={<Phone size={18} className="text-festac-green" />}>
+              <StepCard title="Contact & Category" icon={<Phone size={18} className="text-festac-green" />} isDarkMode={isDarkMode}>
                 <div className="space-y-4">
-                  <Field label="Phone Number *">
+                  <Field label="Phone Number *" isDarkMode={isDarkMode}>
                     <input type="tel" value={form.phone} onChange={(e) => update('phone', e.target.value)}
                       placeholder="0801 234 5678" className="input" />
                   </Field>
 
-                  <Field label="WhatsApp Number" hint="Leave blank if same as phone">
+                  <Field label="WhatsApp Number" hint="Leave blank if same as phone" isDarkMode={isDarkMode}>
                     <input type="tel" value={form.whatsappPhone} onChange={(e) => update('whatsappPhone', e.target.value)}
                       placeholder="0801 234 5678 (or leave blank)" className="input" />
                   </Field>
 
-                  <Field label="Email Address">
+                  <Field label="Email Address" isDarkMode={isDarkMode}>
                     <input type="email" value={form.email} onChange={(e) => update('email', e.target.value)}
                       placeholder="business@email.com (optional)" className="input" />
                   </Field>
 
-                  <Field label="Category *">
+                  <Field label="Category *" isDarkMode={isDarkMode}>
                     <select value={form.categoryId} onChange={(e) => update('categoryId', e.target.value)} className="input">
                       <option value="">Select your business category</option>
                       {(categories as any[])?.map((c: any) => (
@@ -259,7 +260,7 @@ export default function VendorOnboardingPage() {
                     </select>
                   </Field>
 
-                  <Field label="Tags" hint="Comma-separated keywords to help customers find you">
+                  <Field label="Tags" hint="Comma-separated keywords to help customers find you" isDarkMode={isDarkMode}>
                     <input type="text" value={form.tags} onChange={(e) => update('tags', e.target.value)}
                       placeholder="e.g. jollof rice, catering, delivery, festac" className="input" />
                   </Field>
@@ -271,20 +272,20 @@ export default function VendorOnboardingPage() {
           {/* ─── STEP 4: Review ───────────────────────────── */}
           {step === 4 && (
             <motion.div key="step4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
-              <StepCard title="Review & Submit" icon={<CheckCircle size={18} className="text-festac-green" />}>
+              <StepCard title="Review & Submit" icon={<CheckCircle size={18} className="text-festac-green" />} isDarkMode={isDarkMode}>
                 <div className="space-y-3">
-                  <ReviewRow label="Business Name" value={form.businessName} />
-                  <ReviewRow label="Type" value={`${form.businessType} · ${form.priceRange.replace('_', ' ')}`} />
-                  <ReviewRow label="Address" value={`${form.address}${form.ward ? `, ${form.ward}` : ''}, ${form.lga}`} />
-                  <ReviewRow label="Phone" value={form.phone} />
-                  {form.whatsappPhone && <ReviewRow label="WhatsApp" value={form.whatsappPhone} />}
-                  <ReviewRow label="Delivery" value={form.deliveryAvailable ? 'Yes' : 'No'} />
-                  <ReviewRow label="Description" value={form.description.slice(0, 80) + (form.description.length > 80 ? '...' : '')} />
+                  <ReviewRow label="Business Name" value={form.businessName} isDarkMode={isDarkMode} />
+                  <ReviewRow label="Type" value={`${form.businessType} · ${form.priceRange.replace('_', ' ')}`} isDarkMode={isDarkMode} />
+                  <ReviewRow label="Address" value={`${form.address}${form.ward ? `, ${form.ward}` : ''}, ${form.lga}`} isDarkMode={isDarkMode} />
+                  <ReviewRow label="Phone" value={form.phone} isDarkMode={isDarkMode} />
+                  {form.whatsappPhone && <ReviewRow label="WhatsApp" value={form.whatsappPhone} isDarkMode={isDarkMode} />}
+                  <ReviewRow label="Delivery" value={form.deliveryAvailable ? 'Yes' : 'No'} isDarkMode={isDarkMode} />
+                  <ReviewRow label="Description" value={form.description.slice(0, 80) + (form.description.length > 80 ? '...' : '')} isDarkMode={isDarkMode} />
                 </div>
 
-                <div className="mt-5 p-4 bg-amber-50 border border-amber-100 rounded-xl">
-                  <p className="text-xs text-amber-700 font-medium">📋 What happens next?</p>
-                  <ul className="text-xs text-amber-600 mt-1 space-y-0.5 list-disc list-inside">
+                <div className={clsx('mt-5 p-4 rounded-xl border', isDarkMode ? 'bg-gray-700/50 border-gray-600' : 'bg-amber-50 border-amber-100')}>
+                  <p className={clsx('text-xs font-medium', isDarkMode ? 'text-amber-400' : 'text-amber-700')}>📋 What happens next?</p>
+                  <ul className={clsx('text-xs mt-1 space-y-0.5 list-disc list-inside', isDarkMode ? 'text-amber-300' : 'text-amber-600')}>
                     <li>Your listing will be reviewed within 24 hours</li>
                     <li>You'll receive an OTP confirmation on your phone</li>
                     <li>Once approved, you can add photos, products & services</li>
@@ -319,33 +320,33 @@ export default function VendorOnboardingPage() {
   );
 }
 
-function StepCard({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
+function StepCard({ title, icon, children, isDarkMode }: { title: string; icon: React.ReactNode; children: React.ReactNode; isDarkMode: boolean }) {
   return (
-    <div className="bg-white rounded-2xl shadow-card p-6">
+    <div className={clsx('rounded-2xl shadow-card p-6', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
       <div className="flex items-center gap-2 mb-5">
         {icon}
-        <h2 className="font-display font-semibold text-gray-900">{title}</h2>
+        <h2 className={clsx('font-display font-semibold', isDarkMode ? 'text-white' : 'text-gray-900')}>{title}</h2>
       </div>
       {children}
     </div>
   );
 }
 
-function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+function Field({ label, hint, children, isDarkMode }: { label: string; hint?: string; children: React.ReactNode; isDarkMode: boolean }) {
   return (
     <div>
-      <label className="text-sm font-medium text-gray-700 mb-1.5 block">{label}</label>
-      {hint && <p className="text-xs text-gray-400 mb-1.5">{hint}</p>}
+      <label className={clsx('text-sm font-medium mb-1.5 block', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>{label}</label>
+      {hint && <p className={clsx('text-xs mb-1.5', isDarkMode ? 'text-gray-500' : 'text-gray-400')}>{hint}</p>}
       {children}
     </div>
   );
 }
 
-function ReviewRow({ label, value }: { label: string; value: string }) {
+function ReviewRow({ label, value, isDarkMode }: { label: string; value: string; isDarkMode: boolean }) {
   return (
-    <div className="flex items-start justify-between gap-4 py-2 border-b border-gray-50 last:border-0">
-      <span className="text-xs text-gray-400 font-medium flex-shrink-0 w-28">{label}</span>
-      <span className="text-sm text-gray-800 text-right">{value}</span>
+    <div className={clsx('flex items-start justify-between gap-4 py-2 border-b last:border-0', isDarkMode ? 'border-gray-700' : 'border-gray-50')}>
+      <span className={clsx('text-xs font-medium flex-shrink-0 w-28', isDarkMode ? 'text-gray-500' : 'text-gray-400')}>{label}</span>
+      <span className={clsx('text-sm text-right', isDarkMode ? 'text-gray-300' : 'text-gray-800')}>{value}</span>
     </div>
   );
 }
