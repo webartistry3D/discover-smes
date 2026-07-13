@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { Route, Switch, useLocation } from 'wouter';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -131,24 +131,12 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { isAuthenticated, user } = useAuthStore();
   const isLandingPage = location === '/';
-  const [isOffline, setIsOffline] = useState(() => !navigator.onLine);
-
-  useEffect(() => {
-    const handle = () => setIsOffline(!navigator.onLine);
-    handle();
-    window.addEventListener('online', handle);
-    window.addEventListener('offline', handle);
-    return () => {
-      window.removeEventListener('online', handle);
-      window.removeEventListener('offline', handle);
-    };
-  }, []);
 
   return (
     <div className={clsx('min-h-screen flex flex-col', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       <Navbar />
       <main className={clsx('flex-1', isAuthenticated ? 'pb-20' : '')}>
-        {isOffline ? <NotFoundPage /> : children}
+        {children}
       </main>
       {isAuthenticated && (
   <>

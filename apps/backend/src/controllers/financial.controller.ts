@@ -415,7 +415,7 @@ export class FinancialController {
         if (endDate) dateFilter.date.lte = new Date(endDate);
       }
 
-      const [totalIncome, totalExpense, invoiceStats] = await Promise.all([
+      const [totalIncome, totalExpense, invoiceStats, paidInvoiceTotal] = await Promise.all([
         prisma.income.aggregate({
           where: { vendorId, ...dateFilter },
           _sum: { amount: true },
@@ -430,11 +430,17 @@ export class FinancialController {
           _sum: { total: true },
           _count: true,
         }),
+        prisma.invoice.aggregate({
+          where: { vendorId, status: 'PAID' },
+          _sum: { total: true },
+        }),
       ]);
 
-      const income = totalIncome._sum.amount || 0;
-      const expense = totalExpense._sum.amount || 0;
-      const profit = Number(income) - Number(expense);
+      const incomeFromRecords = Number(totalIncome._sum.amount || 0);
+      const incomeFromInvoices = Number(paidInvoiceTotal._sum.total || 0);
+      const income = incomeFromRecords + incomeFromInvoices;
+      const expense = Number(totalExpense._sum.amount || 0);
+      const profit = income - expense;
 
       const invoiceSummary = invoiceStats.reduce((acc, stat) => {
         acc[stat.status.toLowerCase()] = {
@@ -445,8 +451,8 @@ export class FinancialController {
       }, {} as Record<string, { total: number; count: number }>);
 
       sendSuccess(res, {
-        income: Number(income),
-        expense: Number(expense),
+        income,
+        expense,
         profit,
         invoiceSummary,
       });

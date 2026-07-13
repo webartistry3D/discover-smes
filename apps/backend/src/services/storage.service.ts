@@ -36,7 +36,7 @@ class StorageService {
 
     // Ensure local upload dir exists
     if (config.storage.provider === 'local') {
-      const folders = ['vendors', 'products', 'services', 'users', 'documents'];
+      const folders = ['vendors', 'products', 'services', 'users', 'documents', 'receipts'];
       folders.forEach((f) => {
         const dir = join(config.storage.localUploadDir, f);
         if (!existsSync(dir)) mkdirSync(dir, { recursive: true });

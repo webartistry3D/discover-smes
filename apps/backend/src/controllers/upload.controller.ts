@@ -162,6 +162,7 @@ export class UploadController {
       const result = await storageService.upload(req.file.buffer, req.file.originalname, req.file.mimetype, {
         folder: `vendors/${vendorId}/receipts`,
         maxSizeMB: 5,
+        allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'] as any,
       });
 
       sendSuccess(res, { url: result.url }, 'Receipt uploaded');

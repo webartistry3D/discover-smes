@@ -222,11 +222,9 @@ export default function FAQManager() {
               <h1 className={clsx('font-display font-bold text-2xl', isDarkMode ? 'text-white' : 'text-gray-900')}>FAQ Manager</h1>
               {/*<p className="text-white/60 text-sm mt-1">Manage your chatbot response rules</p>*/}
             </div>
-          </div>
-          <div className="flex justify-end mb-2">
             <Button onClick={() => setIsAdding(true)} variant="primary">
               <Plus size={18} className="mr-2" />
-              Add Rule
+              Rule
             </Button>
           </div>
 
