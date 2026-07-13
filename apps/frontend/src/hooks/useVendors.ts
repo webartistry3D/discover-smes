@@ -274,6 +274,12 @@ export function useUploadProductImages() {
   });
 }
 
+export function useUploadReceipt() {
+  return useMutation({
+    mutationFn: (file: File) => uploadApi.uploadReceipt(file).then((r) => r.data.data.url as string),
+  });
+}
+
 // ─── FINANCIAL ──────────────────────────────────────────────
 
 export function useIncomes(params?: Record<string, unknown>) {

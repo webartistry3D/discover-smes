@@ -47,8 +47,10 @@ const api: AxiosInstance = axios.create({
 
 // Request interceptor — attach token
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  if (authToken) {
-    config.headers.Authorization = `Bearer ${authToken}`;
+  const token = authToken || localStorage.getItem('df_access');
+  console.log('[api] request', config.method, config.url, 'token present:', !!token);
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
@@ -59,7 +61,22 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry && refreshTokenValue) {
+    const rt = refreshTokenValue || localStorage.getItem('df_refresh');
+    console.log('[api] 401 response', originalRequest.url, 'refresh token present:', !!rt);
+    console.log('[api] 401 response data', error.response?.data);
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (!rt) {
+        console.warn('[api] no refresh token, logging out');
+        clearAuthTokens();
+        try {
+          useAuthStore.getState().logout();
+        } catch {
+          /* ignore store import issues during HMR */
+        }
+        window.location.href = '/';
+        return Promise.reject(error);
+      }
+
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -76,7 +93,7 @@ api.interceptors.response.use(
 
       try {
         const response = await axios.post(`${BASE_URL}/auth/refresh`, {
-          refreshToken: refreshTokenValue,
+          refreshToken: rt,
         });
         const { accessToken, refreshToken } = response.data.data;
         setAuthTokens(accessToken, refreshToken);
@@ -95,11 +112,17 @@ api.interceptors.response.use(
       }
     }
 
+    // Suppress toasts for network/offline errors (no response) so users don't see 'Something went wrong'
+    if (!error.response) {
+      console.warn('Network error:', error.message);
+      return Promise.reject(error);
+    }
+
     // Show error toast for non-401 errors
-    const message = error.response?.data?.error?.message ?? 'Something went wrong';
-    if (error.response?.status >= 500) {
+    const message = error.response.data?.error?.message ?? 'Something went wrong';
+    if (error.response.status >= 500) {
       toast.error('Server error. Please try again.');
-    } else if (error.response?.status !== 401 && error.response?.status !== 404) {
+    } else if (error.response.status !== 401 && error.response.status !== 404) {
       toast.error(message);
     }
 
@@ -171,6 +194,13 @@ export const uploadApi = {
     const formData = new FormData();
     files.forEach((file) => formData.append('images', file));
     return api.post('/uploads/product-images', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  uploadReceipt: (file: File) => {
+    const formData = new FormData();
+    formData.append('receipt', file);
+    return api.post('/uploads/receipt', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },

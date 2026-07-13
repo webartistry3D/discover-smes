@@ -151,6 +151,24 @@ export class UploadController {
       next(err);
     }
   }
+
+  // Upload a single receipt file and return its URL
+  async uploadReceipt(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      if (!req.file) throw AppError.badRequest('No receipt file provided');
+      const vendorId = req.user!.vendorId;
+      if (!vendorId) throw AppError.forbidden('Vendor account required');
+
+      const result = await storageService.upload(req.file.buffer, req.file.originalname, req.file.mimetype, {
+        folder: `vendors/${vendorId}/receipts`,
+        maxSizeMB: 5,
+      });
+
+      sendSuccess(res, { url: result.url }, 'Receipt uploaded');
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 export const uploadController = new UploadController();

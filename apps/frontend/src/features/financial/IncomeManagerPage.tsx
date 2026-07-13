@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'wouter';
 import { Plus, TrendingUp, Calendar, Filter, Search, Edit, Trash2, ArrowUpRight, ArrowDownRight, ChevronLeft } from 'lucide-react';
-import { useIncomes, useCreateIncome, useUpdateIncome, useDeleteIncome, useFinancialSummary } from '../../hooks/useVendors';
+import { useIncomes, useCreateIncome, useUpdateIncome, useDeleteIncome, useInvoices } from '../../hooks/useVendors';
 import { Button, Skeleton, Badge } from '../../components/ui/index';
-import type { Income, IncomeCategory } from '../../lib/shared';
+import type { Income, IncomeCategory, Invoice } from '../../lib/shared';
 import toast from 'react-hot-toast';
 import { useUIStore } from '../../stores/ui.store';
 import { clsx } from 'clsx';
@@ -34,18 +34,52 @@ export default function IncomeManagerPage() {
     notes: '',
   });
 
-  const { data: incomes, isLoading } = useIncomes({ category: categoryFilter !== 'all' ? categoryFilter : undefined });
-  const { data: summary } = useFinancialSummary();
+  const { data: incomes, isLoading: isIncomesLoading } = useIncomes({ category: categoryFilter !== 'all' ? categoryFilter : undefined });
+  const { data: paidInvoices, isLoading: isInvoicesLoading } = useInvoices({ status: 'PAID' });
   const createIncome = useCreateIncome();
   const updateIncome = useUpdateIncome();
   const deleteIncome = useDeleteIncome();
 
-  const filteredIncomes = incomes?.filter((income: Income) =>
+  const isLoading = isIncomesLoading || isInvoicesLoading;
+
+  const invoiceIncomeRecords = useMemo<Income[]>(() => {
+    return (paidInvoices || []).map((invoice: Invoice) => ({
+      id: invoice.id,
+      vendorId: invoice.vendorId,
+      amount: Number(invoice.total),
+      currency: invoice.currency,
+      category: 'PRODUCT_SALE' as IncomeCategory,
+      source: 'Invoice',
+      sourceId: invoice.id,
+      description: `Payment from ${invoice.customerName} - ${invoice.invoiceNumber}`,
+      date: invoice.paidDate || invoice.updatedAt || invoice.createdAt,
+      notes: invoice.notes,
+      createdAt: invoice.createdAt,
+      updatedAt: invoice.updatedAt,
+    }));
+  }, [paidInvoices]);
+
+  const allIncomeRecords = useMemo<Income[]>(() => {
+    const records = [...(incomes || []), ...invoiceIncomeRecords];
+    records.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    return records;
+  }, [incomes, invoiceIncomeRecords]);
+
+  const filteredIncomes = allIncomeRecords.filter((income: Income) =>
     income.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    income.source?.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
+    income.source?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    income.amount.toString().includes(searchQuery)
+  );
 
   const totalIncome = filteredIncomes.reduce((sum: number, income: Income) => sum + Number(income.amount), 0);
+
+  const thisMonth = allIncomeRecords
+    .filter((income: Income) => {
+      const incomeDate = new Date(income.date);
+      const now = new Date();
+      return incomeDate.getMonth() === now.getMonth() && incomeDate.getFullYear() === now.getFullYear();
+    })
+    .reduce((sum: number, income: Income) => sum + Number(income.amount), 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,7 +156,7 @@ export default function IncomeManagerPage() {
 
           {/* Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-green-500/20 rounded-lg">
@@ -134,8 +168,8 @@ export default function IncomeManagerPage() {
                   {formatCurrencyCompact(totalIncome)}
                 </p>
               </div>
-            </div>
-            <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-blue-500/20 rounded-lg">
@@ -145,8 +179,8 @@ export default function IncomeManagerPage() {
                 </div>
                 <p className="text-white font-bold text-6xl">{filteredIncomes.length}</p>
               </div>
-            </div>
-            <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-purple-500/20 rounded-lg">
@@ -155,10 +189,10 @@ export default function IncomeManagerPage() {
                   <p className="text-white/60 text-xs">This Month</p>
                 </div>
                 <p className="text-white font-bold text-6xl font-mono">
-                  {formatCurrencyCompact(summary?.income || 0)}
+                  {formatCurrencyCompact(thisMonth)}
                 </p>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>
@@ -214,6 +248,7 @@ export default function IncomeManagerPage() {
             <div className="flex flex-col gap-4">
               {filteredIncomes.map((income: Income) => {
                 const catInfo = getCategoryInfo(income.category);
+                const isInvoiceIncome = income.source === 'Invoice';
                 return (
                   <motion.div
                     key={income.id}
@@ -228,10 +263,15 @@ export default function IncomeManagerPage() {
                       </div>
                       <div>
                         <p className={clsx('font-semibold', isDarkMode ? 'text-white' : 'text-gray-900')}>{income.description || income.source}</p>
-                        <div className="flex items-center gap-2 mt-1">
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
                           <Badge variant="blue" className="text-xs">
                             {catInfo.label}
                           </Badge>
+                          {isInvoiceIncome && (
+                            <Badge variant="green" className="text-xs">
+                              Invoice
+                            </Badge>
+                          )}
                           <span className={clsx('text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>
                             {new Date(income.date).toLocaleDateString()}
                           </span>
@@ -242,20 +282,22 @@ export default function IncomeManagerPage() {
                       <p className="font-bold text-green-600 text-lg font-mono">
                         +{formatCurrencyCompact(Number(income.amount))}
                       </p>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleEdit(income)}
-                          className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100')}
-                        >
-                          <Edit size={18} className={isDarkMode ? 'text-gray-400' : 'text-gray-600'} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(income.id)}
-                          className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-red-900/30' : 'hover:bg-red-50')}
-                        >
-                          <Trash2 size={18} className="text-red-600" />
-                        </button>
-                      </div>
+                      {!isInvoiceIncome && (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEdit(income)}
+                            className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100')}
+                          >
+                            <Edit size={18} className={isDarkMode ? 'text-gray-400' : 'text-gray-600'} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(income.id)}
+                            className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-red-900/30' : 'hover:bg-red-50')}
+                          >
+                            <Trash2 size={18} className="text-red-600" />
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </motion.div>

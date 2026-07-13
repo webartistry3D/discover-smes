@@ -227,20 +227,20 @@ export default function InventoryManagerPage() {
               {/*<p className="text-white/60 text-sm mt-1">Track stock levels, movements, and alerts</p>*/}
             </div>
           </div>
-          <div className="flex justify-end mb-2 gap-2">
+          <div className="flex justify-between mb-2 gap-2">
             <Button onClick={() => setIsAddingCategory(true)} variant="secondary">
               <Plus size={18} className="mr-2" />
-              Add Category
+              Category
             </Button>
             <Button onClick={() => setIsAdding(true)} variant="primary">
               <Plus size={18} className="mr-2" />
-              Add Item
+              Item
             </Button>
           </div>
 
           {/* Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-festac-green/20 rounded-lg">
@@ -250,8 +250,8 @@ export default function InventoryManagerPage() {
                 </div>
                 <p className="text-white font-bold text-6xl font-mono">{summary?.totalItems || 0}</p>
               </div>
-            </div>
-            <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-yellow-500/20 rounded-lg">
@@ -261,8 +261,8 @@ export default function InventoryManagerPage() {
                 </div>
                 <p className="text-white font-bold text-6xl font-mono">{summary?.lowStockCount || 0}</p>
               </div>
-            </div>
-            <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-red-500/20 rounded-lg">
@@ -272,7 +272,7 @@ export default function InventoryManagerPage() {
                 </div>
                 <p className="text-white font-bold text-6xl font-mono">{summary?.outOfStockCount || 0}</p>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>

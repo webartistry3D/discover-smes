@@ -60,6 +60,13 @@ export const uploadDocuments = multer({
   fileFilter: documentFilter,
 }).array('documents', 5);
 
+// Single receipt file (PDF + images)
+export const uploadReceipt = multer({
+  storage: memStorage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: documentFilter,
+}).single('receipt');
+
 // Middleware wrapper to handle multer errors properly
 export function wrapMulter(multerMiddleware: any) {
   return (req: Request, res: any, next: any) => {

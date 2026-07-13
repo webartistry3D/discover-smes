@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'wouter';
 import { Plus, Search, Filter, FileText, DollarSign, AlertTriangle, TrendingUp, ArrowUp, ArrowDown, X, Edit, Trash2, MoreVertical, Clock, BarChart3, ChevronLeft, Receipt, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
-import { useTaxRecords, useTaxRecord, useCreateTaxRecord, useUpdateTaxRecord, useDeleteTaxRecord, useTaxPayments, useCreateTaxPayment, useDeleteTaxPayment, useTaxCalculation, useVatTracking, useComplianceReports, useGenerateComplianceReport, useTaxSummary } from '../../hooks/useVendors';
+import { useTaxRecords, useTaxRecord, useCreateTaxRecord, useUpdateTaxRecord, useDeleteTaxRecord, useTaxPayments, useCreateTaxPayment, useDeleteTaxPayment, useTaxCalculation, useVatTracking, useComplianceReports, useGenerateComplianceReport, useTaxSummary, useInvoices } from '../../hooks/useVendors';
 import { Button, Skeleton, Badge } from '../../components/ui/index';
-import type { TaxRecord, TaxPayment, TaxType, TaxStatus } from '../../lib/shared';
+import type { TaxRecord, TaxPayment, TaxType, TaxStatus, Invoice } from '../../lib/shared';
 import toast from 'react-hot-toast';
 import { useUIStore } from '../../stores/ui.store';
 import { clsx } from 'clsx';
@@ -46,7 +46,8 @@ export default function TaxManagerPage() {
   const { data: summary } = useTaxSummary();
   const { data: selectedRecord } = useTaxRecord(selectedRecordId || '');
   const { data: taxPayments } = useTaxPayments(selectedRecordId ? { taxRecordId: selectedRecordId } : undefined);
-  const { data: vatTracking } = useVatTracking();
+  const { data: vatTracking, isLoading: isVatTrackingLoading } = useVatTracking();
+  const { data: paidInvoices, isLoading: isPaidInvoicesLoading } = useInvoices({ status: 'PAID' });
   const { data: complianceReports } = useComplianceReports();
   const { data: taxCalculation } = useTaxCalculation();
   const createTaxRecord = useCreateTaxRecord();
@@ -182,6 +183,23 @@ export default function TaxManagerPage() {
     return true;
   }) || [];
 
+  // Compute VAT from paid invoices
+  const invoiceVat = useMemo(() => {
+    return (paidInvoices || []).reduce((sum: number, invoice: Invoice) => sum + Number(invoice.taxAmount || 0), 0);
+  }, [paidInvoices]);
+
+  // KPI augmentation: invoice VAT adds to total tax liability and is considered "paid" since invoices are PAID
+  const kpiTotalLiability = (summary?.totalTaxLiability || 0) + invoiceVat;
+  const kpiTotalPaid = (summary?.totalPaid || 0) + invoiceVat;
+  const kpiTotalPending = summary?.totalPending || 0;
+  const kpiTotalOverdue = summary?.totalOverdue || 0;
+
+  // VAT Tracking computations
+  const vatCollected = (vatTracking?.totalVatCollected ?? vatTracking?.vatCollected ?? 0) + invoiceVat;
+  const vatPaid = vatTracking?.totalVatPaid ?? vatTracking?.vatPaid ?? 0;
+  const netVat = vatCollected - vatPaid;
+  const isVatLoading = isVatTrackingLoading || isPaidInvoicesLoading;
+
   const getStatusIcon = (status: TaxStatus) => {
     switch (status) {
       case 'PAID':
@@ -218,7 +236,7 @@ export default function TaxManagerPage() {
 
           {/* Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-blue-500/20 rounded-lg">
@@ -226,10 +244,10 @@ export default function TaxManagerPage() {
                   </div>
                   <p className="text-white/60 text-xs">Total Tax Liability</p>
                 </div>
-                <p className="text-white font-bold text-6xl font-mono">{formatCurrencyCompact(summary?.totalTaxLiability || 0)}</p>
+                <p className="text-white font-bold text-6xl font-mono">{formatCurrencyCompact(kpiTotalLiability)}</p>
               </div>
-            </div>
-            <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-green-500/20 rounded-lg">
@@ -237,10 +255,10 @@ export default function TaxManagerPage() {
                   </div>
                   <p className="text-white/60 text-xs">Total Paid</p>
                 </div>
-                <p className="text-white font-bold text-6xl font-mono">{formatCurrencyCompact(summary?.totalPaid || 0)}</p>
+                <p className="text-white font-bold text-6xl font-mono">{formatCurrencyCompact(kpiTotalPaid)}</p>
               </div>
-            </div>
-            <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-yellow-500/20 rounded-lg">
@@ -248,10 +266,10 @@ export default function TaxManagerPage() {
                   </div>
                   <p className="text-white/60 text-xs">Pending</p>
                 </div>
-                <p className="text-white font-bold text-6xl font-mono">{formatCurrencyCompact(summary?.totalPending || 0)}</p>
+                <p className="text-white font-bold text-6xl font-mono">{formatCurrencyCompact(kpiTotalPending)}</p>
               </div>
-            </div>
-            <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-red-500/20 rounded-lg">
@@ -259,9 +277,9 @@ export default function TaxManagerPage() {
                   </div>
                   <p className="text-white/60 text-xs">Overdue</p>
                 </div>
-                <p className="text-white font-bold text-6xl font-mono">{formatCurrencyCompact(summary?.totalOverdue || 0)}</p>
+                <p className="text-white font-bold text-6xl font-mono">{formatCurrencyCompact(kpiTotalOverdue)}</p>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>
@@ -433,6 +451,14 @@ export default function TaxManagerPage() {
         )}
 
         {/* Payments Tab */}
+        {activeTab === 'payments' && !selectedRecordId && (
+          <div className={clsx('rounded-lg shadow-sm border p-12 text-center', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200')}>
+            <Receipt className={clsx('w-16 h-16 mx-auto mb-4', isDarkMode ? 'text-gray-600' : 'text-gray-300')} />
+            <h3 className={clsx('text-lg font-medium mb-2', isDarkMode ? 'text-white' : 'text-gray-900')}>Select a Tax Record</h3>
+            <p className={clsx('mb-4', isDarkMode ? 'text-gray-400' : 'text-gray-600')}>Go to the Tax Records tab and click on a record to view and manage payments</p>
+            <Button onClick={() => setActiveTab('records')} variant="secondary">Go to Tax Records</Button>
+          </div>
+        )}
         {activeTab === 'payments' && selectedRecordId && (
           <div className="space-y-6">
             <div className={clsx('rounded-lg shadow-sm border p-6', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200')}>
@@ -526,25 +552,53 @@ export default function TaxManagerPage() {
 
         {/* VAT Tracking Tab */}
         {activeTab === 'vat' && (
-          <div className={clsx('rounded-lg shadow-sm border p-6', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200')}>
-            <h3 className={clsx('text-lg font-medium mb-4', isDarkMode ? 'text-white' : 'text-gray-900')}>VAT Tracking</h3>
-            {vatTracking ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className={clsx('p-4 rounded-lg', isDarkMode ? 'bg-blue-900/20' : 'bg-blue-50')}>
-                  <p className={clsx('text-sm font-medium', isDarkMode ? 'text-gray-300' : 'text-gray-600')}>VAT Collected (Output)</p>
-                  <p className="text-2xl font-bold text-blue-600 mt-1 font-mono">{formatCurrencyCompact(vatTracking.vatCollected || 0)}</p>
+          <div className="space-y-6">
+            <div className={clsx('rounded-lg shadow-sm border p-6', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200')}>
+              <h3 className={clsx('text-lg font-medium mb-4', isDarkMode ? 'text-white' : 'text-gray-900')}>VAT Tracking</h3>
+              {!isVatLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className={clsx('p-4 rounded-lg', isDarkMode ? 'bg-blue-900/20' : 'bg-blue-50')}>
+                    <p className={clsx('text-sm font-medium', isDarkMode ? 'text-gray-300' : 'text-gray-600')}>VAT Collected (Output)</p>
+                    <p className="text-2xl font-bold text-blue-600 mt-1 font-mono">{formatCurrencyCompact(vatCollected)}</p>
+                  </div>
+                  <div className={clsx('p-4 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-50')}>
+                    <p className={clsx('text-sm font-medium', isDarkMode ? 'text-gray-300' : 'text-gray-600')}>VAT Paid (Input)</p>
+                    <p className="text-2xl font-bold text-green-600 mt-1 font-mono">{formatCurrencyCompact(vatPaid)}</p>
+                  </div>
+                  <div className={clsx('p-4 rounded-lg', isDarkMode ? 'bg-purple-900/20' : 'bg-purple-50')}>
+                    <p className={clsx('text-sm font-medium', isDarkMode ? 'text-gray-300' : 'text-gray-600')}>Net VAT Payable</p>
+                    <p className="text-2xl font-bold text-purple-600 mt-1 font-mono">{formatCurrencyCompact(netVat)}</p>
+                  </div>
                 </div>
-                <div className={clsx('p-4 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-50')}>
-                  <p className={clsx('text-sm font-medium', isDarkMode ? 'text-gray-300' : 'text-gray-600')}>VAT Paid (Input)</p>
-                  <p className="text-2xl font-bold text-green-600 mt-1 font-mono">{formatCurrencyCompact(vatTracking.vatPaid || 0)}</p>
+              ) : (
+                <Skeleton className="h-32 w-full" />
+              )}
+            </div>
+
+            {/* Invoice VAT Breakdown */}
+            {paidInvoices && paidInvoices.length > 0 && (
+              <div className={clsx('rounded-lg shadow-sm border', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200')}>
+                <div className={clsx('p-6 border-b', isDarkMode ? 'border-gray-700' : 'border-gray-200')}>
+                  <h3 className={clsx('text-lg font-medium', isDarkMode ? 'text-white' : 'text-gray-900')}>VAT from Paid Invoices</h3>
+                  <p className={clsx('text-sm mt-1', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>{paidInvoices.length} paid invoice{paidInvoices.length !== 1 ? 's' : ''} contributing {formatCurrencyCompact(invoiceVat)} in VAT</p>
                 </div>
-                <div className={clsx('p-4 rounded-lg', isDarkMode ? 'bg-purple-900/20' : 'bg-purple-50')}>
-                  <p className={clsx('text-sm font-medium', isDarkMode ? 'text-gray-300' : 'text-gray-600')}>Net VAT Payable</p>
-                  <p className="text-2xl font-bold text-purple-600 mt-1 font-mono">{formatCurrencyCompact(vatTracking.netVat || 0)}</p>
+                <div className={clsx('divide-y', isDarkMode ? 'divide-gray-700' : 'divide-gray-200')}>
+                  {paidInvoices.slice(0, 10).map((invoice: Invoice) => (
+                    <div key={invoice.id} className="p-4 flex items-center justify-between">
+                      <div>
+                        <p className={clsx('font-medium', isDarkMode ? 'text-white' : 'text-gray-900')}>{invoice.customerName}</p>
+                        <p className={clsx('text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>#{invoice.invoiceNumber} &middot; {invoice.paidDate ? new Date(invoice.paidDate).toLocaleDateString() : 'Paid'}</p>
+                      </div>
+                      <p className="font-mono font-medium text-blue-600">{formatCurrencyCompact(Number(invoice.taxAmount || 0))}</p>
+                    </div>
+                  ))}
+                  {paidInvoices.length > 10 && (
+                    <div className={clsx('p-4 text-center text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>
+                      +{paidInvoices.length - 10} more invoices
+                    </div>
+                  )}
                 </div>
               </div>
-            ) : (
-              <Skeleton className="h-32 w-full" />
             )}
           </div>
         )}
@@ -552,7 +606,10 @@ export default function TaxManagerPage() {
         {/* Compliance Reports Tab */}
         {activeTab === 'reports' && (
           <div className="space-y-6">
-            <div className="flex justify-end">
+            <div className="flex items-center justify-between">
+              {!selectedRecordId && (
+                <p className={clsx('text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>Select a tax record from the Records tab to generate a new report</p>
+              )}
               <Button onClick={handleGenerateReport} disabled={!selectedRecordId}>
                 Generate Compliance Report
               </Button>

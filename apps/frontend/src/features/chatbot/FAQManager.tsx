@@ -232,7 +232,7 @@ export default function FAQManager() {
 
           {/* Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-blue-500/20 rounded-lg">
@@ -242,8 +242,8 @@ export default function FAQManager() {
                 </div>
                 <p className="text-white font-bold text-6xl font-mono">{rules?.length || 0}</p>
               </div>
-            </div>
-            <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-green-500/20 rounded-lg">
@@ -253,8 +253,8 @@ export default function FAQManager() {
                 </div>
                 <p className="text-white font-bold text-6xl font-mono">{rules?.filter((r) => r.isActive).length || 0}</p>
               </div>
-            </div>
-            <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-purple-500/20 rounded-lg">
@@ -264,7 +264,7 @@ export default function FAQManager() {
                 </div>
                 <p className="text-white font-bold text-6xl font-mono">{rules?.filter((r) => r.ruleType === ChatbotRuleType.FAQ).length || 0}</p>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>
@@ -328,10 +328,13 @@ export default function FAQManager() {
                   <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Priority</label>
                   <input
                     type="number"
-                    value={formData.priority}
+                    value={formData.priority || ''}
                     onChange={(e) => setFormData({ ...formData, priority: parseInt(e.target.value) || 0 })}
-                    className={clsx('w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300')}
-                    placeholder="0"
+                    className={clsx(
+                      'w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+                      isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300',
+                      '[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]'
+                    )}
                   />
                 </div>
               </div>

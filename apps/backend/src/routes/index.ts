@@ -14,7 +14,7 @@ import chatbotController from '../controllers/chatbot.controller.js';
 import costControlController from '../controllers/cost-control.controller.js';
 import { authenticate, requireRole, requireVendor, optionalAuth } from '../middleware/auth.js';
 import { authRateLimit, otpRateLimit, searchRateLimit, whatsappRateLimit } from '../middleware/rateLimiter.js';
-import { wrapMulter, uploadImage, uploadImages, uploadLogo, uploadDocuments } from '../middleware/upload.js';
+import { wrapMulter, uploadImage, uploadImages, uploadLogo, uploadDocuments, uploadReceipt } from '../middleware/upload.js';
 import {
   verifyWebhook,
   handleIncomingMessage,
@@ -160,9 +160,9 @@ router.get('/tiles/:z/:x/:y', async (req, res, next) => {
       }
     }
 
-    res.status(502).json({ success: false, error: { message: 'All tile providers failed' } });
+    return res.status(502).json({ success: false, error: { message: 'All tile providers failed' } });
   } catch (err) {
-    next(err);
+    return next(err);
   }
 });
 
@@ -471,6 +471,7 @@ uploads.post('/logo', wrapMulter(uploadLogo as any), uploadController.uploadLogo
 uploads.post('/gallery', wrapMulter(uploadImages as any), uploadController.uploadGallery.bind(uploadController));
 uploads.post('/verification', wrapMulter(uploadDocuments as any), uploadController.uploadVerificationDocs.bind(uploadController));
 uploads.post('/product-images', wrapMulter(uploadImages as any), uploadController.uploadProductImages.bind(uploadController));
+uploads.post('/receipt', wrapMulter(uploadReceipt as any), uploadController.uploadReceipt.bind(uploadController));
 router.use('/uploads', uploads);
 
 // ─── FINANCIAL MANAGEMENT ───────────────────────────────────

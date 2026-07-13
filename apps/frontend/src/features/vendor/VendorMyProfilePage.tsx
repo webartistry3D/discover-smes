@@ -361,6 +361,12 @@ export default function VendorMyProfilePage() {
     { id: 'reviews', label: `Reviews (${vendor.totalReviews})` },
   ];
 
+  const cardBg = isDarkMode ? 'bg-gray-800' : 'bg-white';
+  const headingColor = isDarkMode ? 'text-white' : 'text-gray-900';
+  const bodyColor = isDarkMode ? 'text-gray-300' : 'text-gray-600';
+  const mutedColor = isDarkMode ? 'text-gray-400' : 'text-gray-500';
+  const subtleBg = isDarkMode ? 'bg-gray-700' : 'bg-gray-100';
+
   return (
     <div className={clsx('min-h-screen pb-24', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       {/* Cover Image */}
@@ -867,14 +873,17 @@ export default function VendorMyProfilePage() {
 
         {/* Tabs */}
         <div className="flex items-center gap-2 mt-5">
-          <div className="flex gap-1 bg-gray-100 rounded-2xl p-1 overflow-x-auto scrollbar-hide flex-1">
+          <div className={clsx('flex gap-1 rounded-2xl p-1 overflow-x-auto scrollbar-hide flex-1', subtleBg)}>
             {TABS.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-150 ${
-                  activeTab === tab.id ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-                }`}
+                className={clsx(
+                  'flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-150',
+                  activeTab === tab.id
+                    ? (isDarkMode ? 'bg-gray-700 text-white shadow-sm' : 'bg-white text-gray-900 shadow-sm')
+                    : (isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700')
+                )}
               >
                 {tab.label}
               </button>
@@ -896,9 +905,9 @@ export default function VendorMyProfilePage() {
             {activeTab === 'overview' && (
               <motion.div key="overview" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
                 {/* Description */}
-                <div className="bg-white rounded-2xl p-5 shadow-card">
-                  <h3 className="font-semibold text-gray-900 mb-2">About</h3>
-                  <p className={`text-gray-600 text-sm leading-relaxed ${!showFullDesc && 'line-clamp-4'}`}>
+                <div className={clsx('rounded-2xl p-5 shadow-card', cardBg)}>
+                  <h3 className={clsx('font-semibold mb-2', headingColor)}>About</h3>
+                  <p className={clsx('text-sm leading-relaxed', bodyColor, !showFullDesc && 'line-clamp-4')}>
                     {vendor.description}
                   </p>
                   {vendor.description?.length > 200 && (
@@ -910,16 +919,16 @@ export default function VendorMyProfilePage() {
 
                 {/* Opening Hours */}
                 {vendor.openingHours && (
-                  <div className="bg-white rounded-2xl p-5 shadow-card">
-                    <h3 className="font-semibold text-gray-900 mb-3">Opening Hours</h3>
-                    <OpeningHoursGrid hours={vendor.openingHours as any} />
+                  <div className={clsx('rounded-2xl p-5 shadow-card', cardBg)}>
+                    <h3 className={clsx('font-semibold mb-3', headingColor)}>Opening Hours</h3>
+                    <OpeningHoursGrid hours={vendor.openingHours as any} isDarkMode={isDarkMode} />
                   </div>
                 )}
 
                 {/* FAQs */}
-                <div className="bg-white rounded-2xl p-5 shadow-card">
+                <div className={clsx('rounded-2xl p-5 shadow-card', cardBg)}>
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-gray-900">Frequently Asked Questions</h3>
+                    <h3 className={clsx('font-semibold', headingColor)}>Frequently Asked Questions</h3>
                     <Link href="/chatbot/faq">
                       <button className="text-xs font-medium text-festac-green hover:underline flex items-center gap-1">
                         Manage FAQs <ExternalLink size={12} />
@@ -929,14 +938,14 @@ export default function VendorMyProfilePage() {
                   {vendor.faqs?.length > 0 ? (
                     <div className="space-y-3">
                       {vendor.faqs.map((faq: any) => (
-                        <div key={faq.id} className="border-b border-gray-50 last:border-0 pb-3 last:pb-0">
-                          <p className="text-sm font-medium text-gray-800">Q: {faq.question}</p>
-                          <p className="text-sm text-gray-500 mt-1">A: {faq.answer}</p>
+                        <div key={faq.id} className={clsx('border-b last:border-0 pb-3 last:pb-0', isDarkMode ? 'border-gray-700' : 'border-gray-50')}>
+                          <p className={clsx('text-sm font-medium', isDarkMode ? 'text-gray-200' : 'text-gray-800')}>Q: {faq.question}</p>
+                          <p className={clsx('text-sm mt-1', mutedColor)}>A: {faq.answer}</p>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-gray-500">No FAQs yet. Manage them on the FAQ page.</p>
+                    <p className={clsx('text-sm', mutedColor)}>No FAQs yet. Manage them on the FAQ page.</p>
                   )}
                 </div>
 
@@ -958,39 +967,39 @@ export default function VendorMyProfilePage() {
             {activeTab === 'products' && (
               <motion.div key="products" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
                 {vendor.products?.length === 0 ? (
-                  <div className="text-center py-12 text-gray-400">
+                  <div className={clsx('text-center py-12', mutedColor)}>
                     <Package size={32} className="mx-auto mb-2" />
                     <p className="text-sm">No products yet. Click the + button to add your first product.</p>
                   </div>
                 ) : (
                   vendor.products?.map((p: any) => (
-                    <div key={p.id} className="bg-white rounded-2xl p-4 shadow-card flex items-center gap-4">
-                      <div className="w-16 h-16 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
+                    <div key={p.id} className={clsx('rounded-2xl p-4 shadow-card flex items-center gap-4', cardBg)}>
+                      <div className={clsx('w-16 h-16 rounded-xl overflow-hidden flex-shrink-0', subtleBg)}>
                         {p.images?.[0] ? (
                           <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center"><Package size={20} className="text-gray-400" /></div>
+                          <div className="w-full h-full flex items-center justify-center"><Package size={20} className={mutedColor} /></div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-gray-900 text-sm">{p.name}</p>
-                        {p.description && <p className="text-gray-500 text-xs mt-0.5 line-clamp-2">{p.description}</p>}
+                        <p className={clsx('font-semibold text-sm', headingColor)}>{p.name}</p>
+                        {p.description && <p className={clsx('text-xs mt-0.5 line-clamp-2', mutedColor)}>{p.description}</p>}
                       </div>
                       <div className="text-right flex-shrink-0">
                         <p className="font-bold text-festac-green text-sm">{formatNaira(Number(p.price))}</p>
-                        {p.unit && <p className="text-gray-400 text-xs">per {p.unit}</p>}
+                        {p.unit && <p className={clsx('text-xs', mutedColor)}>per {p.unit}</p>}
                       </div>
                       <div className="flex items-center gap-1 flex-shrink-0">
                         <button
                           onClick={() => handleEditProduct(p)}
-                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                          className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100')}
                           title="Edit"
                         >
                           <Edit size={14} className="text-gray-500" />
                         </button>
                         <button
                           onClick={() => handleDeleteProduct(p.id)}
-                          className="p-2 hover:bg-red-50 rounded-lg transition-colors"
+                          className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-red-900/20' : 'hover:bg-red-50')}
                           title="Delete"
                         >
                           <X size={14} className="text-red-500" />
@@ -1005,20 +1014,20 @@ export default function VendorMyProfilePage() {
             {activeTab === 'services' && (
               <motion.div key="services" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
                 {vendor.services?.length === 0 ? (
-                  <div className="text-center py-12 text-gray-400">
+                  <div className={clsx('text-center py-12', mutedColor)}>
                     <Wrench size={32} className="mx-auto mb-2" />
                     <p className="text-sm">No services yet. Click the + button to add your first service.</p>
                   </div>
                 ) : (
                   vendor.services?.map((s: any) => (
-                    <div key={s.id} className="bg-white rounded-2xl p-4 shadow-card flex items-center gap-4">
+                    <div key={s.id} className={clsx('rounded-2xl p-4 shadow-card flex items-center gap-4', cardBg)}>
                       <div className="w-12 h-12 bg-festac-green/10 rounded-xl flex items-center justify-center flex-shrink-0">
                         <Wrench size={20} className="text-festac-green" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-gray-900 text-sm">{s.name}</p>
-                        {s.description && <p className="text-gray-500 text-xs mt-0.5 line-clamp-2">{s.description}</p>}
-                        {s.durationMinutes && <p className="text-gray-400 text-xs mt-0.5">{s.durationMinutes} mins</p>}
+                        <p className={clsx('font-semibold text-sm', headingColor)}>{s.name}</p>
+                        {s.description && <p className={clsx('text-xs mt-0.5 line-clamp-2', mutedColor)}>{s.description}</p>}
+                        {s.durationMinutes && <p className={clsx('text-xs mt-0.5', mutedColor)}>{s.durationMinutes} mins</p>}
                       </div>
                       <div className="text-right flex-shrink-0">
                         <p className="font-bold text-festac-green text-sm">
@@ -1031,14 +1040,14 @@ export default function VendorMyProfilePage() {
                       <div className="flex items-center gap-1 flex-shrink-0">
                         <button
                           onClick={() => handleEditService(s)}
-                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                          className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100')}
                           title="Edit"
                         >
                           <Edit size={14} className="text-gray-500" />
                         </button>
                         <button
                           onClick={() => handleDeleteService(s.id)}
-                          className="p-2 hover:bg-red-50 rounded-lg transition-colors"
+                          className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-red-900/20' : 'hover:bg-red-50')}
                           title="Delete"
                         >
                           <X size={14} className="text-red-500" />
@@ -1052,7 +1061,7 @@ export default function VendorMyProfilePage() {
 
             {activeTab === 'reviews' && (
               <motion.div key="reviews" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
-                <div className="text-center py-12 text-gray-400">
+                <div className={clsx('text-center py-12', mutedColor)}>
                   <Star size={32} className="mx-auto mb-2" />
                   <p className="text-sm">Reviews will appear here</p>
                 </div>
@@ -1065,7 +1074,7 @@ export default function VendorMyProfilePage() {
   );
 }
 
-function OpeningHoursGrid({ hours }: { hours: Record<string, any> }) {
+function OpeningHoursGrid({ hours, isDarkMode }: { hours: Record<string, any>; isDarkMode: boolean }) {
   const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -1074,11 +1083,11 @@ function OpeningHoursGrid({ hours }: { hours: Record<string, any> }) {
         if (!h) return null;
         return (
           <div key={day} className="flex items-center justify-between text-sm">
-            <span className="capitalize text-gray-600 font-medium">{day}</span>
+            <span className={clsx('capitalize font-medium', isDarkMode ? 'text-gray-300' : 'text-gray-600')}>{day}</span>
             {h.isClosed ? (
-              <span className="text-gray-400">Closed</span>
+              <span className={clsx(isDarkMode ? 'text-gray-500' : 'text-gray-400')}>Closed</span>
             ) : (
-              <span className="text-gray-700">{h.open} - {h.close}</span>
+              <span className={clsx(isDarkMode ? 'text-gray-200' : 'text-gray-700')}>{h.open} - {h.close}</span>
             )}
           </div>
         );

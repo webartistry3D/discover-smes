@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useCallback, type SyntheticEvent } from 'react';
 import { Link } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -70,21 +70,12 @@ export default function POSPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showItemSearch, setShowItemSearch] = useState(false);
   const [discountPercent, setDiscountPercent] = useState(0);
-  const [taxPercent, setTaxPercent] = useState(0);
+  const [taxPercent, setTaxPercent] = useState(7.5);
   const [customerName, setCustomerName] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CASH');
   const [isProcessing, setIsProcessing] = useState(false);
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const [showCamera, setShowCamera] = useState(false);
-
-  const scanInputRef = useRef<HTMLInputElement>(null);
-
-  // Keep scan input focused
-  useEffect(() => {
-    if (view === 'scan' && !showItemSearch && !showCamera) {
-      scanInputRef.current?.focus();
-    }
-  }, [view, showItemSearch, showCamera]);
 
   // ── Cart Calculations ──
   const subtotal = cart.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
@@ -117,21 +108,24 @@ export default function POSPage() {
         toast.error(`${item.name} is out of stock`);
         return;
       }
+      let limitExceeded = false;
       setCart((prev) => {
         const existing = prev.find((c) => c.inventoryItem.id === item.id);
         if (existing) {
           const newQty = existing.quantity + qty;
           if (newQty > item.quantity) {
-            toast.error(`Only ${item.quantity} units available`);
+            limitExceeded = true;
             return prev;
           }
           return prev.map((c) =>
             c.inventoryItem.id === item.id ? { ...c, quantity: newQty } : c
           );
         }
-        toast.success(`${item.name} added`);
         return [...prev, { inventoryItem: item, quantity: qty, unitPrice: item.sellingPrice }];
       });
+      if (limitExceeded) {
+        toast.error(`Only ${item.quantity} units available`);
+      }
     },
     []
   );
@@ -151,14 +145,16 @@ export default function POSPage() {
     [lookupItem, addToCart]
   );
 
-  const handleScanSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const item = lookupItem(scanInput);
+  const handleScanSubmit = (e?: SyntheticEvent) => {
+    e?.preventDefault();
+    const code = scanInput.trim();
+    if (!code) return;
+    const item = lookupItem(code);
     if (item) {
       addToCart(item);
       setScanInput('');
     } else {
-      toast.error(`No item found for: "${scanInput}"`);
+      toast.error(`No item found for: "${code}"`);
       setScanInput('');
     }
   };
@@ -255,7 +251,7 @@ export default function POSPage() {
   const handleNewSale = () => {
     setCart([]);
     setDiscountPercent(0);
-    setTaxPercent(0);
+    setTaxPercent(7.5);
     setCustomerName('');
     setPaymentMethod('CASH');
     setReceipt(null);
@@ -268,6 +264,23 @@ export default function POSPage() {
     (item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.sku?.toLowerCase().includes(searchQuery.toLowerCase()))
   );
+
+  // ── Unified add handler (scan, search, or focus search input) ──
+  const handleAddClick = () => {
+    const code = scanInput.trim();
+    if (code) {
+      handleScanSubmit();
+      return;
+    }
+    if (searchQuery.trim() && searchResults.length > 0) {
+      const item = searchResults.find((i) => i.quantity > 0) || searchResults[0];
+      addToCart(item);
+      setSearchQuery('');
+      setShowItemSearch(false);
+      return;
+    }
+    document.getElementById('pos-search-input')?.focus();
+  };
 
   // ─── RECEIPT VIEW ───────────────────────────────────────────
   if (view === 'receipt' && receipt) {
@@ -288,7 +301,7 @@ export default function POSPage() {
 
         {/* Receipt Card */}
         <div className="max-w-2xl mx-auto px-4 py-6">
-          <div className={clsx('rounded-2xl shadow-lg overflow-hidden', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className={clsx('rounded-2xl shadow-lg overflow-hidden', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
             {/* Receipt Header */}
             <div className={clsx('px-6 py-4 border-b text-center', isDarkMode ? 'border-gray-700' : 'border-gray-100')}>
               <p className={clsx('font-display font-bold text-xl', isDarkMode ? 'text-white' : 'text-gray-900')}>Receipt</p>
@@ -343,7 +356,7 @@ export default function POSPage() {
               )}
               {receipt.taxAmount > 0 && (
                 <div className="flex justify-between">
-                  <span className={clsx('text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>Tax ({receipt.taxRate}%)</span>
+                  <span className={clsx('text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>VAT ({receipt.taxRate}%)</span>
                   <span className={clsx('text-sm font-mono', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>{formatNaira(receipt.taxAmount)}</span>
                 </div>
               )}
@@ -358,10 +371,10 @@ export default function POSPage() {
                 </span>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Actions */}
-          <div className="flex gap-3 mt-5">
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex gap-3 mt-5">
             <Button
               variant="outline"
               className="flex-1"
@@ -390,7 +403,7 @@ export default function POSPage() {
               <RotateCcw size={16} className="mr-2" />
               New Sale
             </Button>
-          </div>
+          </motion.div>
         </div>
       </div>
     );
@@ -401,7 +414,7 @@ export default function POSPage() {
     <div className={clsx('min-h-[calc(100vh-64px)] w-full p-4 sm:p-6', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="bg-gradient-hero text-white rounded-2xl shadow-card mb-4">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-gradient-hero text-white rounded-2xl shadow-card mb-4">
           <div className="px-6 py-5 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Link href="/financial/invoices">
@@ -415,7 +428,7 @@ export default function POSPage() {
               </div>
             </div>
             <button
-              onClick={() => setView(view === 'cart' ? 'scan' : 'cart')}
+              onClick={() => document.getElementById('pos-cart-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
               className="relative p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors"
             >
               <ShoppingCart size={22} />
@@ -426,15 +439,15 @@ export default function POSPage() {
               )}
             </button>
           </div>
-        </div>
+        </motion.div>
 
         <div className="flex-1 flex flex-col lg:flex-row gap-4">
 
         {/* ── LEFT: SCAN + SEARCH ── */}
-        <div className={clsx('flex-1 flex flex-col gap-4', view === 'cart' ? 'hidden lg:flex' : 'flex')}>
+        <div className="flex-1 flex flex-col gap-4">
 
           {/* Barcode Scan Input */}
-          <div className={clsx('rounded-2xl p-4 shadow-card', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className={clsx('rounded-2xl p-4 shadow-card', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
             <div className="flex items-center gap-2 mb-3">
               <ScanLine size={18} className="text-festac-green" />
               <h2 className={clsx('font-semibold text-sm', isDarkMode ? 'text-white' : 'text-gray-900')}>
@@ -443,7 +456,6 @@ export default function POSPage() {
             </div>
             <form onSubmit={handleScanSubmit} className="flex gap-2">
               <input
-                ref={scanInputRef}
                 type="text"
                 value={scanInput}
                 onChange={(e) => setScanInput(e.target.value)}
@@ -455,17 +467,17 @@ export default function POSPage() {
                     : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400'
                 )}
                 autoComplete="off"
-                autoFocus
               />
             </form>
             <div className="flex justify-center gap-3 mt-3">
               <button
-                onClick={handleScanSubmit as any}
+                type="button"
+                onClick={handleAddClick}
                 className={clsx(
-                  'p-3 rounded-xl border-2 transition-colors w-[60px] h-[60px] flex items-center justify-center',
-                  isDarkMode
+                  'p-3 rounded-xl border-2 transition-colors w-[60px] h-[60px] flex items-center justify-center cursor-pointer',
+                  scanInput.trim() || searchQuery.trim()
                     ? 'border-festac-green/40 text-festac-green hover:bg-festac-green/10'
-                    : 'border-festac-green/40 text-festac-green hover:bg-festac-green/10'
+                    : 'border-gray-300 text-gray-300 hover:bg-gray-100'
                 )}
               >
                 <Plus size={32} strokeWidth={2.5} />
@@ -474,13 +486,14 @@ export default function POSPage() {
                 <Camera size={32} strokeWidth={2.5} />
               </Button>
             </div>
-          </div>
+          </motion.div>
 
           {/* Item Search */}
-          <div className={clsx('rounded-2xl shadow-card overflow-hidden', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className={clsx('rounded-2xl shadow-card overflow-hidden', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
             <div className={clsx('flex items-center gap-2 px-4 py-3 border-b', isDarkMode ? 'border-gray-700' : 'border-gray-100')}>
               <Search size={16} className={isDarkMode ? 'text-gray-400' : 'text-gray-400'} />
               <input
+                id="pos-search-input"
                 type="text"
                 value={searchQuery}
                 onChange={(e) => {
@@ -560,14 +573,14 @@ export default function POSPage() {
                 )}
               </div>
             )}
-          </div>
+          </motion.div>
         </div>
 
         {/* ── RIGHT: CART & CHECKOUT ── */}
-        <div className={clsx('w-full lg:w-96 flex flex-col gap-4', view === 'scan' ? 'hidden lg:flex' : 'flex')}>
+        <div id="pos-cart-panel" className="w-full lg:w-96 flex flex-col gap-4">
 
           {/* Cart Items */}
-          <div className={clsx('rounded-2xl shadow-card overflow-hidden flex-1', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className={clsx('rounded-2xl shadow-card overflow-hidden flex-1', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
             <div className={clsx('flex items-center justify-between px-4 py-3 border-b', isDarkMode ? 'border-gray-700' : 'border-gray-100')}>
               <div className="flex items-center gap-2">
                 <ShoppingCart size={16} className="text-festac-green" />
@@ -647,10 +660,10 @@ export default function POSPage() {
                 </AnimatePresence>
               </div>
             )}
-          </div>
+          </motion.div>
 
           {/* Checkout Panel */}
-          <div className={clsx('rounded-2xl shadow-card p-4 space-y-4', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className={clsx('rounded-2xl shadow-card p-4 space-y-4', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
             {/* Customer Name (optional) */}
             <div>
               <label className={clsx('text-xs font-medium mb-1 block', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>
@@ -691,16 +704,17 @@ export default function POSPage() {
                     'w-full pl-8 pr-3 py-2.5 rounded-xl border text-sm font-mono focus:outline-none focus:ring-2 focus:ring-festac-green/50',
                     isDarkMode
                       ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500'
-                      : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400'
+                      : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400',
+                    '[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]'
                   )}
                 />
               </div>
             </div>
 
-            {/* Tax */}
+            {/* VAT */}
             <div>
               <label className={clsx('text-xs font-medium mb-1 block', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>
-                Tax %
+                VAT %
               </label>
               <div className="relative">
                 <Receipt size={14} className={clsx('absolute left-3 top-1/2 -translate-y-1/2', isDarkMode ? 'text-gray-500' : 'text-gray-400')} />
@@ -710,12 +724,13 @@ export default function POSPage() {
                   max={100}
                   value={taxPercent || ''}
                   onChange={(e) => setTaxPercent(Math.min(100, Math.max(0, Number(e.target.value))))}
-                  placeholder="0"
+                  placeholder="7.5"
                   className={clsx(
                     'w-full pl-8 pr-3 py-2.5 rounded-xl border text-sm font-mono focus:outline-none focus:ring-2 focus:ring-festac-green/50',
                     isDarkMode
                       ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500'
-                      : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400'
+                      : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400',
+                    '[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]'
                   )}
                 />
               </div>
@@ -761,7 +776,7 @@ export default function POSPage() {
               )}
               {taxAmount > 0 && (
                 <div className="flex justify-between text-sm">
-                  <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Tax ({taxPercent}%)</span>
+                  <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>VAT ({taxPercent}%)</span>
                   <span className={clsx('font-mono', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>{formatNaira(taxAmount)}</span>
                 </div>
               )}
@@ -790,7 +805,7 @@ export default function POSPage() {
                 </span>
               )}
             </Button>
-          </div>
+          </motion.div>
         </div>
       </div>
 

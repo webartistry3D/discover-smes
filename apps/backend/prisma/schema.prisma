@@ -1425,8 +1425,6 @@ model ChatbotSettings {
 
   // Relations
   vendor              Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  rules               ChatbotRule[]
-  sessions            ChatbotSession[]
 
   @@unique([vendorId])
   @@index([vendorId])
@@ -1447,7 +1445,6 @@ model ChatbotRule {
 
   // Relations
   vendor            Vendor           @relation(fields: [vendorId], references: [id], onDelete: Cascade, map: "chatbot_rules_vendor_fkey")
-  settings          ChatbotSettings  @relation(fields: [vendorId], references: [id], onDelete: Cascade, map: "chatbot_rules_settings_fkey")
 
   @@index([vendorId])
   @@index([ruleType])
@@ -1472,7 +1469,6 @@ model ChatbotSession {
 
   // Relations
   vendor            Vendor                @relation(fields: [vendorId], references: [id], onDelete: Cascade, map: "chatbot_sessions_vendor_fkey")
-  settings          ChatbotSettings       @relation(fields: [vendorId], references: [id], onDelete: Cascade, map: "chatbot_sessions_settings_fkey")
   assignedOperator  User?                 @relation("SessionOperator", fields: [assignedOperatorId], references: [id], onDelete: SetNull)
 
   @@index([vendorId])

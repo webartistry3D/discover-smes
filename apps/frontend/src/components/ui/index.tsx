@@ -189,6 +189,27 @@ export function Avatar({ src, name, size = 'md', className }: AvatarProps) {
   );
 }
 
+// ─── PAGE TRANSITION ─────────────────────────────────────────
+
+interface PageTransitionProps {
+  children: ReactNode;
+  className?: string;
+  delay?: number;
+}
+
+export function PageTransition({ children, className, delay = 0 }: PageTransitionProps) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay, ease: 'easeOut' }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 // ─── EMPTY STATE ─────────────────────────────────────────────
 
 interface EmptyStateProps {

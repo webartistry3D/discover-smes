@@ -225,7 +225,7 @@ export function Navbar() {
               ref={dropdownRef}
               style={{ position: 'fixed', top: dropdownPos.top, right: dropdownPos.right, zIndex: 40 }}
               className={clsx(
-                'w-max shadow-2xl overflow-hidden rounded-2xl',
+                'w-max shadow-2xl overflow-hidden rounded-none',
                 isDarkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white border border-gray-200'
               )}
             >
@@ -335,26 +335,25 @@ export function Navbar() {
       {/* Signout Confirmation Modal */}
       <AnimatePresence>
         {showSignoutModal && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
+          <motion.div
+            initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
               onClick={() => setShowSignoutModal(false)}
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              onClick={(e) => e.stopPropagation()}
-              className={clsx(
-                'fixed z-50 w-full max-w-md rounded-2xl shadow-2xl p-6',
-                isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
-              )}
             >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                onClick={(e) => e.stopPropagation()}
+                className={clsx(
+                  'w-full max-w-sm rounded-2xl shadow-2xl p-6',
+                  isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+                )}
+              >
               <h3 className={clsx('text-xl font-semibold mb-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
                 Sign Out
               </h3>
@@ -382,7 +381,7 @@ export function Navbar() {
                 </button>
               </div>
             </motion.div>
-          </>
+          </motion.div>
         )}
       </AnimatePresence>
     </>

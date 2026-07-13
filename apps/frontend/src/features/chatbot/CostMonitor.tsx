@@ -108,7 +108,7 @@ export default function CostMonitor() {
                 </button>
               </Link>
               <div className="flex-1">
-                <h1 className="font-display font-bold text-xl sm:text-2xl">Cost Control Dashboard</h1>
+                <h1 className="font-display font-bold text-xl sm:text-2xl">Cost Control</h1>
                 <p className="text-white/60 text-xs sm:text-sm mt-1">{/*Monitor and optimize your WhatsApp API costs*/}</p>
               </div>
             </div>
@@ -137,7 +137,7 @@ export default function CostMonitor() {
 
           {/* Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-            <div className="bg-white/10 backdrop-blur rounded-xl p-3 sm:p-4">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-white/10 backdrop-blur rounded-xl p-3 sm:p-4">
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-green-500/20 rounded-lg">
@@ -147,8 +147,8 @@ export default function CostMonitor() {
                 </div>
                 <p className="text-white font-bold text-6xl font-mono">₦{savings?.totalCost?.toLocaleString() || 0}</p>
               </div>
-            </div>
-            <div className="bg-white/10 backdrop-blur rounded-xl p-3 sm:p-4">
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white/10 backdrop-blur rounded-xl p-3 sm:p-4">
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-blue-500/20 rounded-lg">
@@ -158,8 +158,8 @@ export default function CostMonitor() {
                 </div>
                 <p className="text-white font-bold text-6xl font-mono">{savings?.savingsPercentage?.toFixed(1) || 0}%</p>
               </div>
-            </div>
-            <div className="bg-white/10 backdrop-blur rounded-xl p-3 sm:p-4">
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white/10 backdrop-blur rounded-xl p-3 sm:p-4">
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-purple-500/20 rounded-lg">
@@ -169,7 +169,7 @@ export default function CostMonitor() {
                 </div>
                 <p className="text-white font-bold text-6xl font-mono">{quotaStatus}</p>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>

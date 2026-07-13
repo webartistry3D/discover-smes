@@ -107,7 +107,7 @@ export default function FinancialReportsPage() {
           {activeTab === 'profit-loss' && profitLossData && (
             <>
               <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
-              <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
                 <div className="flex flex-col gap-2">
                   <div className="flex justify-between items-start">
                     <div className="p-2 bg-green-500/20 rounded-lg">
@@ -117,8 +117,8 @@ export default function FinancialReportsPage() {
                   </div>
                   <p className="text-white font-bold text-6xl font-mono">₦{profitLossData.totalRevenue?.toLocaleString() || 0}</p>
                 </div>
-              </div>
-              <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+              </motion.div>
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
                 <div className="flex flex-col gap-2">
                   <div className="flex justify-between items-start">
                     <div className="p-2 bg-red-500/20 rounded-lg">
@@ -128,8 +128,8 @@ export default function FinancialReportsPage() {
                   </div>
                   <p className="text-white font-bold text-6xl font-mono">₦{profitLossData.totalExpenses?.toLocaleString() || 0}</p>
                 </div>
-              </div>
-              <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+              </motion.div>
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
                 <div className="flex flex-col gap-2">
                   <div className="flex justify-between items-start">
                     <div className="p-2 bg-blue-500/20 rounded-lg">
@@ -141,7 +141,7 @@ export default function FinancialReportsPage() {
                     <span>₦{profitLossData.grossProfit?.toLocaleString() || 0}</span>
                   </p>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center mt-6">

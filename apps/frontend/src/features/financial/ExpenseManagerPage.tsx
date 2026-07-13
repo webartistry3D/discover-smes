@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'wouter';
-import { Plus, TrendingDown, Calendar, Filter, Search, Edit, Trash2, ArrowDownRight, Receipt, ChevronLeft } from 'lucide-react';
-import { useExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense, useFinancialSummary } from '../../hooks/useVendors';
+import { Plus, TrendingDown, Calendar, Filter, Search, Edit, Trash2, ArrowDownRight, Receipt, ChevronLeft, X } from 'lucide-react';
+import { useExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense, useFinancialSummary, useUploadReceipt } from '../../hooks/useVendors';
 import { Button, Skeleton, Badge } from '../../components/ui/index';
 import type { Expense, ExpenseCategory } from '../../lib/shared';
 import toast from 'react-hot-toast';
@@ -30,6 +30,7 @@ export default function ExpenseManagerPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     amount: '',
     category: 'RENT' as ExpenseCategory,
@@ -44,6 +45,7 @@ export default function ExpenseManagerPage() {
   const createExpense = useCreateExpense();
   const updateExpense = useUpdateExpense();
   const deleteExpense = useDeleteExpense();
+  const uploadReceipt = useUploadReceipt();
 
   const filteredExpenses = expenses?.filter((expense: Expense) =>
     expense.description?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -53,13 +55,23 @@ export default function ExpenseManagerPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    let receiptUrl = formData.receiptUrl;
+    if (receiptFile) {
+      try {
+        receiptUrl = await uploadReceipt.mutateAsync(receiptFile);
+      } catch {
+        toast.error('Failed to upload receipt');
+        return;
+      }
+    }
     try {
+      const data = { ...formData, receiptUrl: receiptUrl || undefined };
       if (editingId) {
-        await updateExpense.mutateAsync({ id: editingId, data: formData });
+        await updateExpense.mutateAsync({ id: editingId, data });
         toast.success('Expense updated');
         setEditingId(null);
       } else {
-        await createExpense.mutateAsync(formData);
+        await createExpense.mutateAsync(data);
         toast.success('Expense recorded');
         setIsAdding(false);
       }
@@ -71,6 +83,7 @@ export default function ExpenseManagerPage() {
         receiptUrl: '',
         notes: '',
       });
+      setReceiptFile(null);
     } catch {
       toast.error('Failed to save expense');
     }
@@ -85,8 +98,17 @@ export default function ExpenseManagerPage() {
       receiptUrl: expense.receiptUrl || '',
       notes: expense.notes || '',
     });
+    setReceiptFile(null);
     setEditingId(expense.id);
     setIsAdding(true);
+  };
+
+  const handleRemoveReceipt = () => {
+    if (receiptFile) {
+      setReceiptFile(null);
+    } else {
+      setFormData({ ...formData, receiptUrl: '' });
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -115,7 +137,7 @@ export default function ExpenseManagerPage() {
               </button>
             </Link>
             <div className="flex-1">
-              <h1 className="font-display font-bold text-2xl">Expenses Manager</h1>
+              <h1 className="font-display font-bold text-2xl">ExpenseManager</h1>
             </div>
             <Button onClick={() => setIsAdding(true)} variant="primary" className="p-2">
               <Plus size={20} />
@@ -124,7 +146,7 @@ export default function ExpenseManagerPage() {
 
           {/* Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-red-500/20 rounded-lg">
@@ -136,8 +158,8 @@ export default function ExpenseManagerPage() {
                   {formatCurrencyCompact(totalExpense)}
                 </p>
               </div>
-            </div>
-            <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-blue-500/20 rounded-lg">
@@ -147,8 +169,8 @@ export default function ExpenseManagerPage() {
                 </div>
                 <p className="text-white font-bold text-6xl">{filteredExpenses.length}</p>
               </div>
-            </div>
-            <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-purple-500/20 rounded-lg">
@@ -160,7 +182,7 @@ export default function ExpenseManagerPage() {
                   {formatCurrencyCompact(summary?.expense || 0)}
                 </p>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>
@@ -298,15 +320,16 @@ export default function ExpenseManagerPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className={clsx('rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto', isDarkMode ? 'bg-gray-800' : 'bg-white')}
+            className={clsx('rounded-2xl w-full max-w-md max-h-[60vh] overflow-y-auto', isDarkMode ? 'bg-gray-800' : 'bg-white')}
           >
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-4">
                 <h2 className={clsx('text-xl font-bold', isDarkMode ? 'text-white' : 'text-gray-900')}>{editingId ? 'Edit Expense' : 'Add Expense'}</h2>
                 <button
                   onClick={() => {
                     setIsAdding(false);
                     setEditingId(null);
+                    setReceiptFile(null);
                     setFormData({
                       amount: '',
                       category: 'RENT',
@@ -322,7 +345,7 @@ export default function ExpenseManagerPage() {
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-3">
                 <div>
                   <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Amount (₦)</label>
                   <input
@@ -373,14 +396,49 @@ export default function ExpenseManagerPage() {
                 </div>
 
                 <div>
-                  <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Receipt URL</label>
-                  <input
-                    type="url"
-                    value={formData.receiptUrl}
-                    onChange={(e) => setFormData({ ...formData, receiptUrl: e.target.value })}
-                    className={clsx('w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
-                    placeholder="https://..."
-                  />
+                  <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Receipt (optional)</label>
+                  {receiptFile || formData.receiptUrl ? (
+                    <div className={clsx('flex items-center justify-between gap-2 px-3 py-2 rounded-lg border', isDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200')}>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Receipt size={16} className={clsx('shrink-0', isDarkMode ? 'text-gray-400' : 'text-gray-500')} />
+                        {receiptFile ? (
+                          <span className={clsx('text-sm truncate', isDarkMode ? 'text-white' : 'text-gray-900')}>{receiptFile.name}</span>
+                        ) : (
+                          <a
+                            href={formData.receiptUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-blue-600 truncate"
+                          >
+                            View receipt
+                          </a>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleRemoveReceipt}
+                        className={clsx('p-1 rounded-lg shrink-0', isDarkMode ? 'hover:bg-gray-600 text-gray-400' : 'hover:bg-gray-200 text-gray-500')}
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <input
+                        type="url"
+                        value={formData.receiptUrl}
+                        onChange={(e) => setFormData({ ...formData, receiptUrl: e.target.value })}
+                        className={clsx('w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
+                        placeholder="https://..."
+                      />
+                      <input
+                        type="file"
+                        accept="image/*,.pdf"
+                        onChange={(e) => setReceiptFile(e.target.files?.[0] || null)}
+                        className={clsx('w-full text-sm cursor-pointer', isDarkMode ? 'text-gray-300' : 'text-gray-700')}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -389,7 +447,7 @@ export default function ExpenseManagerPage() {
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                     className={clsx('w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-festac-green resize-none', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
-                    rows={3}
+                    rows={2}
                     placeholder="Additional notes..."
                   />
                 </div>

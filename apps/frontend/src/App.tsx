@@ -1,10 +1,11 @@
-import { Suspense, lazy, useEffect } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import { Route, Switch, useLocation } from 'wouter';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Toaster } from 'react-hot-toast';
 import { clsx } from 'clsx';
 import { Navbar } from './components/ui/Navbar';
+import NotFoundPage from './features/errors/NotFoundPage';
 import { MobileBottomNav } from './components/ui/MobileBottomNav';
 import { AdminMobileBottomNav } from './components/ui/AdminMobileBottomNav';
 import PWAInstallPrompt from './components/ui/PWAInstallPrompt';
@@ -130,12 +131,24 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { isAuthenticated, user } = useAuthStore();
   const isLandingPage = location === '/';
+  const [isOffline, setIsOffline] = useState(() => !navigator.onLine);
+
+  useEffect(() => {
+    const handle = () => setIsOffline(!navigator.onLine);
+    handle();
+    window.addEventListener('online', handle);
+    window.addEventListener('offline', handle);
+    return () => {
+      window.removeEventListener('online', handle);
+      window.removeEventListener('offline', handle);
+    };
+  }, []);
 
   return (
     <div className={clsx('min-h-screen flex flex-col', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       <Navbar />
       <main className={clsx('flex-1', isAuthenticated ? 'pb-20' : '')}>
-        {children}
+        {isOffline ? <NotFoundPage /> : children}
       </main>
       {isAuthenticated && (
   <>
@@ -368,13 +381,8 @@ export default function App() {
                 </ProtectedRoute>
               )}
             </Route>
-            <Route>
-              <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 text-center px-4">
-                <p className="font-display font-black text-6xl text-gray-200">404</p>
-                <p className="text-gray-600 font-medium">Page not found</p>
-                <a href="/" className="btn-primary">Go Home</a>
-              </div>
-            </Route>
+            <Route path="/404" component={NotFoundPage} />
+            <Route component={NotFoundPage} />
           </Switch>
         </Suspense>
       </AppLayout>
