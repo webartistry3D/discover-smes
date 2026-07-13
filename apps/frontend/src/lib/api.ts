@@ -150,7 +150,7 @@ export const vendorApi = {
   create: (data: unknown) => api.post('/vendors', data),
   update: (id: string, data: unknown) => api.patch(`/vendors/${id}`, data),
   trackWhatsApp: (id: string) => api.post(`/vendors/${id}/whatsapp-click`),
-  analytics: (period: 'week' | 'month' = 'month') => api.get('/vendors/dashboard/analytics', { params: { period } }),
+  analytics: (period: 'week' | 'month' | 'year' = 'month') => api.get('/vendors/dashboard/analytics', { params: { period } }),
   me: () => api.get('/vendors/me'),
   // Products
   createProduct: (vendorId: string, data: unknown) => api.post(`/vendors/${vendorId}/products`, data),

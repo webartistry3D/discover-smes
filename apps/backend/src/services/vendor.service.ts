@@ -259,13 +259,19 @@ export class VendorService {
 
   // ─── ANALYTICS ──────────────────────────────────────────
 
-  async getVendorAnalytics(vendorId: string, period: 'week' | 'month' = 'month') {
+  async getVendorAnalytics(vendorId: string, period: 'week' | 'month' | 'year' = 'month') {
     const since = new Date();
-    since.setDate(since.getDate() - (period === 'week' ? 7 : 30));
+    if (period === 'year') {
+      since.setMonth(0, 1);
+      since.setHours(0, 0, 0, 0);
+    } else {
+      since.setDate(since.getDate() - (period === 'week' ? 7 : 30));
+    }
 
-    const [views, waClicks, bookings, reviews] = await Promise.all([
-      prisma.analyticsEvent.count({
-        where: { vendorId, eventType: 'VENDOR_VIEW', createdAt: { gte: since } },
+    const [viewGroups, waClicks, bookings, reviews] = await Promise.all([
+      prisma.analyticsEvent.groupBy({
+        by: ['userId'],
+        where: { vendorId, eventType: 'VENDOR_VIEW', createdAt: { gte: since }, userId: { not: null } },
       }),
       prisma.analyticsEvent.count({
         where: { vendorId, eventType: 'VENDOR_WHATSAPP_CLICK', createdAt: { gte: since } },
@@ -274,7 +280,7 @@ export class VendorService {
       prisma.review.count({ where: { vendorId, createdAt: { gte: since } } }),
     ]);
 
-    return { profileViews: views, whatsappClicks: waClicks, bookingRequests: bookings, newReviews: reviews, period };
+    return { profileViews: viewGroups.length, whatsappClicks: waClicks, bookingRequests: bookings, newReviews: reviews, period };
   }
 
   // ─── HELPERS ────────────────────────────────────────────

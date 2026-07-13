@@ -190,7 +190,7 @@ export default function FAQManager() {
   if (isLoading) {
     return (
       <div className={clsx('min-h-screen', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
-        <div className="bg-gradient-hero text-white">
+        <div className={clsx('rounded-b-2xl shadow-sm', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
           <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
             <Skeleton className="h-12 w-64 mb-4" />
             <Skeleton className="h-6 w-96" />
@@ -210,57 +210,55 @@ export default function FAQManager() {
   return (
     <div className={clsx('min-h-screen pb-20', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       {/* Header */}
-      <div className="bg-gradient-hero text-white">
+      <div className={clsx('rounded-b-2xl shadow-sm', isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900')}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
           <div className="flex items-center gap-4 mb-4">
             <Link href="/dashboard">
-              <button className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors">
+              <button className={clsx('p-2 rounded-xl transition-colors', isDarkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-gray-100 hover:bg-gray-200 text-gray-600')}>
                 <ChevronLeft size={20} />
               </button>
             </Link>
             <div className="flex-1">
-              <h1 className={clsx('font-display font-bold text-2xl', isDarkMode ? 'text-white' : 'text-gray-900')}>FAQ Manager</h1>
-              {/*<p className="text-white/60 text-sm mt-1">Manage your chatbot response rules</p>*/}
+              <h1 className="font-display font-bold text-2xl whitespace-nowrap">FAQ Manager</h1>
             </div>
-            <Button onClick={() => setIsAdding(true)} variant="primary">
-              <Plus size={18} className="mr-2" />
+            <Button onClick={() => setIsAdding(true)} variant="primary" size="sm" icon={<Plus size={16} />}>
               Rule
             </Button>
           </div>
 
           {/* Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-blue-500/20 rounded-lg">
-                    <MessageSquare size={20} className="text-blue-300" />
+                    <MessageSquare size={20} className={isDarkMode ? 'text-blue-300' : 'text-blue-600'} />
                   </div>
-                  <p className="text-white/60 text-xs">Total Rules</p>
+                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Total Rules</p>
                 </div>
-                <p className="text-white font-bold text-6xl font-mono">{rules?.length || 0}</p>
+                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{rules?.length || 0}</p>
               </div>
             </motion.div>
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-green-500/20 rounded-lg">
-                    <Check size={20} className="text-green-300" />
+                    <Check size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />
                   </div>
-                  <p className="text-white/60 text-xs">Active</p>
+                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Active</p>
                 </div>
-                <p className="text-white font-bold text-6xl font-mono">{rules?.filter((r) => r.isActive).length || 0}</p>
+                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{rules?.filter((r) => r.isActive).length || 0}</p>
               </div>
             </motion.div>
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-purple-500/20 rounded-lg">
-                    <Zap size={20} className="text-purple-300" />
+                    <Zap size={20} className={isDarkMode ? 'text-purple-300' : 'text-purple-600'} />
                   </div>
-                  <p className="text-white/60 text-xs">FAQ Type</p>
+                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>FAQ Type</p>
                 </div>
-                <p className="text-white font-bold text-6xl font-mono">{rules?.filter((r) => r.ruleType === ChatbotRuleType.FAQ).length || 0}</p>
+                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{rules?.filter((r) => r.ruleType === ChatbotRuleType.FAQ).length || 0}</p>
               </div>
             </motion.div>
           </div>

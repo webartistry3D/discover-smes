@@ -17,7 +17,7 @@ import { clsx } from 'clsx';
 export default function VendorDashboardPage() {
   const { user } = useAuthStore();
   const { isDarkMode } = useUIStore();
-  const [period, setPeriod] = useState<'week' | 'month'>('month');
+  const [period, setPeriod] = useState<'week' | 'month' | 'year'>('month');
   const { data: analytics, isLoading: analyticsLoading } = useVendorAnalytics(period);
   const { data: bookings, isLoading: bookingsLoading } = useVendorBookings();
   const { data: financialSummary } = useFinancialSummary();
@@ -47,10 +47,17 @@ export default function VendorDashboardPage() {
     return 'Good evening,';
   };
 
+  const periodButtonClass = (p: 'week' | 'month' | 'year') => clsx(
+    'px-4 py-1.5 rounded-full text-sm font-medium transition-colors',
+    period === p
+      ? (isDarkMode ? 'bg-white text-festac-green' : 'bg-festac-green text-white')
+      : (isDarkMode ? 'bg-white/10 text-white/70 hover:bg-white/20' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')
+  );
+
   return (
     <div className={clsx('min-h-screen pb-10', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       {/* Header */}
-      <div className="bg-gradient-hero text-white">
+      <div className={clsx('rounded-b-2xl shadow-sm', isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900')}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
           <div>
             {/*
@@ -63,10 +70,10 @@ export default function VendorDashboardPage() {
             */}
             {/* Welcome Section */}
             <div className="rounded-lg p-0">
-              <h1 className="text-2xl font-inter font-regular text-white mb-0">
+              <h1 className={clsx('text-2xl font-inter font-regular mb-0', isDarkMode ? 'text-white' : 'text-gray-900')}>
                 {getGreeting()} {user?.firstName}! 
               </h1>
-              <p className="font-inter text-white/80 text-sm mt-0">
+              <p className={clsx('font-inter text-sm mt-0', isDarkMode ? 'text-white/80' : 'text-gray-600')}>
                 Here's your business update..
               </p>
             </div>
@@ -77,16 +84,16 @@ export default function VendorDashboardPage() {
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white/10 backdrop-blur rounded-xl p-4"
+              className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}
             >
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-green-500/20 rounded-lg">
-                    <ArrowUpRight size={20} className="text-green-300" />
+                    <ArrowUpRight size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />
                   </div>
-                  <p className="text-white/60 text-xs">Income</p>
+                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Income</p>
                 </div>
-                <p className="text-white font-bold text-6xl font-mono">
+                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>
                   {formatCurrencyCompact(financialSummary?.income || 0)}
                 </p>
               </div>
@@ -95,16 +102,16 @@ export default function VendorDashboardPage() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-white/10 backdrop-blur rounded-xl p-4"
+              className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}
             >
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-red-500/20 rounded-lg">
-                    <ArrowDownRight size={20} className="text-red-300" />
+                    <ArrowDownRight size={20} className={isDarkMode ? 'text-red-300' : 'text-red-600'} />
                   </div>
-                  <p className="text-white/60 text-xs">Expenses</p>
+                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Expenses</p>
                 </div>
-                <p className="text-white font-bold text-6xl font-mono">
+                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>
                   {formatCurrencyCompact(financialSummary?.expense || 0)}
                 </p>
               </div>
@@ -113,16 +120,16 @@ export default function VendorDashboardPage() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-white/10 backdrop-blur rounded-xl p-4"
+              className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}
             >
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-blue-500/20 rounded-lg">
-                    <Wallet size={20} className="text-blue-300" />
+                    <Wallet size={20} className={isDarkMode ? 'text-blue-300' : 'text-blue-600'} />
                   </div>
-                  <p className="text-white/60 text-xs">Net Profit</p>
+                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Net Profit</p>
                 </div>
-                <p className={`text-white font-bold text-6xl font-mono ${financialSummary?.profit >= 0 ? 'text-green-300' : 'text-red-300'}`}>
+                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? (financialSummary?.profit >= 0 ? 'text-green-300' : 'text-red-300') : (financialSummary?.profit >= 0 ? 'text-green-600' : 'text-red-600'))}>
                   {formatCurrencyCompact(financialSummary?.profit || 0)}
                 </p>
               </div>
@@ -133,15 +140,21 @@ export default function VendorDashboardPage() {
           <div className="flex justify-center items-center gap-2 mt-4">
             <button
               onClick={() => setPeriod('week')}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${period === 'week' ? 'bg-white text-festac-green' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
+              className={periodButtonClass('week')}
             >
               This Week
             </button>
             <button
               onClick={() => setPeriod('month')}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${period === 'month' ? 'bg-white text-festac-green' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
+              className={periodButtonClass('month')}
             >
               This Month
+            </button>
+            <button
+              onClick={() => setPeriod('year')}
+              className={periodButtonClass('year')}
+            >
+              This Year
             </button>
           </div>
         </div>

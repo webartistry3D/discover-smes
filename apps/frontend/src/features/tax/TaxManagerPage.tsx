@@ -4,6 +4,7 @@ import { Link } from 'wouter';
 import { Plus, Search, Filter, FileText, DollarSign, AlertTriangle, TrendingUp, ArrowUp, ArrowDown, X, Edit, Trash2, MoreVertical, Clock, BarChart3, ChevronLeft, Receipt, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { useTaxRecords, useTaxRecord, useCreateTaxRecord, useUpdateTaxRecord, useDeleteTaxRecord, useTaxPayments, useCreateTaxPayment, useDeleteTaxPayment, useTaxCalculation, useVatTracking, useComplianceReports, useGenerateComplianceReport, useTaxSummary, useInvoices } from '../../hooks/useVendors';
 import { Button, Skeleton, Badge } from '../../components/ui/index';
+import { RecordListView, type ViewMode } from '../../components/ui/RecordListView';
 import type { TaxRecord, TaxPayment, TaxType, TaxStatus, Invoice } from '../../lib/shared';
 import toast from 'react-hot-toast';
 import { useUIStore } from '../../stores/ui.store';
@@ -215,69 +216,217 @@ export default function TaxManagerPage() {
     }
   };
 
+  const renderTaxRecord = (record: TaxRecord, viewMode: ViewMode) => {
+    const typeInfo = TAX_TYPES.find((t) => t.value === record.type);
+    const statusInfo = TAX_STATUS.find((s) => s.value === record.status);
+    if (viewMode === 'list') {
+      return (
+        <>
+          <td className="px-4 py-3 min-w-[120px]"><Badge className={typeInfo?.color || 'bg-gray-500'}>{typeInfo?.label}</Badge></td>
+          <td className="px-4 py-3 min-w-[240px] max-w-[360px]">
+            <div className="flex flex-col gap-1">
+              <span className={clsx('font-medium line-clamp-2', isDarkMode ? 'text-white' : 'text-gray-900')}>{record.description || record.type}</span>
+              <span className={clsx('text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>{record.period}</span>
+            </div>
+          </td>
+          <td className="px-4 py-3 min-w-[140px] font-mono">{formatCurrencyCompact(Number(record.baseAmount))}</td>
+          <td className="px-4 py-3 min-w-[140px] font-mono">{formatCurrencyCompact(Number(record.taxAmount))}</td>
+          <td className="px-4 py-3 min-w-[120px]"><Badge className={statusInfo?.color || 'bg-gray-500'}>{statusInfo?.label}</Badge></td>
+        </>
+      );
+    }
+    return (
+      <motion.div
+        key={record.id}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className={clsx('w-full p-6 cursor-pointer', isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50')}
+        onClick={() => setSelectedRecordId(record.id)}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              {getStatusIcon(record.status)}
+              <h3 className={clsx('text-lg font-medium', isDarkMode ? 'text-white' : 'text-gray-900')}>{record.description || record.type}</h3>
+              <Badge className={typeInfo?.color || 'bg-gray-500'}>{typeInfo?.label}</Badge>
+              <Badge className={statusInfo?.color || 'bg-gray-500'}>{statusInfo?.label}</Badge>
+            </div>
+            <div className={clsx('grid grid-cols-2 md:grid-cols-4 gap-4 text-sm', isDarkMode ? 'text-gray-300' : 'text-gray-600')}>
+              <div>
+                <span className="font-medium">Period:</span> {record.period}
+              </div>
+              <div>
+                <span className="font-medium">Base Amount:</span> {formatCurrencyCompact(Number(record.baseAmount))}
+              </div>
+              <div>
+                <span className="font-medium">Tax Amount:</span> {formatCurrencyCompact(Number(record.taxAmount))}
+              </div>
+              <div>
+                <span className="font-medium">Due Date:</span> {record.dueDate ? new Date(record.dueDate).toLocaleDateString() : 'N/A'}
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 ml-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditingId(record.id);
+                setFormData({
+                  type: record.type,
+                  period: record.period,
+                  description: record.description || '',
+                  baseAmount: Number(record.baseAmount),
+                  taxRate: Number(record.taxRate),
+                  taxAmount: Number(record.taxAmount),
+                  vatInput: record.vatInput ? Number(record.vatInput) : 0,
+                  vatOutput: record.vatOutput ? Number(record.vatOutput) : 0,
+                  dueDate: record.dueDate ? record.dueDate.split('T')[0] : '',
+                  reference: record.reference || '',
+                  notes: record.notes || '',
+                });
+              }}
+            >
+              <Edit className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete(record.id);
+              }}
+            >
+              <Trash2 className="w-4 h-4 text-red-600" />
+            </Button>
+          </div>
+        </div>
+      </motion.div>
+    );
+  };
+
+  const renderTaxPayment = (payment: TaxPayment, viewMode: ViewMode) => {
+    if (viewMode === 'list') {
+      return (
+        <>
+          <td className="px-4 py-3 whitespace-nowrap">{new Date(payment.paymentDate).toLocaleDateString()}</td>
+          <td className="px-4 py-3 font-mono font-semibold text-base min-w-[140px]">{formatCurrencyCompact(Number(payment.amount))}</td>
+          <td className="px-4 py-3 min-w-[140px]">{payment.reference || '-'}</td>
+          <td className="px-4 py-3 text-right">
+            <button
+              onClick={() => handleDeletePayment(payment.id)}
+              className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-red-50')}
+            >
+              <Trash2 size={16} className="text-red-600" />
+            </button>
+          </td>
+        </>
+      );
+    }
+    return (
+      <div key={payment.id} className="p-6 flex items-center justify-between">
+        <div>
+          <p className={clsx('font-medium font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{formatCurrencyCompact(Number(payment.amount))}</p>
+          <p className={clsx('text-sm', isDarkMode ? 'text-gray-300' : 'text-gray-600')}>{new Date(payment.paymentDate).toLocaleDateString()}</p>
+          {payment.reference && <p className={clsx('text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>Ref: {payment.reference}</p>}
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => handleDeletePayment(payment.id)}
+        >
+          <Trash2 className="w-4 h-4 text-red-600" />
+        </Button>
+      </div>
+    );
+  };
+
+  const renderVatInvoice = (invoice: Invoice, viewMode: ViewMode) => {
+    if (viewMode === 'list') {
+      return (
+        <>
+          <td className="px-4 py-3 font-medium min-w-[140px]">{invoice.invoiceNumber}</td>
+          <td className="px-4 py-3 min-w-[240px] max-w-[360px] line-clamp-2">{invoice.customerName}</td>
+          <td className="px-4 py-3 whitespace-nowrap">{invoice.paidDate ? new Date(invoice.paidDate).toLocaleDateString() : 'Paid'}</td>
+          <td className="px-4 py-3 text-right font-mono font-semibold text-base text-blue-600 min-w-[140px]">{formatCurrencyCompact(Number(invoice.taxAmount || 0))}</td>
+        </>
+      );
+    }
+    return (
+      <div key={invoice.id} className="p-4 flex items-center justify-between">
+        <div>
+          <p className={clsx('font-medium', isDarkMode ? 'text-white' : 'text-gray-900')}>{invoice.customerName}</p>
+          <p className={clsx('text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>#{invoice.invoiceNumber} &middot; {invoice.paidDate ? new Date(invoice.paidDate).toLocaleDateString() : 'Paid'}</p>
+        </div>
+        <p className="font-mono font-medium text-blue-600">{formatCurrencyCompact(Number(invoice.taxAmount || 0))}</p>
+      </div>
+    );
+  };
+
   return (
     <div className={clsx('min-h-screen pb-20', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       {/* Header */}
-      <div className="bg-gradient-hero text-white">
+      <div className={clsx('rounded-b-2xl shadow-sm', isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900')}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
           <div className="flex items-center gap-4 mb-4">
             <Link href="/dashboard">
-              <button className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors">
+              <button className={clsx('p-2 rounded-xl transition-colors', isDarkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-gray-100 hover:bg-gray-200 text-gray-600')}>
                 <ChevronLeft size={20} />
               </button>
             </Link>
             <div className="flex-1">
               <h1 className="font-display font-bold text-2xl">Tax Manager</h1>
             </div>
-            <Button onClick={() => setIsAdding(true)} variant="primary" className="p-2">
+            <Button onClick={() => setIsAdding(true)} variant="primary" className="!p-2">
               <Plus size={20} />
             </Button>
           </div>
 
           {/* Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-blue-500/20 rounded-lg">
-                    <DollarSign size={20} className="text-blue-300" />
+                    <DollarSign size={20} className={isDarkMode ? 'text-blue-300' : 'text-blue-600'} />
                   </div>
-                  <p className="text-white/60 text-xs">Total Tax Liability</p>
+                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Total Tax Liability</p>
                 </div>
-                <p className="text-white font-bold text-6xl font-mono">{formatCurrencyCompact(kpiTotalLiability)}</p>
+                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{formatCurrencyCompact(kpiTotalLiability)}</p>
               </div>
             </motion.div>
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-green-500/20 rounded-lg">
-                    <CheckCircle size={20} className="text-green-300" />
+                    <CheckCircle size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />
                   </div>
-                  <p className="text-white/60 text-xs">Total Paid</p>
+                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Total Paid</p>
                 </div>
-                <p className="text-white font-bold text-6xl font-mono">{formatCurrencyCompact(kpiTotalPaid)}</p>
+                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{formatCurrencyCompact(kpiTotalPaid)}</p>
               </div>
             </motion.div>
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-yellow-500/20 rounded-lg">
-                    <Clock size={20} className="text-yellow-300" />
+                    <Clock size={20} className={isDarkMode ? 'text-yellow-300' : 'text-yellow-600'} />
                   </div>
-                  <p className="text-white/60 text-xs">Pending</p>
+                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Pending</p>
                 </div>
-                <p className="text-white font-bold text-6xl font-mono">{formatCurrencyCompact(kpiTotalPending)}</p>
+                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{formatCurrencyCompact(kpiTotalPending)}</p>
               </div>
             </motion.div>
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-red-500/20 rounded-lg">
-                    <AlertTriangle size={20} className="text-red-300" />
+                    <AlertTriangle size={20} className={isDarkMode ? 'text-red-300' : 'text-red-600'} />
                   </div>
-                  <p className="text-white/60 text-xs">Overdue</p>
+                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Overdue</p>
                 </div>
-                <p className="text-white font-bold text-6xl font-mono">{formatCurrencyCompact(kpiTotalOverdue)}</p>
+                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{formatCurrencyCompact(kpiTotalOverdue)}</p>
               </div>
             </motion.div>
           </div>
@@ -356,97 +505,28 @@ export default function TaxManagerPage() {
         {/* Tax Records Tab */}
         {activeTab === 'records' && (
           <div className={clsx('rounded-lg shadow-sm border', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200')}>
-            {isLoading ? (
-              <div className="p-6 space-y-4">
-                {[...Array(5)].map((_, i) => (
-                  <Skeleton key={i} className="h-16 w-full" />
-                ))}
-              </div>
-            ) : filteredRecords.length === 0 ? (
-              <div className="p-12 text-center">
-                <FileText className={clsx('w-16 h-16 mx-auto mb-4', isDarkMode ? 'text-gray-600' : 'text-gray-300')} />
-                <h3 className={clsx('text-lg font-medium mb-2', isDarkMode ? 'text-white' : 'text-gray-900')}>No tax records found</h3>
-                <p className={clsx('mb-4', isDarkMode ? 'text-gray-400' : 'text-gray-600')}>Get started by adding your first tax record</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-                <div className="flex flex-col gap-4">
-                  {filteredRecords.map((record) => (
-                    <motion.div
-                      key={record.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className={clsx('w-full p-6 cursor-pointer', isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50')}
-                      onClick={() => setSelectedRecordId(record.id)}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            {getStatusIcon(record.status)}
-                            <h3 className={clsx('text-lg font-medium', isDarkMode ? 'text-white' : 'text-gray-900')}>{record.description || record.type}</h3>
-                            <Badge className={TAX_TYPES.find((t) => t.value === record.type)?.color || 'bg-gray-500'}>
-                              {TAX_TYPES.find((t) => t.value === record.type)?.label}
-                            </Badge>
-                            <Badge className={TAX_STATUS.find((s) => s.value === record.status)?.color || 'bg-gray-500'}>
-                              {TAX_STATUS.find((s) => s.value === record.status)?.label}
-                            </Badge>
-                          </div>
-                          <div className={clsx('grid grid-cols-2 md:grid-cols-4 gap-4 text-sm', isDarkMode ? 'text-gray-300' : 'text-gray-600')}>
-                            <div>
-                              <span className="font-medium">Period:</span> {record.period}
-                            </div>
-                            <div>
-                              <span className="font-medium">Base Amount:</span> {formatCurrencyCompact(Number(record.baseAmount))}
-                            </div>
-                            <div>
-                              <span className="font-medium">Tax Amount:</span> {formatCurrencyCompact(Number(record.taxAmount))}
-                            </div>
-                            <div>
-                              <span className="font-medium">Due Date:</span> {record.dueDate ? new Date(record.dueDate).toLocaleDateString() : 'N/A'}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 ml-4">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setEditingId(record.id);
-                              setFormData({
-                                type: record.type,
-                                period: record.period,
-                                description: record.description || '',
-                                baseAmount: Number(record.baseAmount),
-                                taxRate: Number(record.taxRate),
-                                taxAmount: Number(record.taxAmount),
-                                vatInput: record.vatInput ? Number(record.vatInput) : 0,
-                                vatOutput: record.vatOutput ? Number(record.vatOutput) : 0,
-                                dueDate: record.dueDate ? record.dueDate.split('T')[0] : '',
-                                reference: record.reference || '',
-                                notes: record.notes || '',
-                              });
-                            }}
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDelete(record.id);
-                            }}
-                          >
-                            <Trash2 className="w-4 h-4 text-red-600" />
-                          </Button>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
+            <RecordListView
+              items={filteredRecords}
+              isLoading={isLoading}
+              keyExtractor={(record) => record.id}
+              renderItem={renderTaxRecord}
+              listHeader={(
+                <tr>
+                  <th className="px-4 py-2 font-medium min-w-[120px]">Type</th>
+                  <th className="px-4 py-2 font-medium min-w-[240px]">Description</th>
+                  <th className="px-4 py-2 font-medium min-w-[140px]">Base Amount</th>
+                  <th className="px-4 py-2 font-medium min-w-[140px]">Tax Amount</th>
+                  <th className="px-4 py-2 font-medium min-w-[120px]">Status</th>
+                </tr>
+              )}
+              emptyState={(
+                <div className="p-12 text-center">
+                  <FileText className={clsx('w-16 h-16 mx-auto mb-4', isDarkMode ? 'text-gray-600' : 'text-gray-300')} />
+                  <h3 className={clsx('text-lg font-medium mb-2', isDarkMode ? 'text-white' : 'text-gray-900')}>No tax records found</h3>
+                  <p className={clsx('mb-4', isDarkMode ? 'text-gray-400' : 'text-gray-600')}>Get started by adding your first tax record</p>
                 </div>
-              </div>
-            )}
+              )}
+            />
           </div>
         )}
 
@@ -521,31 +601,25 @@ export default function TaxManagerPage() {
               <div className={clsx('p-6 border-b', isDarkMode ? 'border-gray-700' : 'border-gray-200')}>
                 <h3 className={clsx('text-lg font-medium', isDarkMode ? 'text-white' : 'text-gray-900')}>Payment History</h3>
               </div>
-              {taxPayments && taxPayments.length > 0 ? (
-                <div className={clsx('divide-y', isDarkMode ? 'divide-gray-700' : 'divide-gray-200')}>
-                  {taxPayments.map((payment) => (
-                    <div key={payment.id} className="p-6 flex items-center justify-between">
-                      <div>
-                        <p className={clsx('font-medium font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{formatCurrencyCompact(Number(payment.amount))}</p>
-                        <p className={clsx('text-sm', isDarkMode ? 'text-gray-300' : 'text-gray-600')}>{new Date(payment.paymentDate).toLocaleDateString()}</p>
-                        {payment.reference && <p className={clsx('text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>Ref: {payment.reference}</p>}
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeletePayment(payment.id)}
-                      >
-                        <Trash2 className="w-4 h-4 text-red-600" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="p-12 text-center">
-                  <Receipt className={clsx('w-16 h-16 mx-auto mb-4', isDarkMode ? 'text-gray-600' : 'text-gray-300')} />
-                  <h3 className={clsx('text-lg font-medium mb-2', isDarkMode ? 'text-white' : 'text-gray-900')}>No payments recorded</h3>
-                </div>
-              )}
+              <RecordListView
+                items={taxPayments || []}
+                keyExtractor={(payment) => payment.id}
+                renderItem={renderTaxPayment}
+                listHeader={(
+                  <tr>
+                    <th className="px-4 py-2 font-medium">Date</th>
+                    <th className="px-4 py-2 font-medium min-w-[140px]">Amount</th>
+                    <th className="px-4 py-2 font-medium min-w-[140px]">Reference</th>
+                    <th className="px-4 py-2 font-medium text-right">Actions</th>
+                  </tr>
+                )}
+                emptyState={(
+                  <div className="p-12 text-center">
+                    <Receipt className={clsx('w-16 h-16 mx-auto mb-4', isDarkMode ? 'text-gray-600' : 'text-gray-300')} />
+                    <h3 className={clsx('text-lg font-medium mb-2', isDarkMode ? 'text-white' : 'text-gray-900')}>No payments recorded</h3>
+                  </div>
+                )}
+              />
             </div>
           </div>
         )}
@@ -576,30 +650,32 @@ export default function TaxManagerPage() {
             </div>
 
             {/* Invoice VAT Breakdown */}
-            {paidInvoices && paidInvoices.length > 0 && (
-              <div className={clsx('rounded-lg shadow-sm border', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200')}>
-                <div className={clsx('p-6 border-b', isDarkMode ? 'border-gray-700' : 'border-gray-200')}>
-                  <h3 className={clsx('text-lg font-medium', isDarkMode ? 'text-white' : 'text-gray-900')}>VAT from Paid Invoices</h3>
-                  <p className={clsx('text-sm mt-1', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>{paidInvoices.length} paid invoice{paidInvoices.length !== 1 ? 's' : ''} contributing {formatCurrencyCompact(invoiceVat)} in VAT</p>
-                </div>
-                <div className={clsx('divide-y', isDarkMode ? 'divide-gray-700' : 'divide-gray-200')}>
-                  {paidInvoices.slice(0, 10).map((invoice: Invoice) => (
-                    <div key={invoice.id} className="p-4 flex items-center justify-between">
-                      <div>
-                        <p className={clsx('font-medium', isDarkMode ? 'text-white' : 'text-gray-900')}>{invoice.customerName}</p>
-                        <p className={clsx('text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>#{invoice.invoiceNumber} &middot; {invoice.paidDate ? new Date(invoice.paidDate).toLocaleDateString() : 'Paid'}</p>
-                      </div>
-                      <p className="font-mono font-medium text-blue-600">{formatCurrencyCompact(Number(invoice.taxAmount || 0))}</p>
-                    </div>
-                  ))}
-                  {paidInvoices.length > 10 && (
-                    <div className={clsx('p-4 text-center text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>
-                      +{paidInvoices.length - 10} more invoices
-                    </div>
-                  )}
-                </div>
+            <div className={clsx('rounded-lg shadow-sm border', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200')}>
+              <div className={clsx('p-6 border-b', isDarkMode ? 'border-gray-700' : 'border-gray-200')}>
+                <h3 className={clsx('text-lg font-medium', isDarkMode ? 'text-white' : 'text-gray-900')}>VAT from Paid Invoices</h3>
+                <p className={clsx('text-sm mt-1', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>{paidInvoices?.length || 0} paid invoice{(paidInvoices?.length || 0) !== 1 ? 's' : ''} contributing {formatCurrencyCompact(invoiceVat)} in VAT</p>
               </div>
-            )}
+              <RecordListView
+                items={paidInvoices || []}
+                isLoading={isPaidInvoicesLoading}
+                keyExtractor={(invoice) => invoice.id}
+                renderItem={renderVatInvoice}
+                listHeader={(
+                  <tr>
+                    <th className="px-4 py-2 font-medium min-w-[140px]">Invoice #</th>
+                    <th className="px-4 py-2 font-medium min-w-[240px]">Customer</th>
+                    <th className="px-4 py-2 font-medium">Date</th>
+                    <th className="px-4 py-2 font-medium text-right min-w-[140px]">VAT</th>
+                  </tr>
+                )}
+                emptyState={(
+                  <div className="p-12 text-center">
+                    <Receipt className={clsx('w-16 h-16 mx-auto mb-4', isDarkMode ? 'text-gray-600' : 'text-gray-300')} />
+                    <h3 className={clsx('text-lg font-medium mb-2', isDarkMode ? 'text-white' : 'text-gray-900')}>No paid invoices</h3>
+                  </div>
+                )}
+              />
+            </div>
           </div>
         )}
 

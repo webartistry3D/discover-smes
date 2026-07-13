@@ -138,7 +138,7 @@ export class VendorController {
 
   async getAnalytics(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const period = (req.query['period'] as 'week' | 'month') ?? 'month';
+      const period = (req.query['period'] as 'week' | 'month' | 'year') ?? 'month';
       const analytics = await vendorService.getVendorAnalytics(req.user!.vendorId!, period);
       sendSuccess(res, analytics);
     } catch (err) {

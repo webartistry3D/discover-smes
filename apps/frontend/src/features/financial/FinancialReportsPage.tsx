@@ -73,30 +73,32 @@ export default function FinancialReportsPage() {
   return (
     <div className={clsx('min-h-screen pb-20', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       {/* Header */}
-      <div className="bg-gradient-hero text-white">
+      <div className={clsx('rounded-b-2xl shadow-sm', isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900')}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
           <div className="flex items-center gap-4 mb-6">
             <Link href="/dashboard">
-              <button className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors">
+              <button className={clsx('p-2 rounded-xl transition-colors', isDarkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-gray-100 hover:bg-gray-200 text-gray-600')}>
                 <ChevronLeft size={20} />
               </button>
             </Link>
             <div className="flex-1 min-w-0">
               <h1 className="font-display font-bold text-2xl">Financial Reports</h1>
-              {/*<p className="text-white/60 text-sm mt-1">Analyze your business financial performance</p>*/}
             </div>
           </div>
 
           {/* Period Selector */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="flex flex-wrap items-center gap-2 bg-white/10 rounded-lg p-2">
+            <div className={clsx('flex flex-wrap items-center gap-2 rounded-lg p-2', isDarkMode ? 'bg-white/10' : 'bg-gray-100')}>
               {(['month', 'quarter', 'year'] as const).map((p) => (
                 <button
                   key={p}
                   onClick={() => setPeriod(p)}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    period === p ? 'bg-white text-gray-900' : 'text-white/70 hover:text-white'
-                  }`}
+                  className={clsx(
+                    'px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                    period === p
+                      ? (isDarkMode ? 'bg-white text-gray-900' : 'bg-festac-green text-white')
+                      : (isDarkMode ? 'text-white/70 hover:text-white' : 'text-gray-600 hover:text-gray-900')
+                  )}
                 >
                   {p.charAt(0).toUpperCase() + p.slice(1)}
                 </button>
@@ -107,37 +109,37 @@ export default function FinancialReportsPage() {
           {activeTab === 'profit-loss' && profitLossData && (
             <>
               <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
-              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
                 <div className="flex flex-col gap-2">
                   <div className="flex justify-between items-start">
                     <div className="p-2 bg-green-500/20 rounded-lg">
-                      <TrendingUp size={20} className="text-green-300" />
+                      <TrendingUp size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />
                     </div>
-                    <p className="text-white/60 text-xs">Total Revenue</p>
+                    <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Total Revenue</p>
                   </div>
-                  <p className="text-white font-bold text-6xl font-mono">₦{profitLossData.totalRevenue?.toLocaleString() || 0}</p>
+                  <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>₦{profitLossData.totalRevenue?.toLocaleString() || 0}</p>
                 </div>
               </motion.div>
-              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
                 <div className="flex flex-col gap-2">
                   <div className="flex justify-between items-start">
                     <div className="p-2 bg-red-500/20 rounded-lg">
-                      <TrendingDown size={20} className="text-red-300" />
+                      <TrendingDown size={20} className={isDarkMode ? 'text-red-300' : 'text-red-600'} />
                     </div>
-                    <p className="text-white/60 text-xs">Total Expenses</p>
+                    <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Total Expenses</p>
                   </div>
-                  <p className="text-white font-bold text-6xl font-mono">₦{profitLossData.totalExpenses?.toLocaleString() || 0}</p>
+                  <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>₦{profitLossData.totalExpenses?.toLocaleString() || 0}</p>
                 </div>
               </motion.div>
-              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
                 <div className="flex flex-col gap-2">
                   <div className="flex justify-between items-start">
                     <div className="p-2 bg-blue-500/20 rounded-lg">
-                      <DollarSign size={20} className="text-blue-300" />
+                      <DollarSign size={20} className={isDarkMode ? 'text-blue-300' : 'text-blue-600'} />
                     </div>
-                    <p className="text-white/60 text-xs">Gross Profit</p>
+                    <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Gross Profit</p>
                   </div>
-                  <p className={`text-white font-bold text-6xl font-mono ${(profitLossData.grossProfit || 0) >= 0 ? 'text-green-300' : 'text-red-300'}`}>
+                  <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? ((profitLossData.grossProfit || 0) >= 0 ? 'text-green-300' : 'text-red-300') : ((profitLossData.grossProfit || 0) >= 0 ? 'text-green-600' : 'text-red-600'))}>
                     <span>₦{profitLossData.grossProfit?.toLocaleString() || 0}</span>
                   </p>
                 </div>
@@ -146,21 +148,21 @@ export default function FinancialReportsPage() {
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center mt-6">
                 <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <Calendar size={18} className="text-white/70" />
+                  <Calendar size={18} className={isDarkMode ? 'text-white/70' : 'text-gray-500'} />
                   <input
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full sm:w-auto bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
+                    className={clsx('w-full sm:w-auto border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2', isDarkMode ? 'bg-white/10 border-white/20 text-white focus:ring-white/50' : 'bg-white border-gray-200 text-gray-900 focus:ring-festac-green/20')}
                   />
                 </div>
                 <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <span className="text-white/60">to</span>
+                  <span className={clsx(isDarkMode ? 'text-white/60' : 'text-gray-600')}>to</span>
                   <input
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full sm:w-auto bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
+                    className={clsx('w-full sm:w-auto border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2', isDarkMode ? 'bg-white/10 border-white/20 text-white focus:ring-white/50' : 'bg-white border-gray-200 text-gray-900 focus:ring-festac-green/20')}
                   />
                 </div>
               </div>
@@ -234,7 +236,7 @@ export default function FinancialReportsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-6"
               >
-                <div className="bg-white/10 backdrop-blur rounded-xl p-6">
+                <div className={clsx('rounded-xl p-6 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-white border-gray-100')}>
                   <h3 className={clsx('font-semibold mb-4', isDarkMode ? 'text-white' : 'text-gray-900')}>Gross Margin</h3>
                   <div className="flex items-center gap-4">
                     <div className="flex-1 bg-gray-200 rounded-full h-4">
@@ -248,7 +250,7 @@ export default function FinancialReportsPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-white/10 backdrop-blur rounded-xl p-6">
+                  <div className={clsx('rounded-xl p-6 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-white border-gray-100')}>
                     <h3 className={clsx('font-semibold mb-4', isDarkMode ? 'text-white' : 'text-gray-900')}>Revenue by Category</h3>
                     <div className="space-y-3">
                       {Object.entries(profitLossData.incomeByCategory || {}).map(([category, amount]) => (
@@ -259,7 +261,7 @@ export default function FinancialReportsPage() {
                       ))}
                     </div>
                   </div>
-                  <div className="bg-white/10 backdrop-blur rounded-xl p-6">
+                  <div className={clsx('rounded-xl p-6 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-white border-gray-100')}>
                     <h3 className={clsx('font-semibold mb-4', isDarkMode ? 'text-white' : 'text-gray-900')}>Expenses by Category</h3>
                     <div className="space-y-3">
                       {Object.entries(profitLossData.expenseByCategory || {}).map(([category, amount]) => (
@@ -282,41 +284,41 @@ export default function FinancialReportsPage() {
                 className="space-y-6"
               >
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+                  <div className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
                     <div className="flex flex-col gap-2">
-                      <p className="text-white/60 text-xs">Operating Cash Flow</p>
-                      <p className={`text-6xl font-bold font-mono ${(cashFlowData.operatingCashFlow || 0) >= 0 ? 'text-green-300' : 'text-red-300'}`}>
+                      <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Operating Cash Flow</p>
+                      <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? ((cashFlowData.operatingCashFlow || 0) >= 0 ? 'text-green-300' : 'text-red-300') : ((cashFlowData.operatingCashFlow || 0) >= 0 ? 'text-green-600' : 'text-red-600'))}>
                         <span>₦{cashFlowData.operatingCashFlow?.toLocaleString() || 0}</span>
                       </p>
                     </div>
                   </div>
-                  <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+                  <div className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
                     <div className="flex flex-col gap-2">
-                      <p className="text-white/60 text-xs">Investing Cash Flow</p>
-                      <p className={`text-6xl font-bold font-mono ${(cashFlowData.investingCashFlow || 0) >= 0 ? 'text-green-300' : 'text-red-300'}`}>
+                      <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Investing Cash Flow</p>
+                      <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? ((cashFlowData.investingCashFlow || 0) >= 0 ? 'text-green-300' : 'text-red-300') : ((cashFlowData.investingCashFlow || 0) >= 0 ? 'text-green-600' : 'text-red-600'))}>
                         <span>₦{cashFlowData.investingCashFlow?.toLocaleString() || 0}</span>
                       </p>
                     </div>
                   </div>
-                  <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+                  <div className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
                     <div className="flex flex-col gap-2">
-                      <p className="text-white/60 text-xs">Financing Cash Flow</p>
-                      <p className={`text-6xl font-bold font-mono ${(cashFlowData.financingCashFlow || 0) >= 0 ? 'text-green-300' : 'text-red-300'}`}>
+                      <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Financing Cash Flow</p>
+                      <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? ((cashFlowData.financingCashFlow || 0) >= 0 ? 'text-green-300' : 'text-red-300') : ((cashFlowData.financingCashFlow || 0) >= 0 ? 'text-green-600' : 'text-red-600'))}>
                         <span>₦{cashFlowData.financingCashFlow?.toLocaleString() || 0}</span>
                       </p>
                     </div>
                   </div>
-                  <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+                  <div className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
                     <div className="flex flex-col gap-2">
-                      <p className="text-white/60 text-xs">Net Cash Flow</p>
-                      <p className={`text-6xl font-bold font-mono ${(cashFlowData.netCashFlow || 0) >= 0 ? 'text-green-300' : 'text-red-300'}`}>
+                      <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Net Cash Flow</p>
+                      <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? ((cashFlowData.netCashFlow || 0) >= 0 ? 'text-green-300' : 'text-red-300') : ((cashFlowData.netCashFlow || 0) >= 0 ? 'text-green-600' : 'text-red-600'))}>
                         <span>₦{cashFlowData.netCashFlow?.toLocaleString() || 0}</span>
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-white/10 backdrop-blur rounded-xl p-6">
+                <div className={clsx('rounded-xl p-6 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-white border-gray-100')}>
                   <h3 className={clsx('font-semibold mb-4', isDarkMode ? 'text-white' : 'text-gray-900')}>Cash Flow Transactions</h3>
                   <div className="space-y-3 max-h-96 overflow-y-auto">
                     {cashFlowData.cashFlows?.map((flow: any, index: number) => (
@@ -352,34 +354,34 @@ export default function FinancialReportsPage() {
                 className="space-y-6"
               >
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+                  <div className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
                     <div className="flex flex-col gap-2">
-                      <p className="text-white/60 text-xs">Total Sales</p>
-                      <p className="text-white font-bold text-6xl font-mono">₦{salesData.totalSales?.toLocaleString() || 0}</p>
+                      <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Total Sales</p>
+                      <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>₦{salesData.totalSales?.toLocaleString() || 0}</p>
                     </div>
                   </div>
-                  <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+                  <div className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
                     <div className="flex flex-col gap-2">
-                      <p className="text-white/60 text-xs">Total Orders</p>
-                      <p className="text-white font-bold text-6xl font-mono">{salesData.totalOrders || 0}</p>
+                      <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Total Orders</p>
+                      <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{salesData.totalOrders || 0}</p>
                     </div>
                   </div>
-                  <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+                  <div className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
                     <div className="flex flex-col gap-2">
-                      <p className="text-white/60 text-xs">Avg Order Value</p>
-                      <p className="text-white font-bold text-6xl font-mono">₦{salesData.averageOrderValue?.toLocaleString() || 0}</p>
+                      <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Avg Order Value</p>
+                      <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>₦{salesData.averageOrderValue?.toLocaleString() || 0}</p>
                     </div>
                   </div>
-                  <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+                  <div className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
                     <div className="flex flex-col gap-2">
-                      <p className="text-white/60 text-xs">Conversion Rate</p>
-                      <p className="text-white font-bold text-6xl font-mono">{salesData.conversionRate?.toFixed(1) || 0}%</p>
+                      <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Conversion Rate</p>
+                      <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{salesData.conversionRate?.toFixed(1) || 0}%</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-white/10 backdrop-blur rounded-xl p-6">
+                  <div className={clsx('rounded-xl p-6 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-white border-gray-100')}>
                     <h3 className={clsx('font-semibold mb-4', isDarkMode ? 'text-white' : 'text-gray-900')}>Sales by Category</h3>
                     <div className="space-y-3">
                       {Object.entries(salesData.salesByCategory || {}).map(([category, amount]) => (
@@ -390,7 +392,7 @@ export default function FinancialReportsPage() {
                       ))}
                     </div>
                   </div>
-                  <div className="bg-white/10 backdrop-blur rounded-xl p-6">
+                  <div className={clsx('rounded-xl p-6 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-white border-gray-100')}>
                     <h3 className={clsx('font-semibold mb-4', isDarkMode ? 'text-white' : 'text-gray-900')}>Top Products</h3>
                     <div className="space-y-3">
                       {Object.entries(salesData.topProducts || {}).slice(0, 5).map(([product, amount]) => (
@@ -413,30 +415,30 @@ export default function FinancialReportsPage() {
                 className="space-y-6"
               >
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+                  <div className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
                     <div className="flex flex-col gap-2">
-                      <p className="text-white/60 text-xs">Total Tax Liability</p>
-                      <p className="text-white font-bold text-6xl font-mono">₦{taxData.totalTaxLiability?.toLocaleString() || 0}</p>
+                      <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Total Tax Liability</p>
+                      <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>₦{taxData.totalTaxLiability?.toLocaleString() || 0}</p>
                     </div>
                   </div>
-                  <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+                  <div className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
                     <div className="flex flex-col gap-2">
-                      <p className="text-white/60 text-xs">Total Tax Paid</p>
-                      <p className="text-white font-bold text-6xl font-mono text-green-300">₦{taxData.totalTaxPaid?.toLocaleString() || 0}</p>
+                      <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Total Tax Paid</p>
+                      <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-green-300' : 'text-green-600')}>₦{taxData.totalTaxPaid?.toLocaleString() || 0}</p>
                     </div>
                   </div>
-                  <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+                  <div className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
                     <div className="flex flex-col gap-2">
-                      <p className="text-white/60 text-xs">Tax Balance</p>
-                      <p className={`text-white font-bold text-6xl font-mono ${(taxData.taxBalance || 0) > 0 ? 'text-red-300' : 'text-green-300'}`}>
+                      <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Tax Balance</p>
+                      <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? ((taxData.taxBalance || 0) > 0 ? 'text-red-300' : 'text-green-300') : ((taxData.taxBalance || 0) > 0 ? 'text-red-600' : 'text-green-600'))}>
                         ₦{taxData.taxBalance?.toLocaleString() || 0}
                       </p>
                     </div>
                   </div>
-                  <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+                  <div className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
                     <div className="flex flex-col gap-2">
-                      <p className="text-white/60 text-xs">Net VAT</p>
-                      <p className={`text-white font-bold text-6xl font-mono ${(taxData.netVat || 0) >= 0 ? 'text-green-300' : 'text-red-300'}`}>
+                      <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Net VAT</p>
+                      <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? ((taxData.netVat || 0) >= 0 ? 'text-green-300' : 'text-red-300') : ((taxData.netVat || 0) >= 0 ? 'text-green-600' : 'text-red-600'))}>
                         ₦{taxData.netVat?.toLocaleString() || 0}
                       </p>
                     </div>
@@ -444,7 +446,7 @@ export default function FinancialReportsPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-white/10 backdrop-blur rounded-xl p-6">
+                  <div className={clsx('rounded-xl p-6 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-white border-gray-100')}>
                     <h3 className={clsx('font-semibold mb-4', isDarkMode ? 'text-white' : 'text-gray-900')}>Filing Status</h3>
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
@@ -457,7 +459,7 @@ export default function FinancialReportsPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="bg-white/10 backdrop-blur rounded-xl p-6">
+                  <div className={clsx('rounded-xl p-6 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-white border-gray-100')}>
                     <h3 className={clsx('font-semibold mb-4', isDarkMode ? 'text-white' : 'text-gray-900')}>VAT Summary</h3>
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
@@ -472,7 +474,7 @@ export default function FinancialReportsPage() {
                   </div>
                 </div>
 
-                <div className="bg-white/10 backdrop-blur rounded-xl p-6">
+                <div className={clsx('rounded-xl p-6 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-white border-gray-100')}>
                   <h3 className={clsx('font-semibold mb-4', isDarkMode ? 'text-white' : 'text-gray-900')}>Tax Records</h3>
                   <div className="space-y-3 max-h-96 overflow-y-auto">
                     {taxData.taxRecords?.map((record: any) => (

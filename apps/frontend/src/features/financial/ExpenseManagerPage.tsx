@@ -4,6 +4,7 @@ import { Link } from 'wouter';
 import { Plus, TrendingDown, Calendar, Filter, Search, Edit, Trash2, ArrowDownRight, Receipt, ChevronLeft, X } from 'lucide-react';
 import { useExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense, useFinancialSummary, useUploadReceipt } from '../../hooks/useVendors';
 import { Button, Skeleton, Badge } from '../../components/ui/index';
+import { RecordListView, type ViewMode } from '../../components/ui/RecordListView';
 import type { Expense, ExpenseCategory } from '../../lib/shared';
 import toast from 'react-hot-toast';
 import { useUIStore } from '../../stores/ui.store';
@@ -125,60 +126,158 @@ export default function ExpenseManagerPage() {
     return EXPENSE_CATEGORIES.find((c) => c.value === category) || EXPENSE_CATEGORIES[10];
   };
 
+  const renderExpenseItem = (expense: Expense, viewMode: ViewMode) => {
+    const catInfo = getCategoryInfo(expense.category);
+    if (viewMode === 'list') {
+      return (
+        <>
+          <td className="px-4 py-3 whitespace-nowrap">{new Date(expense.date).toLocaleDateString()}</td>
+          <td className="px-4 py-3 min-w-[240px] max-w-[360px]">
+            <div className="flex flex-col gap-1">
+              <span className={clsx('font-medium line-clamp-2', isDarkMode ? 'text-white' : 'text-gray-900')}>{expense.description}</span>
+              {expense.receiptUrl && (
+                <a
+                  href={expense.receiptUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-blue-600 hover:underline flex items-center gap-1"
+                >
+                  <Receipt size={12} />
+                  Receipt
+                </a>
+              )}
+            </div>
+          </td>
+          <td className="px-4 py-3 min-w-[140px]"><Badge variant="red" className="text-xs">{catInfo.label}</Badge></td>
+          <td className="px-4 py-3 text-right font-mono font-semibold text-red-600 min-w-[140px] text-base">-{formatCurrencyCompact(Number(expense.amount))}</td>
+        </>
+      );
+    }
+    return (
+      <motion.div
+        key={expense.id}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className={clsx('w-full rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow', isDarkMode ? 'bg-gray-800' : 'bg-white')}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className={`p-3 ${catInfo.color} bg-opacity-10 rounded-lg`}>
+              <ArrowDownRight
+                size={20}
+                className={catInfo.color.replace('bg-', 'text-')}
+              />
+            </div>
+
+            <div>
+              <p className={clsx('font-semibold', isDarkMode ? 'text-white' : 'text-gray-900')}>
+                {expense.description}
+              </p>
+
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                <Badge variant="red" className="text-xs">
+                  {catInfo.label}
+                </Badge>
+
+                <span className={clsx('text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>
+                  {new Date(expense.date).toLocaleDateString()}
+                </span>
+
+                {expense.receiptUrl && (
+                  <a
+                    href={expense.receiptUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-blue-600 hover:underline flex items-center gap-1"
+                  >
+                    <Receipt size={12} />
+                    Receipt
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between sm:gap-4">
+            <p className="font-bold text-red-600 text-lg font-mono">
+              -{formatCurrencyCompact(Number(expense.amount))}
+            </p>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleEdit(expense)}
+                className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100')}
+              >
+                <Edit size={18} className={isDarkMode ? 'text-gray-400' : 'text-gray-600'} />
+              </button>
+
+              <button
+                onClick={() => handleDelete(expense.id)}
+                className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-red-900/30' : 'hover:bg-red-50')}
+              >
+                <Trash2 size={18} className="text-red-600" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    );
+  };
+
   return (
     <div className={clsx('min-h-screen pb-20', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       {/* Header */}
-      <div className="bg-gradient-hero text-white">
+      <div className={clsx('rounded-b-2xl shadow-sm', isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900')}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
           <div className="flex items-center gap-4 mb-4">
             <Link href="/dashboard">
-              <button className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors">
+              <button className={clsx('p-2 rounded-xl transition-colors', isDarkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-gray-100 hover:bg-gray-200 text-gray-600')}>
                 <ChevronLeft size={20} />
               </button>
             </Link>
             <div className="flex-1">
-              <h1 className="font-display font-bold text-2xl">ExpenseManager</h1>
+              <h1 className="font-display font-bold text-2xl">Expense Manager</h1>
             </div>
-            <Button onClick={() => setIsAdding(true)} variant="primary" className="p-2">
+            <Button onClick={() => setIsAdding(true)} variant="primary" className="!p-2">
               <Plus size={20} />
             </Button>
           </div>
 
           {/* Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-red-500/20 rounded-lg">
-                    <TrendingDown size={20} className="text-red-300" />
+                    <TrendingDown size={20} className={isDarkMode ? 'text-red-300' : 'text-red-600'} />
                   </div>
-                  <p className="text-white/60 text-xs">Total Expenses</p>
+                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Total Expenses</p>
                 </div>
-                <p className="text-white font-bold text-6xl font-mono">
+                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>
                   {formatCurrencyCompact(totalExpense)}
                 </p>
               </div>
             </motion.div>
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-blue-500/20 rounded-lg">
-                    <Calendar size={20} className="text-blue-300" />
+                    <Calendar size={20} className={isDarkMode ? 'text-blue-300' : 'text-blue-600'} />
                   </div>
-                  <p className="text-white/60 text-xs">Records</p>
+                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Records</p>
                 </div>
-                <p className="text-white font-bold text-6xl">{filteredExpenses.length}</p>
+                <p className={clsx('font-bold text-6xl', isDarkMode ? 'text-white' : 'text-gray-900')}>{filteredExpenses.length}</p>
               </div>
             </motion.div>
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-purple-500/20 rounded-lg">
-                    <ArrowDownRight size={20} className="text-purple-300" />
+                    <ArrowDownRight size={20} className={isDarkMode ? 'text-purple-300' : 'text-purple-600'} />
                   </div>
-                  <p className="text-white/60 text-xs">This Month</p>
+                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>This Month</p>
                 </div>
-                <p className="text-white font-bold text-6xl font-mono">
+                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>
                   {formatCurrencyCompact(summary?.expense || 0)}
                 </p>
               </div>
@@ -219,99 +318,29 @@ export default function ExpenseManagerPage() {
 
       {/* Expense List */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        {isLoading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-20 rounded-xl" />
-            ))}
-          </div>
-        ) : filteredExpenses.length === 0 ? (
-          <div className={clsx('rounded-xl p-8 text-center', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
-            <TrendingDown size={48} className={clsx('mx-auto mb-4', isDarkMode ? 'text-gray-600' : 'text-gray-300')} />
-            <p className={clsx(isDarkMode ? 'text-gray-400' : 'text-gray-500')}>No expense records found</p>
-            <Button onClick={() => setIsAdding(true)} variant="primary" className="mt-4">
-              Add Your First Expense
-            </Button>
-          </div>
-        ) : (
-          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-            <div className="flex flex-col gap-4">
-              {filteredExpenses.map((expense: Expense) => {
-                const catInfo = getCategoryInfo(expense.category);
-
-                return (
-                  <motion.div
-                    key={expense.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={clsx('w-full rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow', isDarkMode ? 'bg-gray-800' : 'bg-white')}
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                      <div className="flex items-center gap-4">
-                        <div className={`p-3 ${catInfo.color} bg-opacity-10 rounded-lg`}>
-                          <ArrowDownRight
-                            size={20}
-                            className={catInfo.color.replace('bg-', 'text-')}
-                          />
-                        </div>
-
-                        <div>
-                          <p className={clsx('font-semibold', isDarkMode ? 'text-white' : 'text-gray-900')}>
-                            {expense.description}
-                          </p>
-
-                          <div className="flex items-center gap-2 mt-1 flex-wrap">
-                            <Badge variant="red" className="text-xs">
-                              {catInfo.label}
-                            </Badge>
-
-                            <span className={clsx('text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>
-                              {new Date(expense.date).toLocaleDateString()}
-                            </span>
-
-                            {expense.receiptUrl && (
-                              <a
-                                href={expense.receiptUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-xs text-blue-600 hover:underline flex items-center gap-1"
-                              >
-                                <Receipt size={12} />
-                                Receipt
-                              </a>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between sm:gap-4">
-                        <p className="font-bold text-red-600 text-lg font-mono">
-                          -{formatCurrencyCompact(Number(expense.amount))}
-                        </p>
-
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleEdit(expense)}
-                            className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100')}
-                          >
-                            <Edit size={18} className={isDarkMode ? 'text-gray-400' : 'text-gray-600'} />
-                          </button>
-
-                          <button
-                            onClick={() => handleDelete(expense.id)}
-                            className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-red-900/30' : 'hover:bg-red-50')}
-                          >
-                            <Trash2 size={18} className="text-red-600" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
+        <RecordListView
+          items={filteredExpenses}
+          isLoading={isLoading}
+          keyExtractor={(expense) => expense.id}
+          renderItem={renderExpenseItem}
+          listHeader={(
+            <tr>
+              <th className="px-4 py-2 font-medium">Date</th>
+              <th className="px-4 py-2 font-medium min-w-[240px]">Description</th>
+              <th className="px-4 py-2 font-medium min-w-[140px]">Category</th>
+              <th className="px-4 py-2 font-medium text-right min-w-[140px]">Amount</th>
+            </tr>
+          )}
+          emptyState={(
+            <div className={clsx('rounded-xl p-8 text-center', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+              <TrendingDown size={48} className={clsx('mx-auto mb-4', isDarkMode ? 'text-gray-600' : 'text-gray-300')} />
+              <p className={clsx(isDarkMode ? 'text-gray-400' : 'text-gray-500')}>No expense records found</p>
+              <Button onClick={() => setIsAdding(true)} variant="primary" className="mt-4">
+                Add Your First Expense
+              </Button>
             </div>
-          </div>
-        )}
+          )}
+        />
       </div>
 
       {/* Add/Edit Modal */}

@@ -90,7 +90,7 @@ export function useTrackWhatsApp() {
   });
 }
 
-export function useVendorAnalytics(period: 'week' | 'month' = 'month') {
+export function useVendorAnalytics(period: 'week' | 'month' | 'year' = 'month') {
   return useQuery({
     queryKey: queryKeys.vendors.analytics(period),
     queryFn: () => vendorApi.analytics(period).then((r) => r.data.data),

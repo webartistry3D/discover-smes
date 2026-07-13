@@ -4,6 +4,7 @@ import { Link } from 'wouter';
 import { Plus, Search, Filter, Package, AlertTriangle, TrendingUp, DollarSign, ArrowUp, ArrowDown, X, Edit, Trash2, MoreVertical, Clock, BarChart3, ChevronLeft } from 'lucide-react';
 import { useInventoryItems, useCreateInventoryItem, useUpdateInventoryItem, useDeleteInventoryItem, useInventorySummary, useInventoryItem, useStockMovements, useCreateStockMovement, useStockAlerts, useResolveStockAlert, useInventoryValuation, useCreateCategory } from '../../hooks/useVendors';
 import { Button, Skeleton, Badge } from '../../components/ui/index';
+import { RecordListView, type ViewMode } from '../../components/ui/RecordListView';
 import type { InventoryItem, MovementType, AlertSeverity } from '../../lib/shared';
 import toast from 'react-hot-toast';
 import { useUIStore } from '../../stores/ui.store';
@@ -203,6 +204,98 @@ export default function InventoryManagerPage() {
     return { label: 'In Stock', color: 'bg-green-500' };
   };
 
+  const renderInventoryItem = (item: InventoryItem, viewMode: ViewMode) => {
+    const status = getStockStatus(item);
+    if (viewMode === 'list') {
+      return (
+        <>
+          <td className="px-4 py-3 min-w-[240px] max-w-[360px]">
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className={clsx('font-medium line-clamp-2', isDarkMode ? 'text-white' : 'text-gray-900')}>{item.name}</span>
+                <Badge className={status.color}>{status.label}</Badge>
+              </div>
+              {item.sku && <span className={clsx('text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>{item.sku}</span>}
+            </div>
+          </td>
+          <td className="px-4 py-3 min-w-[120px]">{item.sku || '-'}</td>
+          <td className="px-4 py-3 min-w-[140px]">{item.category || '-'}</td>
+          <td className="px-4 py-3 min-w-[100px]"><span className="font-mono">{Number(item.quantity)}</span> {item.unit}</td>
+          <td className="px-4 py-3 text-right font-mono font-semibold text-base min-w-[140px]">₦{Number(item.sellingPrice).toLocaleString()}</td>
+        </>
+      );
+    }
+    return (
+      <motion.div
+        key={item.id}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        onClick={() => setSelectedItemId(item.id)}
+        className={clsx('w-full rounded-xl p-4 shadow-card hover:shadow-md transition-shadow cursor-pointer', isDarkMode ? 'bg-gray-800' : 'bg-white')}
+      >
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2 flex-wrap">
+              <h3 className={clsx('font-semibold', isDarkMode ? 'text-white' : 'text-gray-900')}>{item.name}</h3>
+
+              {item.sku && (
+                <span className={clsx('text-xs px-2 py-1 rounded', isDarkMode ? 'text-gray-400 bg-gray-700' : 'text-gray-500 bg-gray-100')}>
+                  {item.sku}
+                </span>
+              )}
+
+              <Badge className={status.color}>
+                {status.label}
+              </Badge>
+            </div>
+
+            <div className={clsx('space-y-1 text-sm', isDarkMode ? 'text-gray-300' : 'text-gray-600')}>
+              {item.category && (
+                <div className="flex items-center gap-2">
+                  <Package size={14} />
+                  <span>{item.category}</span>
+                </div>
+              )}
+
+              <div className={clsx('flex flex-wrap items-center gap-4 text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>
+                <span>
+                  Qty: <span className="font-mono">{Number(item.quantity)}</span> {item.unit}
+                </span>
+                <span>Min: <span className="font-mono">{Number(item.minStock)}</span></span>
+                <span>
+                  <span className="font-mono">₦{Number(item.sellingPrice).toLocaleString()}/</span>
+                  {item.unit || 'unit'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 ml-3">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEdit(item);
+              }}
+              className={clsx('p-2 text-gray-400 hover:text-festac-green rounded-lg transition-colors', isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-green-50')}
+            >
+              <Edit size={16} />
+            </button>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete(item.id);
+              }}
+              className={clsx('p-2 text-gray-400 hover:text-red-500 rounded-lg transition-colors', isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-red-50')}
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    );
+  };
+
   const filteredItems = inventoryItems?.filter((item) =>
     item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.sku?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -214,17 +307,16 @@ export default function InventoryManagerPage() {
   return (
     <div className={clsx('min-h-screen pb-20', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       {/* Header */}
-      <div className="bg-gradient-hero text-white">
+      <div className={clsx('rounded-b-2xl shadow-sm', isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900')}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
           <div className="flex items-center gap-4 mb-4">
             <Link href="/dashboard">
-              <button className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors">
+              <button className={clsx('p-2 rounded-xl transition-colors', isDarkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-gray-100 hover:bg-gray-200 text-gray-600')}>
                 <ChevronLeft size={20} />
               </button>
             </Link>
             <div className="flex-1">
               <h1 className="font-display font-bold text-2xl">Inventory Manager</h1>
-              {/*<p className="text-white/60 text-sm mt-1">Track stock levels, movements, and alerts</p>*/}
             </div>
           </div>
           <div className="flex justify-between mb-2 gap-2">
@@ -240,37 +332,37 @@ export default function InventoryManagerPage() {
 
           {/* Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-festac-green/20 rounded-lg">
-                    <Package size={20} className="text-festac-green/80" />
+                    <Package size={20} className={isDarkMode ? 'text-festac-green/80' : 'text-festac-green'} />
                   </div>
-                  <p className="text-white/60 text-xs">Total Items</p>
+                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Total Items</p>
                 </div>
-                <p className="text-white font-bold text-6xl font-mono">{summary?.totalItems || 0}</p>
+                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{summary?.totalItems || 0}</p>
               </div>
             </motion.div>
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-yellow-500/20 rounded-lg">
-                    <AlertTriangle size={20} className="text-yellow-300" />
+                    <AlertTriangle size={20} className={isDarkMode ? 'text-yellow-300' : 'text-yellow-600'} />
                   </div>
-                  <p className="text-white/60 text-xs">Low Stock</p>
+                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Low Stock</p>
                 </div>
-                <p className="text-white font-bold text-6xl font-mono">{summary?.lowStockCount || 0}</p>
+                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{summary?.lowStockCount || 0}</p>
               </div>
             </motion.div>
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-red-500/20 rounded-lg">
-                    <AlertTriangle size={20} className="text-red-300" />
+                    <AlertTriangle size={20} className={isDarkMode ? 'text-red-300' : 'text-red-600'} />
                   </div>
-                  <p className="text-white/60 text-xs">Out of Stock</p>
+                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Out of Stock</p>
                 </div>
-                <p className="text-white font-bold text-6xl font-mono">{summary?.outOfStockCount || 0}</p>
+                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{summary?.outOfStockCount || 0}</p>
               </div>
             </motion.div>
           </div>
@@ -371,93 +463,27 @@ export default function InventoryManagerPage() {
         </div>
 
         {/* Inventory List */}
-        {isLoading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-20 rounded-xl" />
-            ))}
-          </div>
-        ) : filteredItems && filteredItems.length > 0 ? (
-          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-            <div className="flex flex-col gap-4">
-              {filteredItems.map((item, index) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  onClick={() => setSelectedItemId(item.id)}
-                  className={clsx('w-full rounded-xl p-4 shadow-card hover:shadow-md transition-shadow cursor-pointer', isDarkMode ? 'bg-gray-800' : 'bg-white')}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2 flex-wrap">
-                        <h3 className={clsx('font-semibold', isDarkMode ? 'text-white' : 'text-gray-900')}>{item.name}</h3>
-
-                        {item.sku && (
-                          <span className={clsx('text-xs px-2 py-1 rounded', isDarkMode ? 'text-gray-400 bg-gray-700' : 'text-gray-500 bg-gray-100')}>
-                            {item.sku}
-                          </span>
-                        )}
-
-                        <Badge className={getStockStatus(item).color}>
-                          {getStockStatus(item).label}
-                        </Badge>
-                      </div>
-
-                      <div className={clsx('space-y-1 text-sm', isDarkMode ? 'text-gray-300' : 'text-gray-600')}>
-                        {item.category && (
-                          <div className="flex items-center gap-2">
-                            <Package size={14} />
-                            <span>{item.category}</span>
-                          </div>
-                        )}
-
-                        <div className={clsx('flex flex-wrap items-center gap-4 text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>
-                          <span>
-                            Qty: <span className="font-mono">{Number(item.quantity)}</span> {item.unit}
-                          </span>
-                          <span>Min: <span className="font-mono">{Number(item.minStock)}</span></span>
-                          <span>
-                            <span className="font-mono">₦{Number(item.sellingPrice).toLocaleString()}/</span>
-                            {item.unit || 'unit'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 ml-3">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEdit(item);
-                        }}
-                        className={clsx('p-2 text-gray-400 hover:text-festac-green rounded-lg transition-colors', isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-green-50')}
-                      >
-                        <Edit size={16} />
-                      </button>
-
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(item.id);
-                        }}
-                        className={clsx('p-2 text-gray-400 hover:text-red-500 rounded-lg transition-colors', isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-red-50')}
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+        <RecordListView
+          items={filteredItems || []}
+          isLoading={isLoading}
+          keyExtractor={(item) => item.id}
+          renderItem={renderInventoryItem}
+          listHeader={(
+            <tr>
+              <th className="px-4 py-2 font-medium min-w-[240px]">Item</th>
+              <th className="px-4 py-2 font-medium min-w-[120px]">SKU</th>
+              <th className="px-4 py-2 font-medium min-w-[140px]">Category</th>
+              <th className="px-4 py-2 font-medium min-w-[100px]">Stock</th>
+              <th className="px-4 py-2 font-medium text-right min-w-[140px]">Price</th>
+            </tr>
+          )}
+          emptyState={(
+            <div className={clsx('rounded-xl p-8 text-center', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+              <Package size={48} className={clsx('mx-auto mb-4', isDarkMode ? 'text-gray-600' : 'text-gray-300')} />
+              <p className={clsx(isDarkMode ? 'text-gray-400' : 'text-gray-500')}>No inventory items found</p>
             </div>
-          </div>
-        ) : (
-          <div className={clsx('rounded-xl p-8 text-center', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
-            <Package size={48} className={clsx('mx-auto mb-4', isDarkMode ? 'text-gray-600' : 'text-gray-300')} />
-            <p className={clsx(isDarkMode ? 'text-gray-400' : 'text-gray-500')}>No inventory items found</p>
-          </div>
-        )}
+          )}
+        />
       </div>
 
       {/* Item Detail View */}

@@ -71,7 +71,7 @@ export default function CostMonitor() {
   if (dashboardLoading || savingsLoading) {
     return (
       <div className={clsx('min-h-screen', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
-        <div className="bg-gradient-hero text-white">
+        <div className={clsx('rounded-b-2xl shadow-sm', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
           <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
             <Skeleton className="h-12 w-64 mb-4" />
             <Skeleton className="h-6 w-96" />
@@ -98,18 +98,17 @@ export default function CostMonitor() {
   return (
     <div className={clsx('min-h-screen pb-20', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       {/* Header */}
-      <div className="bg-gradient-hero text-white">
+      <div className={clsx('rounded-b-2xl shadow-sm', isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900')}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
             <div className="flex items-center gap-3">
               <Link href="/dashboard">
-                <button className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors">
+                <button className={clsx('p-2 rounded-xl transition-colors', isDarkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-gray-100 hover:bg-gray-200 text-gray-600')}>
                   <ChevronLeft size={20} />
                 </button>
               </Link>
               <div className="flex-1">
                 <h1 className="font-display font-bold text-xl sm:text-2xl">Cost Control</h1>
-                <p className="text-white/60 text-xs sm:text-sm mt-1">{/*Monitor and optimize your WhatsApp API costs*/}</p>
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -117,7 +116,7 @@ export default function CostMonitor() {
                 variant="secondary"
                 onClick={handleClearCache}
                 disabled={isClearingCache}
-                className="bg-white/10 hover:bg-white/20 text-white border-none text-xs sm:text-sm"
+                className={clsx('text-xs sm:text-sm', isDarkMode ? 'bg-white/10 hover:bg-white/20 text-white border-none' : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border-none')}
               >
                 <Trash2 size={16} className="mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Clear Cache</span>
@@ -126,7 +125,7 @@ export default function CostMonitor() {
                 variant={dashboard?.quota?.quota?.reducedMode ? 'primary' : 'secondary'}
                 onClick={handleToggleReducedMode}
                 disabled={enableReducedMode.isPending || disableReducedMode.isPending}
-                className={dashboard?.quota?.quota?.reducedMode ? '' : 'bg-white/10 hover:bg-white/20 text-white border-none text-xs sm:text-sm'}
+                className={dashboard?.quota?.quota?.reducedMode ? '' : clsx('text-xs sm:text-sm', isDarkMode ? 'bg-white/10 hover:bg-white/20 text-white border-none' : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border-none')}
               >
                 <Shield size={16} className="mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">{dashboard?.quota?.quota?.reducedMode ? 'Disable Reduced Mode' : 'Enable Reduced Mode'}</span>
@@ -137,37 +136,37 @@ export default function CostMonitor() {
 
           {/* Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-white/10 backdrop-blur rounded-xl p-3 sm:p-4">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className={clsx('rounded-xl border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent p-3 sm:p-4' : 'bg-gray-50 border-gray-200 p-3 sm:p-4')}>
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-green-500/20 rounded-lg">
-                    <DollarSign size={18} className="text-green-300" />
+                    <DollarSign size={18} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />
                   </div>
-                  <p className="text-white/60 text-[10px] sm:text-xs">Total Cost</p>
+                  <p className={clsx('text-[10px] sm:text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Total Cost</p>
                 </div>
-                <p className="text-white font-bold text-6xl font-mono">₦{savings?.totalCost?.toLocaleString() || 0}</p>
+                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>₦{savings?.totalCost?.toLocaleString() || 0}</p>
               </div>
             </motion.div>
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white/10 backdrop-blur rounded-xl p-3 sm:p-4">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className={clsx('rounded-xl border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent p-3 sm:p-4' : 'bg-gray-50 border-gray-200 p-3 sm:p-4')}>
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-blue-500/20 rounded-lg">
-                    <Database size={18} className="text-blue-300" />
+                    <Database size={18} className={isDarkMode ? 'text-blue-300' : 'text-blue-600'} />
                   </div>
-                  <p className="text-white/60 text-[10px] sm:text-xs">Cache Hit Rate</p>
+                  <p className={clsx('text-[10px] sm:text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Cache Hit Rate</p>
                 </div>
-                <p className="text-white font-bold text-6xl font-mono">{savings?.savingsPercentage?.toFixed(1) || 0}%</p>
+                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{savings?.savingsPercentage?.toFixed(1) || 0}%</p>
               </div>
             </motion.div>
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white/10 backdrop-blur rounded-xl p-3 sm:p-4">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className={clsx('rounded-xl border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent p-3 sm:p-4' : 'bg-gray-50 border-gray-200 p-3 sm:p-4')}>
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-purple-500/20 rounded-lg">
-                    <Activity size={18} className="text-purple-300" />
+                    <Activity size={18} className={isDarkMode ? 'text-purple-300' : 'text-purple-600'} />
                   </div>
-                  <p className="text-white/60 text-[10px] sm:text-xs">Quota Status</p>
+                  <p className={clsx('text-[10px] sm:text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Quota Status</p>
                 </div>
-                <p className="text-white font-bold text-6xl font-mono">{quotaStatus}</p>
+                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{quotaStatus}</p>
               </div>
             </motion.div>
           </div>

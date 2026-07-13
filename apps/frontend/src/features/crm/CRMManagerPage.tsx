@@ -4,6 +4,7 @@ import { Link } from 'wouter';
 import { Plus, Search, Filter, Users, Mail, Phone, Building2, ChevronLeft, MoreVertical, Edit, Trash2, X, Clock, DollarSign, FileText, MessageSquare, Tag, StickyNote } from 'lucide-react';
 import { useCustomers, useCreateCustomer, useUpdateCustomer, useDeleteCustomer, useCRMSummary, useCustomer, useCustomerNotes, useCustomerTags, useCommunications, useCustomerPurchaseHistory, useCreateCustomerNote, useCreateCustomerTag, useDeleteCustomerTag, useCreateCommunication } from '../../hooks/useVendors';
 import { Button, Skeleton, Badge } from '../../components/ui/index';
+import { RecordListView, type ViewMode } from '../../components/ui/RecordListView';
 import type { Customer, CustomerStatus } from '../../lib/shared';
 import toast from 'react-hot-toast';
 import { useUIStore } from '../../stores/ui.store';
@@ -173,6 +174,97 @@ export default function CRMManagerPage() {
     return CUSTOMER_STATUS.find((s) => s.value === status) || CUSTOMER_STATUS[0];
   };
 
+  const renderCustomer = (customer: Customer, viewMode: ViewMode) => {
+    const statusInfo = getStatusInfo(customer.status);
+    if (viewMode === 'list') {
+      return (
+        <>
+          <td className="px-4 py-3 min-w-[240px] max-w-[360px]">
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className={clsx('font-medium line-clamp-2', isDarkMode ? 'text-white' : 'text-gray-900')}>{customer.name}</span>
+                <Badge className={statusInfo.color}>{statusInfo.label}</Badge>
+              </div>
+            </div>
+          </td>
+          <td className="px-4 py-3 min-w-[180px]">{customer.email || '-'}</td>
+          <td className="px-4 py-3 min-w-[140px]">{customer.phone || '-'}</td>
+          <td className="px-4 py-3 min-w-[160px]">{customer.company || '-'}</td>
+          <td className="px-4 py-3 text-right font-mono font-semibold text-base min-w-[140px]">₦{Number(customer.totalSpent).toLocaleString()}</td>
+          <td className="px-4 py-3 min-w-[100px]">{customer._count?.invoices || 0}</td>
+        </>
+      );
+    }
+    return (
+      <motion.div
+        key={customer.id}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        onClick={() => setSelectedCustomerId(customer.id)}
+        className={clsx('w-full rounded-xl p-4 shadow-card hover:shadow-md transition-shadow cursor-pointer', isDarkMode ? 'bg-gray-800' : 'bg-white')}
+      >
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <h3 className={clsx('font-semibold', isDarkMode ? 'text-white' : 'text-gray-900')}>{customer.name}</h3>
+              <Badge className={statusInfo.color}>
+                {statusInfo.label}
+              </Badge>
+            </div>
+
+            <div className={clsx('space-y-1 text-sm', isDarkMode ? 'text-gray-300' : 'text-gray-600')}>
+              {customer.email && (
+                <div className="flex items-center gap-2">
+                  <Mail size={14} />
+                  <span>{customer.email}</span>
+                </div>
+              )}
+              {customer.phone && (
+                <div className="flex items-center gap-2">
+                  <Phone size={14} />
+                  <span>{customer.phone}</span>
+                </div>
+              )}
+              {customer.company && (
+                <div className="flex items-center gap-2">
+                  <Building2 size={14} />
+                  <span>{customer.company}</span>
+                </div>
+              )}
+            </div>
+
+            <div className={clsx('mt-2 flex items-center gap-4 text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>
+              <span className="font-mono">₦{Number(customer.totalSpent).toLocaleString()}</span> spent
+              <span>{customer._count?.invoices || 0} purchases</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEdit(customer);
+              }}
+              className="p-2 text-gray-400 hover:text-festac-green hover:bg-green-50 rounded-lg transition-colors"
+            >
+              <Edit size={16} />
+            </button>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete(customer.id);
+              }}
+              className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    );
+  };
+
   const filteredCustomers = customers?.filter((c) =>
     c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     c.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -183,11 +275,11 @@ export default function CRMManagerPage() {
   return (
     <div className={clsx('min-h-screen pb-20', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       {/* Header */}
-      <div className="bg-gradient-hero text-white">
+      <div className={clsx('rounded-b-2xl shadow-sm', isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900')}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
           <div className="flex items-center gap-4 mb-4">
             <Link href="/dashboard">
-              <button className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors">
+              <button className={clsx('p-2 rounded-xl transition-colors', isDarkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-gray-100 hover:bg-gray-200 text-gray-600')}>
                 <ChevronLeft size={20} />
               </button>
             </Link>
@@ -201,37 +293,37 @@ export default function CRMManagerPage() {
 
           {/* Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-blue-500/20 rounded-lg">
-                    <Users size={20} className="text-blue-300" />
+                    <Users size={20} className={isDarkMode ? 'text-blue-300' : 'text-blue-600'} />
                   </div>
-                  <p className="text-white/60 text-xs">Total Customers</p>
+                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Total Customers</p>
                 </div>
-                <p className="text-white font-bold text-6xl font-mono">{summary?.totalCustomers || 0}</p>
+                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{summary?.totalCustomers || 0}</p>
               </div>
             </motion.div>
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-green-500/20 rounded-lg">
-                    <Users size={20} className="text-green-300" />
+                    <Users size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />
                   </div>
-                  <p className="text-white/60 text-xs">Active Customers</p>
+                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Active Customers</p>
                 </div>
-                <p className="text-white font-bold text-6xl font-mono">{summary?.statusBreakdown?.active || 0}</p>
+                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{summary?.statusBreakdown?.active || 0}</p>
               </div>
             </motion.div>
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white/10 backdrop-blur rounded-xl p-4">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
                   <div className="p-2 bg-purple-500/20 rounded-lg">
-                    <Mail size={20} className="text-purple-300" />
+                    <Mail size={20} className={isDarkMode ? 'text-purple-300' : 'text-purple-600'} />
                   </div>
-                  <p className="text-white/60 text-xs">Recent Communications</p>
+                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Recent Communications</p>
                 </div>
-                <p className="text-white font-bold text-6xl font-mono">{summary?.recentCommunications || 0}</p>
+                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{summary?.recentCommunications || 0}</p>
               </div>
             </motion.div>
           </div>
@@ -268,92 +360,28 @@ export default function CRMManagerPage() {
         </div>
 
         {/* Customer List */}
-        {isLoading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-20 rounded-xl" />
-            ))}
-          </div>
-        ) : filteredCustomers && filteredCustomers.length > 0 ? (
-          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-            <div className="flex flex-col gap-4">
-              {filteredCustomers.map((customer, index) => (
-                <motion.div
-                  key={customer.id}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  onClick={() => setSelectedCustomerId(customer.id)}
-                  className={clsx('w-full rounded-xl p-4 shadow-card hover:shadow-md transition-shadow cursor-pointer', isDarkMode ? 'bg-gray-800' : 'bg-white')}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className={clsx('font-semibold', isDarkMode ? 'text-white' : 'text-gray-900')}>{customer.name}</h3>
-                        <Badge className={getStatusInfo(customer.status).color}>
-                          {getStatusInfo(customer.status).label}
-                        </Badge>
-                      </div>
-
-                      <div className={clsx('space-y-1 text-sm', isDarkMode ? 'text-gray-300' : 'text-gray-600')}>
-                        {customer.email && (
-                          <div className="flex items-center gap-2">
-                            <Mail size={14} />
-                            <span>{customer.email}</span>
-                          </div>
-                        )}
-                        {customer.phone && (
-                          <div className="flex items-center gap-2">
-                            <Phone size={14} />
-                            <span>{customer.phone}</span>
-                          </div>
-                        )}
-                        {customer.company && (
-                          <div className="flex items-center gap-2">
-                            <Building2 size={14} />
-                            <span>{customer.company}</span>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className={clsx('mt-2 flex items-center gap-4 text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>
-                        <span className="font-mono">₦{Number(customer.totalSpent).toLocaleString()}</span> spent
-                        <span>{customer._count?.invoices || 0} purchases</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEdit(customer);
-                        }}
-                        className="p-2 text-gray-400 hover:text-festac-green hover:bg-green-50 rounded-lg transition-colors"
-                      >
-                        <Edit size={16} />
-                      </button>
-
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(customer.id);
-                        }}
-                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+        <RecordListView
+          items={filteredCustomers || []}
+          isLoading={isLoading}
+          keyExtractor={(customer) => customer.id}
+          renderItem={renderCustomer}
+          listHeader={(
+            <tr>
+              <th className="px-4 py-2 font-medium min-w-[240px]">Customer</th>
+              <th className="px-4 py-2 font-medium min-w-[180px]">Email</th>
+              <th className="px-4 py-2 font-medium min-w-[140px]">Phone</th>
+              <th className="px-4 py-2 font-medium min-w-[160px]">Company</th>
+              <th className="px-4 py-2 font-medium text-right min-w-[140px]">Spent</th>
+              <th className="px-4 py-2 font-medium min-w-[100px]">Purchases</th>
+            </tr>
+          )}
+          emptyState={(
+            <div className={clsx('rounded-xl p-8 text-center', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+              <Users size={48} className={clsx('mx-auto mb-4', isDarkMode ? 'text-gray-600' : 'text-gray-300')} />
+              <p className={clsx(isDarkMode ? 'text-gray-400' : 'text-gray-500')}>No customers found</p>
             </div>
-          </div>
-        ) : (
-          <div className={clsx('rounded-xl p-8 text-center', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
-            <Users size={48} className={clsx('mx-auto mb-4', isDarkMode ? 'text-gray-600' : 'text-gray-300')} />
-            <p className={clsx(isDarkMode ? 'text-gray-400' : 'text-gray-500')}>No customers found</p>
-          </div>
-        )}
+          )}
+        />
       </div>
 
       {/* Customer Detail View */}
