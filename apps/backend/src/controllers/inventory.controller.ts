@@ -10,10 +10,17 @@ export class InventoryController {
       const vendorId = req.user!.vendorId;
       if (!vendorId) throw AppError.forbidden('Vendor account required');
 
-      const { category, search, lowStock } = req.query as Record<string, string>;
+      const { category, categoryId, search, lowStock } = req.query as Record<string, string>;
 
       const where: any = { vendorId, isActive: true };
-      if (category) where.category = category;
+      if (categoryId) {
+        where.categoryId = categoryId;
+      } else if (category) {
+        where.OR = [
+          { category: { equals: category, mode: 'insensitive' } },
+          { categoryRel: { name: { equals: category, mode: 'insensitive' } } },
+        ];
+      }
       if (search) {
         where.OR = [
           { name: { contains: search, mode: 'insensitive' } },
@@ -28,6 +35,7 @@ export class InventoryController {
       const items = await prisma.inventoryItem.findMany({
         where,
         include: {
+          categoryRel: true,
           _count: {
             select: {
               stockMovements: true,
@@ -91,6 +99,7 @@ export class InventoryController {
         name,
         description,
         category,
+        categoryId,
         unit,
         quantity,
         minStock,
@@ -104,13 +113,16 @@ export class InventoryController {
         notes,
       } = req.body as Record<string, unknown>;
 
+      const resolvedCategory = await this.resolveCategory(categoryId as string | undefined, category as string | undefined);
+
       const item = await prisma.inventoryItem.create({
         data: {
           vendorId,
           sku: sku as string | undefined,
           name: name as string,
           description: description as string | undefined,
-          category: category as string | undefined,
+          category: resolvedCategory.name,
+          categoryId: resolvedCategory.id,
           unit: unit as string | undefined,
           quantity: Number(quantity) || 0,
           minStock: Number(minStock) || 0,
@@ -156,6 +168,7 @@ export class InventoryController {
         name,
         description,
         category,
+        categoryId,
         unit,
         quantity,
         minStock,
@@ -170,13 +183,16 @@ export class InventoryController {
         notes,
       } = req.body as Record<string, unknown>;
 
+      const resolvedCategory = await this.resolveCategory(categoryId as string | undefined, category as string | undefined);
+
       const item = await prisma.inventoryItem.update({
         where: { id, vendorId },
         data: {
           sku: sku as string | undefined,
           name: name as string | undefined,
           description: description as string | undefined,
-          category: category as string | undefined,
+          category: resolvedCategory.name,
+          categoryId: resolvedCategory.id,
           unit: unit as string | undefined,
           quantity: quantity !== undefined ? Number(quantity) : undefined,
           minStock: minStock !== undefined ? Number(minStock) : undefined,
@@ -407,6 +423,24 @@ export class InventoryController {
   }
 
   // ─── INVENTORY SUMMARY ──────────────────────────────────────
+
+  private async resolveCategory(
+    categoryId?: string,
+    categoryName?: string,
+  ): Promise<{ id?: string; name?: string }> {
+    if (categoryId) {
+      const cat = await prisma.category.findUnique({ where: { id: categoryId } });
+      if (cat) return { id: cat.id, name: cat.name };
+    }
+    if (categoryName) {
+      const cat = await prisma.category.findFirst({
+        where: { name: { equals: categoryName.trim(), mode: 'insensitive' }, isActive: true },
+      });
+      if (cat) return { id: cat.id, name: cat.name };
+      return { name: categoryName.trim() };
+    }
+    return {};
+  }
 
   async getInventorySummary(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {

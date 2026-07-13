@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'wouter';
 import { Plus, Search, Filter, Package, AlertTriangle, TrendingUp, DollarSign, ArrowUp, ArrowDown, X, Edit, Trash2, MoreVertical, Clock, BarChart3, ChevronLeft } from 'lucide-react';
-import { useInventoryItems, useCreateInventoryItem, useUpdateInventoryItem, useDeleteInventoryItem, useInventorySummary, useInventoryItem, useStockMovements, useCreateStockMovement, useStockAlerts, useResolveStockAlert, useInventoryValuation, useCreateCategory } from '../../hooks/useVendors';
+import { useInventoryItems, useCreateInventoryItem, useUpdateInventoryItem, useDeleteInventoryItem, useInventorySummary, useInventoryItem, useStockMovements, useCreateStockMovement, useStockAlerts, useResolveStockAlert, useInventoryValuation, useCategories, useCreateCategory } from '../../hooks/useVendors';
 import { Button, Skeleton, Badge } from '../../components/ui/index';
 import { RecordListView, type ViewMode } from '../../components/ui/RecordListView';
 import type { InventoryItem, MovementType, AlertSeverity } from '../../lib/shared';
@@ -39,13 +39,14 @@ export default function InventoryManagerPage() {
   const [categoryFormData, setCategoryFormData] = useState({ name: '', description: '' });
 
   const { data: inventoryItems, isLoading } = useInventoryItems(
-    categoryFilter !== 'all' ? { category: categoryFilter, lowStock: lowStockOnly ? 'true' : undefined } : { lowStock: lowStockOnly ? 'true' : undefined }
+    categoryFilter !== 'all' ? { categoryId: categoryFilter, lowStock: lowStockOnly ? 'true' : undefined } : { lowStock: lowStockOnly ? 'true' : undefined }
   );
   const { data: summary } = useInventorySummary();
   const { data: selectedItem } = useInventoryItem(selectedItemId || '');
   const { data: stockMovements } = useStockMovements(selectedItemId ? { inventoryId: selectedItemId } : undefined);
   const { data: stockAlerts } = useStockAlerts({ isResolved: 'false' });
   const { data: valuation } = useInventoryValuation();
+  const { data: categoriesData } = useCategories();
   const createInventoryItem = useCreateInventoryItem();
   const updateInventoryItem = useUpdateInventoryItem();
   const deleteInventoryItem = useDeleteInventoryItem();
@@ -57,7 +58,7 @@ export default function InventoryManagerPage() {
     sku: '',
     name: '',
     description: '',
-    category: '',
+    categoryId: '',
     unit: '',
     quantity: 0,
     minStock: 0,
@@ -81,7 +82,7 @@ export default function InventoryManagerPage() {
         sku: '',
         name: '',
         description: '',
-        category: '',
+        categoryId: '',
         unit: '',
         quantity: 0,
         minStock: 0,
@@ -110,7 +111,7 @@ export default function InventoryManagerPage() {
         sku: '',
         name: '',
         description: '',
-        category: '',
+        categoryId: '',
         unit: '',
         quantity: 0,
         minStock: 0,
@@ -144,7 +145,7 @@ export default function InventoryManagerPage() {
       sku: item.sku || '',
       name: item.name,
       description: item.description || '',
-      category: item.category || '',
+      categoryId: item.categoryId || '',
       unit: item.unit || '',
       quantity: Number(item.quantity),
       minStock: Number(item.minStock),
@@ -302,7 +303,7 @@ export default function InventoryManagerPage() {
     item.category?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const categories = [...new Set(inventoryItems?.map((item) => item.category).filter(Boolean))] as string[];
+  const categories = categoriesData ?? [];
 
   return (
     <div className={clsx('min-h-screen pb-20', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
@@ -445,8 +446,8 @@ export default function InventoryManagerPage() {
             >
               <option value="all">All Categories</option>
               {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
                 </option>
               ))}
             </select>
@@ -629,12 +630,18 @@ export default function InventoryManagerPage() {
                 </div>
                 <div>
                   <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Category</label>
-                  <input
-                    type="text"
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  <select
+                    value={formData.categoryId}
+                    onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
                     className={clsx('w-full px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
-                  />
+                  >
+                    <option value="">Select category</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>

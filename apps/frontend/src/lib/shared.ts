@@ -174,6 +174,7 @@ export interface InventoryItem {
   name: string;
   description?: string;
   category?: string;
+  categoryId?: string;
   unit?: string;
   quantity: number;
   minStock: number;
@@ -336,6 +337,7 @@ export interface VendorSummary {
 export interface Category {
   id: string;
   name: string;
+  description?: string;
   icon?: string;
   slug: string;
   color?: string;

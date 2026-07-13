@@ -99,6 +99,14 @@ vendors.delete('/:id/services/:serviceId', authenticate, requireVendor, vendorCo
 router.use('/vendors', vendors);
 
 // ─── CATEGORIES ──────────────────────────────────────────────
+const generateSlug = (name: string) =>
+  name
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
 router.get('/categories', async (_req, res, next) => {
   try {
     const categories = await prisma.category.findMany({
@@ -110,6 +118,32 @@ router.get('/categories', async (_req, res, next) => {
       },
     });
     sendSuccess(res, categories.map((c) => ({ ...c, vendorCount: c._count.vendors })));
+  } catch (err) { next(err); }
+});
+
+router.post('/categories', authenticate, async (req, res, next) => {
+  try {
+    const { name, description } = req.body as { name?: string; description?: string };
+    if (!name || !name.trim()) throw AppError.badRequest('Category name is required');
+
+    const baseSlug = generateSlug(name);
+    if (!baseSlug) throw AppError.badRequest('Category name must contain valid characters');
+
+    let slug = baseSlug;
+    let suffix = 0;
+    while (await prisma.category.findUnique({ where: { slug } })) {
+      suffix += 1;
+      slug = `${baseSlug}-${suffix}`;
+    }
+
+    const category = await prisma.category.create({
+      data: {
+        name: name.trim(),
+        slug,
+        description,
+      },
+    });
+    sendCreated(res, category, 'Category created');
   } catch (err) { next(err); }
 });
 

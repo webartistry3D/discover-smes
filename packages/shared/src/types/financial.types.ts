@@ -194,6 +194,7 @@ export interface InventoryItem {
   name: string;
   description?: string;
   category?: string;
+  categoryId?: string;
   unit?: string;
   quantity: number;
   minStock: number;

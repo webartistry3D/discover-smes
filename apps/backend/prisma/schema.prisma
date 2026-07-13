@@ -107,6 +107,7 @@ model Category {
   // Relations
   vendors      Vendor[]
   subCategories SubCategory[]
+  inventoryItems InventoryItem[]
 
   @@index([slug])
   @@index([isActive, sortOrder])
@@ -988,7 +989,8 @@ model InventoryItem {
   barcode     String?  @unique
   name        String
   description String?
-  category    String?
+  category    String?  // Denormalized category name for quick display/filtering
+  categoryId  String?  @db.Uuid
   unit        String?  // e.g., "pcs", "kg", "liters"
   quantity    Decimal  @default(0) @db.Decimal(12, 2)
   minStock    Decimal  @default(0) @db.Decimal(12, 2) // Minimum stock level for alerts
@@ -1005,12 +1007,14 @@ model InventoryItem {
   updatedAt   DateTime @updatedAt
 
   vendor         Vendor          @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  categoryRel    Category?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   stockMovements StockMovement[]
   stockAlerts    StockAlert[]
 
   @@index([vendorId, isActive])
   @@index([sku])
   @@index([category])
+  @@index([categoryId])
   @@map("inventory_items")
 }
 
