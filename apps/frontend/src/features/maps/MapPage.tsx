@@ -389,7 +389,7 @@ export default function MapPage() {
                 placeholder='Lat'
                 value={coords.lat}
                 onChange={(e) => setCoords((c) => ({ ...c, lat: e.target.value }))}
-                className={clsx('w-20 text-sm bg-transparent focus:outline-none', isDarkMode ? 'placeholder-gray-500' : 'placeholder-gray-400')}
+                className={clsx('w-20 text-sm bg-transparent focus:outline-none', isDarkMode ? 'text-white placeholder-gray-500' : 'text-gray-900 placeholder-gray-400')}
               />
               <span className={clsx('text-xs', isDarkMode ? 'text-gray-500' : 'text-gray-400')}>|</span>
               <input
@@ -398,7 +398,7 @@ export default function MapPage() {
                 placeholder='Lng'
                 value={coords.lng}
                 onChange={(e) => setCoords((c) => ({ ...c, lng: e.target.value }))}
-                className={clsx('w-20 text-sm bg-transparent focus:outline-none', isDarkMode ? 'placeholder-gray-500' : 'placeholder-gray-400')}
+                className={clsx('w-20 text-sm bg-transparent focus:outline-none', isDarkMode ? 'text-white placeholder-gray-500' : 'text-gray-900 placeholder-gray-400')}
               />
             </div>
             <button
