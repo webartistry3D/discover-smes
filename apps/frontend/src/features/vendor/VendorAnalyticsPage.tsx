@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'wouter';
 import { ChevronLeft, BarChart3, TrendingUp, Users, Eye, Calendar, ArrowUp, ArrowDown, DollarSign } from 'lucide-react';
 import { Skeleton } from '../../components/ui/index';
+import { KPICard } from '../../components/ui/KPICard';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useVendorAnalytics } from '../../hooks/useVendors';
 import { useUIStore } from '../../stores/ui.store';
@@ -62,60 +63,54 @@ export default function VendorAnalyticsPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-5">
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {analyticsLoading ? (
-            [1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-32 rounded-2xl" />)
-          ) : (
-            [
-              { 
-                icon: <Eye size={18} />, 
-                label: 'Profile Views', 
-                value: analytics?.profileViews?.toLocaleString() || '0', 
-                change: analytics?.profileViewsChange || '+0%', 
-                positive: (analytics?.profileViewsChange || '+0%').includes('+') 
-              },
-              { 
-                icon: <Users size={18} />, 
-                label: 'New Followers', 
-                value: analytics?.newFollowers?.toLocaleString() || '0', 
-                change: analytics?.followersChange || '+0%', 
-                positive: (analytics?.followersChange || '+0%').includes('+') 
-              },
-              { 
-                icon: <Calendar size={18} />, 
-                label: 'Bookings', 
-                value: analytics?.bookings?.toLocaleString() || '0', 
-                change: analytics?.bookingsChange || '+0%', 
-                positive: (analytics?.bookingsChange || '+0%').includes('+') 
-              },
-              { 
-                icon: <DollarSign size={18} />, 
-                label: 'Revenue', 
-                value: `₦${(analytics?.revenue || 0).toLocaleString()}`, 
-                change: analytics?.revenueChange || '+0%', 
-                positive: (analytics?.revenueChange || '+0%').includes('+') 
-              },
-            ].map((stat, index) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className={clsx('rounded-2xl p-4 shadow-card', isDarkMode ? 'bg-gray-800' : 'bg-white')}
-              >
-                <div className="flex flex-col gap-2">
-                  <div className="flex justify-between items-start">
-                    <div className="p-2 bg-festac-green/10 rounded-xl text-festac-green">{stat.icon}</div>
-                    <div className={`flex items-center gap-1 text-xs font-medium ${stat.positive ? 'text-green-600' : 'text-red-600'}`}>
-                      {stat.positive ? <ArrowUp size={12} /> : <ArrowDown size={12} />}
-                      {stat.change}
-                    </div>
-                  </div>
-                  <p className={clsx('text-6xl font-bold font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{stat.value}</p>
-                  <p className={clsx('text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>{stat.label}</p>
+          {[
+            {
+              icon: <Eye size={18} />,
+              label: 'Profile Views',
+              value: analytics?.profileViews?.toLocaleString() || '0',
+              change: analytics?.profileViewsChange || '+0%',
+              positive: (analytics?.profileViewsChange || '+0%').includes('+'),
+            },
+            {
+              icon: <Users size={18} />,
+              label: 'New Followers',
+              value: analytics?.newFollowers?.toLocaleString() || '0',
+              change: analytics?.followersChange || '+0%',
+              positive: (analytics?.followersChange || '+0%').includes('+'),
+            },
+            {
+              icon: <Calendar size={18} />,
+              label: 'Bookings',
+              value: analytics?.bookings?.toLocaleString() || '0',
+              change: analytics?.bookingsChange || '+0%',
+              positive: (analytics?.bookingsChange || '+0%').includes('+'),
+            },
+            {
+              icon: <DollarSign size={18} />,
+              label: 'Revenue',
+              value: `₦${(analytics?.revenue || 0).toLocaleString()}`,
+              change: analytics?.revenueChange || '+0%',
+              positive: (analytics?.revenueChange || '+0%').includes('+'),
+            },
+          ].map((stat, index) => (
+            <KPICard
+              key={stat.label}
+              icon={stat.icon}
+              iconContainerClassName="p-2 bg-festac-green/10 rounded-xl text-festac-green"
+              topRight={
+                <div className={`flex items-center gap-1 text-xs font-medium ${stat.positive ? 'text-green-600' : 'text-red-600'}`}>
+                  {stat.positive ? <ArrowUp size={12} /> : <ArrowDown size={12} />}
+                  {stat.change}
                 </div>
-              </motion.div>
-            ))
-          )}
+              }
+              label={stat.label}
+              value={stat.value}
+              isLoading={analyticsLoading}
+              labelPosition="bottom"
+              containerClassName={clsx('rounded-2xl p-4 shadow-card gap-2', isDarkMode ? 'bg-gray-800' : 'bg-white')}
+              delay={index * 0.05}
+            />
+          ))}
         </div>
 
         {/* Charts Section */}

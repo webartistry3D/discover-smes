@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, MapPin, ArrowRight, Zap, ShieldCheck, MessageCircle, TrendingUp, ChevronRight } from 'lucide-react';
+import { Search, MapPin, Map as MapIcon, ArrowRight, Zap, ShieldCheck, MessageCircle, TrendingUp, ChevronRight } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useCategories, useFeaturedVendors, useNearbyVendors } from '../../hooks/useVendors';
 import { useGeolocation } from '../../hooks/useGeolocation';
@@ -26,7 +26,7 @@ export default function HomePage() {
   const { location, isGranted, permission, requestLocation } = useGeolocation(true);
   const { data: categories, isLoading: catsLoading } = useCategories();
   const { data: featured, isLoading: featuredLoading } = useFeaturedVendors(8);
-  const { data: nearby } = useNearbyVendors(location?.lat, location?.lng, 3);
+  const { data: nearby, isLoading: nearbyLoading } = useNearbyVendors(location?.lat, location?.lng, 3);
 
   // Cycle through business types
   useEffect(() => {
@@ -73,19 +73,28 @@ export default function HomePage() {
             transition={{ duration: 0.6 }}
             className="max-w-2xl"
           >
-            {/* Location pill */}
+            {/* Location pill + View Map */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
-              className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full text-sm text-white/80 mb-6"
+              className="flex flex-wrap items-center gap-2 mb-6"
             >
-              <MapPin size={13} className="text-festac-amber" />
-              {isGranted && location
-                ? `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`
-                : permission === 'denied'
-                  ? 'Amuwo-Odofin, Lagos'
-                  : 'Locating...'}
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full text-sm text-white/80">
+                <MapPin size={13} className="text-festac-amber" />
+                {isGranted && location
+                  ? `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`
+                  : permission === 'denied'
+                    ? 'Amuwo-Odofin, Lagos'
+                    : 'Locating...'}
+              </div>
+              <Link
+                href="/map"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full text-sm text-white/80 hover:bg-white/20 transition-colors"
+              >
+                <MapIcon size={13} className="text-festac-amber" />
+                <span>View Map</span>
+              </Link>
             </motion.div>
 
             <h1 className="font-display font-black text-4xl sm:text-7xl lg:text-7xl leading-[1.1] text-balance">
@@ -187,7 +196,7 @@ export default function HomePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-16 py-12">
 
         {/* ─── NEARBY ──────────────────────────────────────── */}
-        {nearby && nearby.length > 0 && (
+        {(nearbyLoading || (nearby && nearby.length > 0)) && (
           <section>
             <SectionHeader
               icon={<MapPin size={16} className="text-festac-green" />}
@@ -196,11 +205,19 @@ export default function HomePage() {
               href="/discover?sortBy=distance"
             />
             <div className="flex gap-4 mt-5 overflow-x-auto pb-4">
-              {nearby.slice(0, 6).map((v, i) => (
-                <div key={v.id} className="max-w-[250px] flex-shrink-0">
-                  <VendorCard vendor={v} index={i} />
-                </div>
-              ))}
+              {nearbyLoading ? (
+                Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="max-w-[250px] flex-shrink-0">
+                    <VendorCardSkeleton />
+                  </div>
+                ))
+              ) : (
+                nearby!.slice(0, 6).map((v, i) => (
+                  <div key={v.id} className="max-w-[250px] flex-shrink-0">
+                    <VendorCard vendor={v} index={i} />
+                  </div>
+                ))
+              )}
             </div>
           </section>
         )}

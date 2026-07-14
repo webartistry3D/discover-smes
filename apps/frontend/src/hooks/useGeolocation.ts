@@ -2,9 +2,16 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useUIStore } from '../stores/ui.store';
 import { FESTAC_CENTER } from '../lib/shared';
 
+const COORD_DECIMALS = 3;
+
+function roundCoord(value: number) {
+  return Math.round(value * 10 ** COORD_DECIMALS) / 10 ** COORD_DECIMALS;
+}
+
 export function useGeolocation(autoRequest = false) {
   const { userLocation, locationPermission, setUserLocation, setLocationPermission } = useUIStore();
   const watchIdRef = useRef<number | null>(null);
+  const lastLocationRef = useRef(userLocation);
 
   const startWatching = useCallback(() => {
     if (!navigator.geolocation) {
@@ -17,14 +24,26 @@ export function useGeolocation(autoRequest = false) {
 
     watchIdRef.current = navigator.geolocation.watchPosition(
       (position) => {
-        setUserLocation({ lat: position.coords.latitude, lng: position.coords.longitude });
+        const lat = roundCoord(position.coords.latitude);
+        const lng = roundCoord(position.coords.longitude);
+
+        if (
+          lastLocationRef.current &&
+          Math.abs(lat - lastLocationRef.current.lat) < 0.001 &&
+          Math.abs(lng - lastLocationRef.current.lng) < 0.001
+        ) {
+          return;
+        }
+
+        lastLocationRef.current = { lat, lng };
+        setUserLocation({ lat, lng });
         setLocationPermission('granted');
       },
       () => {
         setLocationPermission('denied');
         setUserLocation(FESTAC_CENTER);
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 },
+      { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 },
     );
   }, [setUserLocation, setLocationPermission]);
 

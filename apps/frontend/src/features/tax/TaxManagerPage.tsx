@@ -4,6 +4,7 @@ import { Link } from 'wouter';
 import { Plus, Search, Filter, FileText, DollarSign, AlertTriangle, TrendingUp, ArrowUp, ArrowDown, X, Edit, Trash2, MoreVertical, Clock, BarChart3, ChevronLeft, Receipt, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { useTaxRecords, useTaxRecord, useCreateTaxRecord, useUpdateTaxRecord, useDeleteTaxRecord, useTaxPayments, useCreateTaxPayment, useDeleteTaxPayment, useTaxCalculation, useVatTracking, useComplianceReports, useGenerateComplianceReport, useTaxSummary, useInvoices } from '../../hooks/useVendors';
 import { Button, Skeleton, Badge } from '../../components/ui/index';
+import { KPICard } from '../../components/ui/KPICard';
 import { RecordListView, type ViewMode } from '../../components/ui/RecordListView';
 import type { TaxRecord, TaxPayment, TaxType, TaxStatus, Invoice } from '../../lib/shared';
 import toast from 'react-hot-toast';
@@ -44,7 +45,7 @@ export default function TaxManagerPage() {
   const { data: taxRecords, isLoading } = useTaxRecords(
     typeFilter !== 'all' || statusFilter !== 'all' ? { type: typeFilter !== 'all' ? typeFilter : undefined, status: statusFilter !== 'all' ? statusFilter : undefined } : undefined
   );
-  const { data: summary } = useTaxSummary();
+  const { data: summary, isLoading: taxSummaryLoading } = useTaxSummary();
   const { data: selectedRecord } = useTaxRecord(selectedRecordId || '');
   const { data: taxPayments } = useTaxPayments(selectedRecordId ? { taxRecordId: selectedRecordId } : undefined);
   const { data: vatTracking, isLoading: isVatTrackingLoading } = useVatTracking();
@@ -385,50 +386,37 @@ export default function TaxManagerPage() {
 
           {/* Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
-              <div className="flex flex-col gap-2">
-                <div className="flex justify-between items-start">
-                  <div className="p-2 bg-blue-500/20 rounded-lg">
-                    <DollarSign size={20} className={isDarkMode ? 'text-blue-300' : 'text-blue-600'} />
-                  </div>
-                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Total Tax Liability</p>
-                </div>
-                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{formatCurrencyCompact(kpiTotalLiability)}</p>
-              </div>
-            </motion.div>
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
-              <div className="flex flex-col gap-2">
-                <div className="flex justify-between items-start">
-                  <div className="p-2 bg-green-500/20 rounded-lg">
-                    <CheckCircle size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />
-                  </div>
-                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Total Paid</p>
-                </div>
-                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{formatCurrencyCompact(kpiTotalPaid)}</p>
-              </div>
-            </motion.div>
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
-              <div className="flex flex-col gap-2">
-                <div className="flex justify-between items-start">
-                  <div className="p-2 bg-yellow-500/20 rounded-lg">
-                    <Clock size={20} className={isDarkMode ? 'text-yellow-300' : 'text-yellow-600'} />
-                  </div>
-                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Pending</p>
-                </div>
-                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{formatCurrencyCompact(kpiTotalPending)}</p>
-              </div>
-            </motion.div>
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
-              <div className="flex flex-col gap-2">
-                <div className="flex justify-between items-start">
-                  <div className="p-2 bg-red-500/20 rounded-lg">
-                    <AlertTriangle size={20} className={isDarkMode ? 'text-red-300' : 'text-red-600'} />
-                  </div>
-                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Overdue</p>
-                </div>
-                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{formatCurrencyCompact(kpiTotalOverdue)}</p>
-              </div>
-            </motion.div>
+            <KPICard
+              icon={<DollarSign size={20} className={isDarkMode ? 'text-blue-300' : 'text-blue-600'} />}
+              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-blue-900/20' : 'bg-blue-500/20')}
+              label="Total Tax Liability"
+              value={formatCurrencyCompact(kpiTotalLiability)}
+              isLoading={taxSummaryLoading || isPaidInvoicesLoading}
+            />
+            <KPICard
+              icon={<CheckCircle size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />}
+              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}
+              label="Total Paid"
+              value={formatCurrencyCompact(kpiTotalPaid)}
+              isLoading={taxSummaryLoading || isPaidInvoicesLoading}
+              delay={0.1}
+            />
+            <KPICard
+              icon={<Clock size={20} className={isDarkMode ? 'text-yellow-300' : 'text-yellow-600'} />}
+              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-yellow-900/20' : 'bg-yellow-500/20')}
+              label="Pending"
+              value={formatCurrencyCompact(kpiTotalPending)}
+              isLoading={taxSummaryLoading || isPaidInvoicesLoading}
+              delay={0.2}
+            />
+            <KPICard
+              icon={<AlertTriangle size={20} className={isDarkMode ? 'text-red-300' : 'text-red-600'} />}
+              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-red-900/20' : 'bg-red-500/20')}
+              label="Overdue"
+              value={formatCurrencyCompact(kpiTotalOverdue)}
+              isLoading={taxSummaryLoading || isPaidInvoicesLoading}
+              delay={0.3}
+            />
           </div>
         </div>
       </div>
@@ -678,24 +666,37 @@ export default function TaxManagerPage() {
                 <TrendingUp size={20} className="text-purple-500" />
                 VAT Tracking
               </h3>
-              {!isVatLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className={clsx('p-4 rounded-lg', isDarkMode ? 'bg-blue-900/20' : 'bg-blue-50')}>
-                    <p className={clsx('text-sm font-medium', isDarkMode ? 'text-gray-300' : 'text-gray-600')}>VAT Collected (Output)</p>
-                    <p className="text-2xl font-bold text-blue-600 mt-1 font-mono">{formatCurrencyCompact(vatCollected)}</p>
-                  </div>
-                  <div className={clsx('p-4 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-50')}>
-                    <p className={clsx('text-sm font-medium', isDarkMode ? 'text-gray-300' : 'text-gray-600')}>VAT Paid (Input)</p>
-                    <p className="text-2xl font-bold text-green-600 mt-1 font-mono">{formatCurrencyCompact(vatPaid)}</p>
-                  </div>
-                  <div className={clsx('p-4 rounded-lg', isDarkMode ? 'bg-purple-900/20' : 'bg-purple-50')}>
-                    <p className={clsx('text-sm font-medium', isDarkMode ? 'text-gray-300' : 'text-gray-600')}>Net VAT Payable</p>
-                    <p className="text-2xl font-bold text-purple-600 mt-1 font-mono">{formatCurrencyCompact(netVat)}</p>
-                  </div>
-                </div>
-              ) : (
-                <Skeleton className="h-32 w-full" />
-              )}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <KPICard
+                  label="VAT Collected (Output)"
+                  value={formatCurrencyCompact(vatCollected)}
+                  isLoading={isVatLoading}
+                  labelPosition="top-left"
+                  labelClassName="text-sm font-medium"
+                  valueClassName="text-2xl font-bold text-blue-600 mt-1 font-mono"
+                  containerClassName={clsx('p-4 rounded-lg gap-0', isDarkMode ? 'bg-blue-900/20' : 'bg-blue-50')}
+                />
+                <KPICard
+                  label="VAT Paid (Input)"
+                  value={formatCurrencyCompact(vatPaid)}
+                  isLoading={isVatLoading}
+                  labelPosition="top-left"
+                  labelClassName="text-sm font-medium"
+                  valueClassName="text-2xl font-bold text-green-600 mt-1 font-mono"
+                  containerClassName={clsx('p-4 rounded-lg gap-0', isDarkMode ? 'bg-green-900/20' : 'bg-green-50')}
+                  delay={0.1}
+                />
+                <KPICard
+                  label="Net VAT Payable"
+                  value={formatCurrencyCompact(netVat)}
+                  isLoading={isVatLoading}
+                  labelPosition="top-left"
+                  labelClassName="text-sm font-medium"
+                  valueClassName="text-2xl font-bold text-purple-600 mt-1 font-mono"
+                  containerClassName={clsx('p-4 rounded-lg gap-0', isDarkMode ? 'bg-purple-900/20' : 'bg-purple-50')}
+                  delay={0.2}
+                />
+              </div>
             </div>
 
             {/* Invoice VAT Breakdown */}

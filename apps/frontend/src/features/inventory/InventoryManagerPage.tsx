@@ -4,6 +4,7 @@ import { Link } from 'wouter';
 import { Plus, Search, Filter, Package, AlertTriangle, TrendingUp, DollarSign, ArrowUp, ArrowDown, X, Edit, Trash2, MoreVertical, Clock, BarChart3, ChevronLeft } from 'lucide-react';
 import { useInventoryItems, useCreateInventoryItem, useUpdateInventoryItem, useDeleteInventoryItem, useInventorySummary, useInventoryItem, useStockMovements, useCreateStockMovement, useStockAlerts, useResolveStockAlert, useInventoryValuation, useCategories, useCreateCategory } from '../../hooks/useVendors';
 import { Button, Skeleton, Badge } from '../../components/ui/index';
+import { KPICard } from '../../components/ui/KPICard';
 import { RecordListView, type ViewMode } from '../../components/ui/RecordListView';
 import type { InventoryItem, MovementType, AlertSeverity } from '../../lib/shared';
 import toast from 'react-hot-toast';
@@ -41,11 +42,11 @@ export default function InventoryManagerPage() {
   const { data: inventoryItems, isLoading } = useInventoryItems(
     categoryFilter !== 'all' ? { categoryId: categoryFilter, lowStock: lowStockOnly ? 'true' : undefined } : { lowStock: lowStockOnly ? 'true' : undefined }
   );
-  const { data: summary } = useInventorySummary();
+  const { data: summary, isLoading: inventorySummaryLoading } = useInventorySummary();
   const { data: selectedItem } = useInventoryItem(selectedItemId || '');
   const { data: stockMovements } = useStockMovements(selectedItemId ? { inventoryId: selectedItemId } : undefined);
   const { data: stockAlerts } = useStockAlerts({ isResolved: 'false' });
-  const { data: valuation } = useInventoryValuation();
+  const { data: valuation, isLoading: valuationLoading } = useInventoryValuation();
   const { data: categoriesData } = useCategories();
   const createInventoryItem = useCreateInventoryItem();
   const updateInventoryItem = useUpdateInventoryItem();
@@ -337,68 +338,73 @@ export default function InventoryManagerPage() {
 
           {/* Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
-              <div className="flex flex-col gap-2">
-                <div className="flex justify-between items-start">
-                  <div className="p-2 bg-festac-green/20 rounded-lg">
-                    <Package size={20} className={isDarkMode ? 'text-festac-green/80' : 'text-festac-green'} />
-                  </div>
-                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Total Items</p>
-                </div>
-                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{summary?.totalItems || 0}</p>
-              </div>
-            </motion.div>
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
-              <div className="flex flex-col gap-2">
-                <div className="flex justify-between items-start">
-                  <div className="p-2 bg-yellow-500/20 rounded-lg">
-                    <AlertTriangle size={20} className={isDarkMode ? 'text-yellow-300' : 'text-yellow-600'} />
-                  </div>
-                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Low Stock</p>
-                </div>
-                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{summary?.lowStockCount || 0}</p>
-              </div>
-            </motion.div>
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
-              <div className="flex flex-col gap-2">
-                <div className="flex justify-between items-start">
-                  <div className="p-2 bg-red-500/20 rounded-lg">
-                    <AlertTriangle size={20} className={isDarkMode ? 'text-red-300' : 'text-red-600'} />
-                  </div>
-                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Out of Stock</p>
-                </div>
-                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{summary?.outOfStockCount || 0}</p>
-              </div>
-            </motion.div>
+            <KPICard
+              icon={<Package size={20} className={isDarkMode ? 'text-festac-green/80' : 'text-festac-green'} />}
+              iconContainerClassName="p-2 rounded-lg bg-festac-green/20"
+              label="Total Items"
+              value={summary?.totalItems || 0}
+              isLoading={inventorySummaryLoading}
+            />
+            <KPICard
+              icon={<AlertTriangle size={20} className={isDarkMode ? 'text-yellow-300' : 'text-yellow-600'} />}
+              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-yellow-900/20' : 'bg-yellow-500/20')}
+              label="Low Stock"
+              value={summary?.lowStockCount || 0}
+              isLoading={inventorySummaryLoading}
+              delay={0.1}
+            />
+            <KPICard
+              icon={<AlertTriangle size={20} className={isDarkMode ? 'text-red-300' : 'text-red-600'} />}
+              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-red-900/20' : 'bg-red-500/20')}
+              label="Out of Stock"
+              value={summary?.outOfStockCount || 0}
+              isLoading={inventorySummaryLoading}
+              delay={0.2}
+            />
           </div>
         </div>
       </div>
 
       {/* Inventory Valuation */}
-      {valuation && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-          <div className={clsx('rounded-2xl p-6 shadow-card', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
-            <h2 className={clsx('font-semibold mb-4 flex items-center gap-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
-              <DollarSign className="w-5 h-5 text-festac-green" />
-              Inventory Valuation
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className={clsx('rounded-xl p-4', isDarkMode ? 'bg-gray-700' : 'bg-gray-50')}>
-                <p className={clsx('text-xs mb-1', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>Total Value (Selling)</p>
-                <p className={clsx('font-bold text-xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>₦{valuation.totalValue.toLocaleString()}</p>
-              </div>
-              <div className={clsx('rounded-xl p-4', isDarkMode ? 'bg-gray-700' : 'bg-gray-50')}>
-                <p className={clsx('text-xs mb-1', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>Total Cost</p>
-                <p className={clsx('font-bold text-xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>₦{valuation.totalCost.toLocaleString()}</p>
-              </div>
-              <div className={clsx('rounded-xl p-4', isDarkMode ? 'bg-gray-700' : 'bg-gray-50')}>
-                <p className={clsx('text-xs mb-1', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>Potential Profit</p>
-                <p className={clsx('font-bold text-xl font-mono', isDarkMode ? 'text-green-400' : 'text-green-600')}>₦{(valuation.totalValue - valuation.totalCost).toLocaleString()}</p>
-              </div>
-            </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        <div className={clsx('rounded-2xl p-6 shadow-card', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+          <h2 className={clsx('font-semibold mb-4 flex items-center gap-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
+            <DollarSign className="w-5 h-5 text-festac-green" />
+            Inventory Valuation
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <KPICard
+              label="Total Value (Selling)"
+              value={valuation ? '₦' + valuation.totalValue.toLocaleString() : '₦0'}
+              isLoading={valuationLoading}
+              labelPosition="top-left"
+              labelClassName="text-xs mb-1"
+              valueClassName="text-xl font-bold font-mono"
+              containerClassName={clsx('rounded-xl p-4 gap-0', isDarkMode ? 'bg-gray-700' : 'bg-gray-50')}
+            />
+            <KPICard
+              label="Total Cost"
+              value={valuation ? '₦' + valuation.totalCost.toLocaleString() : '₦0'}
+              isLoading={valuationLoading}
+              labelPosition="top-left"
+              labelClassName="text-xs mb-1"
+              valueClassName="text-xl font-bold font-mono"
+              containerClassName={clsx('rounded-xl p-4 gap-0', isDarkMode ? 'bg-gray-700' : 'bg-gray-50')}
+              delay={0.1}
+            />
+            <KPICard
+              label="Potential Profit"
+              value={valuation ? '₦' + (valuation.totalValue - valuation.totalCost).toLocaleString() : '₦0'}
+              isLoading={valuationLoading}
+              labelPosition="top-left"
+              labelClassName="text-xs mb-1"
+              valueClassName={clsx('text-xl font-bold font-mono', isDarkMode ? 'text-green-400' : 'text-green-600')}
+              containerClassName={clsx('rounded-xl p-4 gap-0', isDarkMode ? 'bg-gray-700' : 'bg-gray-50')}
+              delay={0.2}
+            />
           </div>
         </div>
-      )}
+      </div>
 
       {/* Low Stock Alerts */}
       {stockAlerts && stockAlerts.length > 0 && (

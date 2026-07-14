@@ -10,6 +10,7 @@ import { useVendorAnalytics, useVendorBookings, useFinancialSummary, useVendorPr
 import { useAuthStore } from '../../stores/auth.store';
 import { useUIStore } from '../../stores/ui.store';
 import { Skeleton, Badge, Button } from '../../components/ui/index';
+import { KPICard } from '../../components/ui/KPICard';
 import { formatNaira } from '../../lib/shared';
 import { formatCurrencyCompact } from '../../lib/utils';
 import { clsx } from 'clsx';
@@ -20,7 +21,7 @@ export default function VendorDashboardPage() {
   const [period, setPeriod] = useState<'week' | 'month' | 'year'>('month');
   const { data: analytics, isLoading: analyticsLoading } = useVendorAnalytics(period);
   const { data: bookings, isLoading: bookingsLoading } = useVendorBookings();
-  const { data: financialSummary } = useFinancialSummary();
+  const { data: financialSummary, isLoading: financialSummaryLoading } = useFinancialSummary();
   const { data: vendorProfile } = useVendorProfile();
 
   const pendingBookings = (bookings as any[])?.filter((b: any) => b.status === 'PENDING') ?? [];
@@ -81,59 +82,30 @@ export default function VendorDashboardPage() {
 
           {/* ─── FINANCIAL SUMMARY ─────────────────────────────── */}
           <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}
-            >
-              <div className="flex flex-col gap-2">
-                <div className="flex justify-between items-start">
-                  <div className="p-2 bg-green-500/20 rounded-lg">
-                    <ArrowUpRight size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />
-                  </div>
-                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Income</p>
-                </div>
-                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>
-                  {formatCurrencyCompact(financialSummary?.income || 0)}
-                </p>
-              </div>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}
-            >
-              <div className="flex flex-col gap-2">
-                <div className="flex justify-between items-start">
-                  <div className="p-2 bg-red-500/20 rounded-lg">
-                    <ArrowDownRight size={20} className={isDarkMode ? 'text-red-300' : 'text-red-600'} />
-                  </div>
-                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Expenses</p>
-                </div>
-                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>
-                  {formatCurrencyCompact(financialSummary?.expense || 0)}
-                </p>
-              </div>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}
-            >
-              <div className="flex flex-col gap-2">
-                <div className="flex justify-between items-start">
-                  <div className="p-2 bg-blue-500/20 rounded-lg">
-                    <Wallet size={20} className={isDarkMode ? 'text-blue-300' : 'text-blue-600'} />
-                  </div>
-                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Net Profit</p>
-                </div>
-                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? (financialSummary?.profit >= 0 ? 'text-green-300' : 'text-red-300') : (financialSummary?.profit >= 0 ? 'text-green-600' : 'text-red-600'))}>
-                  {formatCurrencyCompact(financialSummary?.profit || 0)}
-                </p>
-              </div>
-            </motion.div>
+            <KPICard
+              icon={<ArrowUpRight size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />}
+              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}
+              label="Income"
+              value={formatCurrencyCompact(financialSummary?.income || 0)}
+              isLoading={financialSummaryLoading}
+            />
+            <KPICard
+              icon={<ArrowDownRight size={20} className={isDarkMode ? 'text-red-300' : 'text-red-600'} />}
+              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-red-900/20' : 'bg-red-500/20')}
+              label="Expenses"
+              value={formatCurrencyCompact(financialSummary?.expense || 0)}
+              isLoading={financialSummaryLoading}
+              delay={0.1}
+            />
+            <KPICard
+              icon={<Wallet size={20} className={isDarkMode ? 'text-blue-300' : 'text-blue-600'} />}
+              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-blue-900/20' : 'bg-blue-500/20')}
+              label="Net Profit"
+              value={formatCurrencyCompact(financialSummary?.profit || 0)}
+              isLoading={financialSummaryLoading}
+              valueClassName={isDarkMode ? (financialSummary?.profit >= 0 ? 'text-green-300' : 'text-red-300') : (financialSummary?.profit >= 0 ? 'text-green-600' : 'text-red-600')}
+              delay={0.2}
+            />
           </div>
 
           {/* Period selector */}
@@ -169,28 +141,20 @@ export default function VendorDashboardPage() {
             { label: 'WhatsApp Clicks', value: analytics?.whatsappClicks, icon: <MessageCircle size={18} />, color: 'green' },
             { label: 'Booking Requests', value: analytics?.bookingRequests, icon: <Calendar size={18} />, color: 'purple' },
             //{ label: 'New Reviews', value: analytics?.newReviews, icon: <Star size={18} />, color: 'amber' },
-          ].map((stat) => (
-            <motion.div
+          ].map((stat, index) => (
+            <KPICard
               key={stat.label}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={clsx('rounded-2xl p-4 shadow-card', isDarkMode ? 'bg-gray-800' : 'bg-white')}
-            >
-              {analyticsLoading ? (
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-7 w-1/2" />
-                </div>
-              ) : (
-                <>
-                  <div className={clsx('w-8 h-8 rounded-xl flex items-center justify-center mb-2', isDarkMode ? `bg-${stat.color}-900/30 text-${stat.color}-400` : `bg-${stat.color}-50 text-${stat.color}-600`)}>
-                    {stat.icon}
-                  </div>
-                  <p className={clsx('text-4xl font-display font-black font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{(stat.value ?? 0).toLocaleString()}</p>
-                  <p className={clsx('text-xs mt-0.5', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>{stat.label}</p>
-                </>
-              )}
-            </motion.div>
+              icon={stat.icon}
+              iconContainerClassName={clsx('w-8 h-8 rounded-xl flex items-center justify-center mb-2', isDarkMode ? `bg-${stat.color}-900/30 text-${stat.color}-400` : `bg-${stat.color}-50 text-${stat.color}-600`)}
+              label={stat.label}
+              value={(stat.value ?? 0).toLocaleString()}
+              isLoading={analyticsLoading}
+              valueClassName="text-4xl font-display font-black"
+              labelPosition="bottom"
+              labelClassName="mt-0.5"
+              containerClassName={clsx('rounded-2xl p-4 shadow-card gap-0', isDarkMode ? 'bg-gray-800' : 'bg-white')}
+              delay={index * 0.05}
+            />
           ))}
         </div>
 

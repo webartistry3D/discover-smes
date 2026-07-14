@@ -10,7 +10,7 @@ export const queryKeys = {
     all: ['vendors'] as const,
     search: (filters: SearchFilters) => ['vendors', 'search', filters] as const,
     featured: ['vendors', 'featured'] as const,
-    nearby: (lat: number, lng: number) => ['vendors', 'nearby', lat, lng] as const,
+    nearby: (lat: number, lng: number, radius: number) => ['vendors', 'nearby', lat, lng, radius] as const,
     detail: (slug: string) => ['vendors', 'detail', slug] as const,
     analytics: (period: string) => ['vendors', 'analytics', period] as const,
   },
@@ -69,10 +69,10 @@ export function useFeaturedVendors(limit = 8) {
 
 export function useNearbyVendors(lat?: number, lng?: number, radius = 5) {
   return useQuery({
-    queryKey: queryKeys.vendors.nearby(lat ?? 0, lng ?? 0),
+    queryKey: queryKeys.vendors.nearby(lat ?? 0, lng ?? 0, radius),
     queryFn: () => vendorApi.nearby(lat!, lng!, radius).then((r) => r.data.data),
     enabled: !!lat && !!lng,
-    staleTime: 60 * 1000,
+    staleTime: 5 * 60 * 1000,
   });
 }
 

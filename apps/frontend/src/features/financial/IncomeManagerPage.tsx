@@ -4,6 +4,7 @@ import { Link } from 'wouter';
 import { Plus, TrendingUp, Calendar, Filter, Search, Edit, Trash2, ArrowUpRight, ArrowDownRight, ChevronLeft } from 'lucide-react';
 import { useIncomes, useCreateIncome, useUpdateIncome, useDeleteIncome, useInvoices } from '../../hooks/useVendors';
 import { Button, Skeleton, Badge } from '../../components/ui/index';
+import { KPICard } from '../../components/ui/KPICard';
 import { RecordListView, type ViewMode } from '../../components/ui/RecordListView';
 import type { Income, IncomeCategory, Invoice } from '../../lib/shared';
 import toast from 'react-hot-toast';
@@ -230,43 +231,29 @@ export default function IncomeManagerPage() {
 
           {/* Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
-              <div className="flex flex-col gap-2">
-                <div className="flex justify-between items-start">
-                  <div className="p-2 bg-green-500/20 rounded-lg">
-                    <TrendingUp size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />
-                  </div>
-                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Total Income</p>
-                </div>
-                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>
-                  {formatCurrencyCompact(totalIncome)}
-                </p>
-              </div>
-            </motion.div>
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
-              <div className="flex flex-col gap-2">
-                <div className="flex justify-between items-start">
-                  <div className="p-2 bg-blue-500/20 rounded-lg">
-                    <Calendar size={20} className={isDarkMode ? 'text-blue-300' : 'text-blue-600'} />
-                  </div>
-                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Records</p>
-                </div>
-                <p className={clsx('font-bold text-6xl', isDarkMode ? 'text-white' : 'text-gray-900')}>{filteredIncomes.length}</p>
-              </div>
-            </motion.div>
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
-              <div className="flex flex-col gap-2">
-                <div className="flex justify-between items-start">
-                  <div className="p-2 bg-purple-500/20 rounded-lg">
-                    <ArrowUpRight size={20} className={isDarkMode ? 'text-purple-300' : 'text-purple-600'} />
-                  </div>
-                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>This Month</p>
-                </div>
-                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>
-                  {formatCurrencyCompact(thisMonth)}
-                </p>
-              </div>
-            </motion.div>
+            <KPICard
+              icon={<TrendingUp size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />}
+              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}
+              label="Total Income"
+              value={formatCurrencyCompact(totalIncome)}
+              isLoading={isLoading}
+            />
+            <KPICard
+              icon={<Calendar size={20} className={isDarkMode ? 'text-blue-300' : 'text-blue-600'} />}
+              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-blue-900/20' : 'bg-blue-500/20')}
+              label="Records"
+              value={filteredIncomes.length}
+              isLoading={isLoading}
+              delay={0.1}
+            />
+            <KPICard
+              icon={<ArrowUpRight size={20} className={isDarkMode ? 'text-purple-300' : 'text-purple-600'} />}
+              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-purple-900/20' : 'bg-purple-500/20')}
+              label="This Month"
+              value={formatCurrencyCompact(thisMonth)}
+              isLoading={isLoading}
+              delay={0.2}
+            />
           </div>
         </div>
       </div>

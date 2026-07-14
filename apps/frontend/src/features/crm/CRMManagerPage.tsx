@@ -4,6 +4,7 @@ import { Link } from 'wouter';
 import { Plus, Search, Filter, Users, Mail, Phone, Building2, ChevronLeft, MoreVertical, Edit, Trash2, X, Clock, DollarSign, FileText, MessageSquare, Tag, StickyNote } from 'lucide-react';
 import { useCustomers, useCreateCustomer, useUpdateCustomer, useDeleteCustomer, useCRMSummary, useCustomer, useCustomerNotes, useCustomerTags, useCommunications, useCustomerPurchaseHistory, useCreateCustomerNote, useCreateCustomerTag, useDeleteCustomerTag, useCreateCommunication } from '../../hooks/useVendors';
 import { Button, Skeleton, Badge } from '../../components/ui/index';
+import { KPICard } from '../../components/ui/KPICard';
 import { RecordListView, type ViewMode } from '../../components/ui/RecordListView';
 import type { Customer, CustomerStatus } from '../../lib/shared';
 import toast from 'react-hot-toast';
@@ -28,12 +29,12 @@ export default function CRMManagerPage() {
   const { data: customers, isLoading } = useCustomers(
     statusFilter !== 'all' ? { status: statusFilter } : undefined
   );
-  const { data: summary } = useCRMSummary();
+  const { data: summary, isLoading: crmSummaryLoading } = useCRMSummary();
   const { data: selectedCustomer } = useCustomer(selectedCustomerId || '');
   const { data: customerNotes } = useCustomerNotes(selectedCustomerId || '');
   const { data: customerTags } = useCustomerTags(selectedCustomerId || '');
   const { data: communications } = useCommunications(selectedCustomerId ? { customerId: selectedCustomerId } : undefined);
-  const { data: purchaseHistory } = useCustomerPurchaseHistory(selectedCustomerId || '');
+  const { data: purchaseHistory, isLoading: purchaseHistoryLoading } = useCustomerPurchaseHistory(selectedCustomerId || '');
   const createCustomer = useCreateCustomer();
   const updateCustomer = useUpdateCustomer();
   const deleteCustomer = useDeleteCustomer();
@@ -293,39 +294,29 @@ export default function CRMManagerPage() {
 
           {/* Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
-              <div className="flex flex-col gap-2">
-                <div className="flex justify-between items-start">
-                  <div className="p-2 bg-blue-500/20 rounded-lg">
-                    <Users size={20} className={isDarkMode ? 'text-blue-300' : 'text-blue-600'} />
-                  </div>
-                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Total Customers</p>
-                </div>
-                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{summary?.totalCustomers || 0}</p>
-              </div>
-            </motion.div>
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
-              <div className="flex flex-col gap-2">
-                <div className="flex justify-between items-start">
-                  <div className="p-2 bg-green-500/20 rounded-lg">
-                    <Users size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />
-                  </div>
-                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Active Customers</p>
-                </div>
-                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{summary?.statusBreakdown?.active || 0}</p>
-              </div>
-            </motion.div>
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
-              <div className="flex flex-col gap-2">
-                <div className="flex justify-between items-start">
-                  <div className="p-2 bg-purple-500/20 rounded-lg">
-                    <Mail size={20} className={isDarkMode ? 'text-purple-300' : 'text-purple-600'} />
-                  </div>
-                  <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Recent Communications</p>
-                </div>
-                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{summary?.recentCommunications || 0}</p>
-              </div>
-            </motion.div>
+            <KPICard
+              icon={<Users size={20} className={isDarkMode ? 'text-blue-300' : 'text-blue-600'} />}
+              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-blue-900/20' : 'bg-blue-500/20')}
+              label="Total Customers"
+              value={summary?.totalCustomers || 0}
+              isLoading={crmSummaryLoading}
+            />
+            <KPICard
+              icon={<Users size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />}
+              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}
+              label="Active Customers"
+              value={summary?.statusBreakdown?.active || 0}
+              isLoading={crmSummaryLoading}
+              delay={0.1}
+            />
+            <KPICard
+              icon={<Mail size={20} className={isDarkMode ? 'text-purple-300' : 'text-purple-600'} />}
+              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-purple-900/20' : 'bg-purple-500/20')}
+              label="Recent Communications"
+              value={summary?.recentCommunications || 0}
+              isLoading={crmSummaryLoading}
+              delay={0.2}
+            />
           </div>
         </div>
       </div>
@@ -404,33 +395,54 @@ export default function CRMManagerPage() {
           </div>
 
           {/* Purchase History */}
-          {purchaseHistory && (
+          {selectedCustomerId && (
             <div className={clsx('rounded-2xl p-6 shadow-card mb-6', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
               <h3 className={clsx('font-semibold mb-4 flex items-center gap-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
                 <DollarSign size={18} className="text-festac-green" />
                 Purchase History
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <p className={clsx('text-xs mb-1', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>Total Purchases</p>
-                  <p className={clsx('font-bold font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{purchaseHistory.totalPurchases}</p>
-                </div>
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <p className={clsx('text-xs mb-1', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>Total Spent</p>
-                  <p className={clsx('font-bold font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>₦{purchaseHistory.totalSpent.toLocaleString()}</p>
-                </div>
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <p className={clsx('text-xs mb-1', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>Avg. Order Value</p>
-                  <p className={clsx('font-bold font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>₦{purchaseHistory.averageOrderValue.toLocaleString()}</p>
-                </div>
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <p className={clsx('text-xs mb-1', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>Last Purchase</p>
-                  <p className={clsx('font-bold text-sm', isDarkMode ? 'text-white' : 'text-gray-900')}>
-                    {purchaseHistory.lastPurchaseDate ? new Date(purchaseHistory.lastPurchaseDate).toLocaleDateString() : 'N/A'}
-                  </p>
-                </div>
+                <KPICard
+                  label="Total Purchases"
+                  value={purchaseHistory?.totalPurchases ?? 0}
+                  isLoading={purchaseHistoryLoading}
+                  labelPosition="top-left"
+                  labelClassName="text-xs mb-1"
+                  valueClassName="text-base font-bold font-mono"
+                  containerClassName="rounded-xl p-4 gap-0 bg-gray-50"
+                />
+                <KPICard
+                  label="Total Spent"
+                  value={purchaseHistory ? '₦' + purchaseHistory.totalSpent.toLocaleString() : '₦0'}
+                  isLoading={purchaseHistoryLoading}
+                  labelPosition="top-left"
+                  labelClassName="text-xs mb-1"
+                  valueClassName="text-base font-bold font-mono"
+                  containerClassName="rounded-xl p-4 gap-0 bg-gray-50"
+                  delay={0.1}
+                />
+                <KPICard
+                  label="Avg. Order Value"
+                  value={purchaseHistory ? '₦' + purchaseHistory.averageOrderValue.toLocaleString() : '₦0'}
+                  isLoading={purchaseHistoryLoading}
+                  labelPosition="top-left"
+                  labelClassName="text-xs mb-1"
+                  valueClassName="text-base font-bold font-mono"
+                  containerClassName="rounded-xl p-4 gap-0 bg-gray-50"
+                  delay={0.2}
+                />
+                <KPICard
+                  label="Last Purchase"
+                  value={purchaseHistory?.lastPurchaseDate ? new Date(purchaseHistory.lastPurchaseDate).toLocaleDateString() : 'N/A'}
+                  isLoading={purchaseHistoryLoading}
+                  labelPosition="top-left"
+                  labelClassName="text-xs mb-1"
+                  valueClassName="text-sm font-bold font-mono"
+                  containerClassName="rounded-xl p-4 gap-0 bg-gray-50"
+                  delay={0.3}
+                />
               </div>
-              {purchaseHistory.invoices.length > 0 && (
+              {purchaseHistory?.invoices && purchaseHistory.invoices.length > 0 && (
                 <div className="space-y-2">
                   <h4 className={clsx('text-sm font-medium', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Recent Invoices</h4>
                   {purchaseHistory.invoices.slice(0, 5).map((invoice) => (

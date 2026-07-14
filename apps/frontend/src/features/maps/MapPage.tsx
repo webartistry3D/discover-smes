@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Link } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, X, MessageCircle, Star, Navigation } from 'lucide-react';
+import { MapPin, X, MessageCircle, Star, Navigation, Search } from 'lucide-react';
 import type * as Leaflet from 'leaflet';
 import { useNearbyVendors } from '../../hooks/useVendors';
 import { useGeolocation } from '../../hooks/useGeolocation';
@@ -9,6 +9,7 @@ import { useUIStore } from '../../stores/ui.store';
 import { VerificationBadge } from '../../components/ui/VerificationBadge';
 import { Spinner } from '../../components/ui/index';
 import { generateWhatsAppUrl, generateWhatsAppGreeting, FESTAC_CENTER } from '../../lib/shared';
+import { VendorCard } from '../../components/marketplace/VendorCard';
 import type { VendorSummary } from '../../lib/shared';
 import { clsx } from 'clsx';
 
@@ -51,12 +52,14 @@ export default function MapPage() {
 
   const [selectedVendor, setSelectedVendor] = useState<VendorSummary | null>(null);
   const [mapReady, setMapReady] = useState(false);
+  const [manualCenter, setManualCenter] = useState<{ lat: number; lng: number } | null>(null);
+  const [coords, setCoords] = useState({ lat: '', lng: '' });
 
   const { isDarkMode } = useUIStore();
   const { location, requestLocation } = useGeolocation(true);
-  const center = location ?? FESTAC_CENTER;
+  const mapCenter = manualCenter ?? location ?? FESTAC_CENTER;
 
-  const { data: vendors, isLoading } = useNearbyVendors(center.lat, center.lng, 50);
+  const { data: vendors, isLoading } = useNearbyVendors(mapCenter.lat, mapCenter.lng, 50);
 
   const vendorsWithCoordinates = vendors?.filter((v) => v.coordinates?.lat && v.coordinates?.lng) ?? [];
 
@@ -77,7 +80,7 @@ export default function MapPage() {
       (container as any)._leaflet_events = undefined;
 
       const map = L.map(container, {
-        center: [center.lat, center.lng],
+        center: [mapCenter.lat, mapCenter.lng],
         zoom: 14,
         zoomControl: false,
       });
@@ -143,12 +146,12 @@ export default function MapPage() {
     return () => resizeObserverRef.current?.disconnect();
   }, [mapReady]);
 
-  // Recenter map when user location becomes available
+  // Recenter map when the active center (manual search or user location) changes
   useEffect(() => {
     const map = mapInstanceRef.current;
-    if (!map || !location || !map.getContainer()?.isConnected) return undefined;
-    map.flyTo([location.lat, location.lng], 15, { animate: true, duration: 1 });
-  }, [location]);
+    if (!map || !map.getContainer()?.isConnected) return undefined;
+    map.flyTo([mapCenter.lat, mapCenter.lng], 15, { animate: true, duration: 1 });
+  }, [mapCenter.lat, mapCenter.lng]);
 
   // Add vendor markers
   useEffect(() => {
@@ -182,7 +185,7 @@ export default function MapPage() {
   // Add user location marker
   useEffect(() => {
     const map = mapInstanceRef.current;
-    if (!mapReady || !map || !location || !map.getContainer()?.isConnected) return undefined;
+    if (!mapReady || !map || !map.getContainer()?.isConnected) return undefined;
 
     import('leaflet').then((L) => {
       if (userMarkerRef.current) {
@@ -192,7 +195,7 @@ export default function MapPage() {
 
       const userIconHtml = `<div style="width:16px;height:16px;background:#3b82f6;border:3px solid white;border-radius:50%;box-shadow:0 0 0 6px rgba(59,130,246,0.2);"></div>`;
       const userIcon = L.divIcon({ html: userIconHtml, className: '', iconSize: [16, 16], iconAnchor: [8, 8] });
-      const userMarker = L.marker([location.lat, location.lng], { icon: userIcon, zIndexOffset: 1000 }).addTo(map);
+      const userMarker = L.marker([mapCenter.lat, mapCenter.lng], { icon: userIcon, zIndexOffset: 1000 }).addTo(map);
       userMarkerRef.current = userMarker;
     });
 
@@ -202,7 +205,7 @@ export default function MapPage() {
         userMarkerRef.current = null;
       }
     };
-  }, [mapReady, location]);
+  }, [mapReady, mapCenter.lat, mapCenter.lng]);
 
   // Close bottom sheet on outside click or Escape key
   const handleSheetClose = useCallback(() => setSelectedVendor(null), []);
@@ -230,12 +233,23 @@ export default function MapPage() {
   }, [selectedVendor, handleSheetClose]);
 
   const handleCenterOnMe = () => {
-    const map = mapInstanceRef.current;
-    if (!map || !location || !map.getContainer()?.isConnected) {
+    if (!location) {
       requestLocation();
       return;
     }
-    map.flyTo([location.lat, location.lng], 15, { animate: true, duration: 1 });
+    setManualCenter(null);
+    const map = mapInstanceRef.current;
+    if (map && map.getContainer()?.isConnected) {
+      map.flyTo([location.lat, location.lng], 15, { animate: true, duration: 1 });
+    }
+  };
+
+  const handleCoordinateSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const lat = parseFloat(coords.lat);
+    const lng = parseFloat(coords.lng);
+    if (Number.isNaN(lat) || Number.isNaN(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) return;
+    setManualCenter({ lat, lng });
   };
 
   return (
@@ -245,7 +259,7 @@ export default function MapPage() {
           className={clsx(
             'overflow-hidden shadow-card border relative',
             isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200',
-            'h-[calc(100vh-140px)] sm:h-[calc(100vh-160px)]'
+            'h-[calc(75vh-105px)] sm:h-[calc(100vh-160px)]'
           )}
           style={{ minHeight: '400px' }}
         >
@@ -263,11 +277,13 @@ export default function MapPage() {
           )}
 
           {/* Top controls */}
-          <div className="absolute top-4 left-4 right-4 z-20 flex items-center justify-between pointer-events-none">
-            <div className={clsx('rounded-2xl shadow-card-hover px-4 py-2.5 flex items-center gap-2 pointer-events-auto', isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900')}>
-              <MapPin size={14} className="text-festac-green" />
-              <span className="text-sm font-semibold">{vendorsWithCoordinates.length} businesses nearby</span>
-              {isLoading && <Spinner size="sm" />}
+          <div className="absolute top-4 left-4 right-4 z-20 flex items-start justify-between pointer-events-none">
+            <div className="flex flex-col gap-2 pointer-events-auto">
+              <div className={clsx('rounded-2xl shadow-card-hover px-4 py-2.5 flex items-center gap-2 w-fit', isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900')}>
+                <MapPin size={14} className="text-festac-green" />
+                <span className="text-sm font-semibold">{vendorsWithCoordinates.length} businesses nearby</span>
+                {isLoading && <Spinner size="sm" />}
+              </div>
             </div>
 
             <button
@@ -359,6 +375,51 @@ export default function MapPage() {
               </motion.div>
             )}
           </AnimatePresence>
+        </div>
+
+        {/* Search & nearby businesses */}
+        <div className={clsx('mt-4 rounded-2xl shadow-card border p-4', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200')}>
+          <form onSubmit={handleCoordinateSearch} className="flex flex-wrap items-center gap-3 mb-4">
+            <span className={clsx('text-sm font-semibold', isDarkMode ? 'text-white' : 'text-gray-900')}>Search coordinates</span>
+            <div className={clsx('flex items-center gap-2 rounded-xl px-3 py-2', isDarkMode ? 'bg-gray-700' : 'bg-gray-100')}>
+              <Search size={14} className="text-festac-green flex-shrink-0" />
+              <input
+                type='text'
+                inputMode='decimal'
+                placeholder='Lat'
+                value={coords.lat}
+                onChange={(e) => setCoords((c) => ({ ...c, lat: e.target.value }))}
+                className={clsx('w-20 text-sm bg-transparent focus:outline-none', isDarkMode ? 'placeholder-gray-500' : 'placeholder-gray-400')}
+              />
+              <span className={clsx('text-xs', isDarkMode ? 'text-gray-500' : 'text-gray-400')}>|</span>
+              <input
+                type='text'
+                inputMode='decimal'
+                placeholder='Lng'
+                value={coords.lng}
+                onChange={(e) => setCoords((c) => ({ ...c, lng: e.target.value }))}
+                className={clsx('w-20 text-sm bg-transparent focus:outline-none', isDarkMode ? 'placeholder-gray-500' : 'placeholder-gray-400')}
+              />
+            </div>
+            <button
+              type='submit'
+              className='px-3 py-2 rounded-lg bg-festac-green text-white text-sm font-medium hover:bg-festac-green/90 transition-colors'
+            >
+              Search
+            </button>
+          </form>
+
+          <h3 className={clsx('text-sm font-semibold mb-3', isDarkMode ? 'text-white' : 'text-gray-900')}>Nearby Businesses</h3>
+          <div className='flex gap-4 overflow-x-auto pb-4'>
+            {!isLoading && vendorsWithCoordinates.length === 0 && (
+              <p className={clsx('text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>No businesses found.</p>
+            )}
+            {vendorsWithCoordinates.map((vendor, i) => (
+              <div key={vendor.id} className='max-w-[260px] flex-shrink-0'>
+                <VendorCard vendor={vendor} index={i} variant='compact' />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

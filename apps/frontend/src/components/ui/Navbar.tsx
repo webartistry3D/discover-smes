@@ -210,7 +210,7 @@ export function Navbar() {
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               ref={dropdownRef}
               className={clsx(
-                'fixed top-0 right-0 z-50 h-fit max-h-screen w-fit max-w-[85vw] shadow-2xl overflow-y-auto rounded-l-2xl',
+                'fixed top-0 right-0 z-50 h-fit max-h-screen w-fit max-w-[85vw] shadow-2xl overflow-y-auto',
                 isDarkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white border border-gray-200'
               )}
             >
@@ -218,7 +218,7 @@ export function Navbar() {
                 <button
                   onClick={closeProfileDropdown}
                   className={clsx(
-                    'absolute top-2 right-2 p-2 rounded-lg transition-colors',
+                    'absolute top-2 right-2 p-2 transition-colors',
                     isDarkMode ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'
                   )}
                   aria-label="Close"
@@ -229,7 +229,7 @@ export function Navbar() {
                   href="/profile"
                   onClick={closeProfileDropdown}
                   className={clsx(
-                    'flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-[21px] font-medium whitespace-nowrap',
+                    'flex items-center gap-3 px-4 py-3 transition-colors text-[21px] font-medium whitespace-nowrap',
                     isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
                   )}
                 >
@@ -242,7 +242,7 @@ export function Navbar() {
                     setShowSignoutModal(true);
                   }}
                   className={clsx(
-                    'w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-sm font-medium text-red-600 whitespace-nowrap',
+                    'w-full flex items-center gap-3 px-4 py-3 transition-colors text-[21px] font-medium text-red-600 whitespace-nowrap',
                     isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-red-50'
                   )}
                 >
