@@ -101,7 +101,7 @@ export default function HomePage() {
               <div className="flex flex-wrap items-baseline gap-2 sm:flex-col">
                 <span>Discover</span>
                 <span
-                  className="inline-grid bg-festac-amber px-4 py-1"
+                  className="inline-grid bg-festac-amber px-4 py-3"
                   style={{ gridTemplateAreas: "'content'" }}
                 >
                   {BUSINESS_TYPES.map((type) => (
