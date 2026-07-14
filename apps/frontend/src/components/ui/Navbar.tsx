@@ -278,7 +278,7 @@ export function Navbar() {
                 isDarkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white border border-gray-200'
               )}
             >
-              <div className="p-4">
+              <div className="p-0">
                 <button
                   onClick={closeAuthDropdown}
                   className={clsx(
@@ -300,7 +300,7 @@ export function Navbar() {
                   )}
                 >
                   <LogIn size={18} />
-                  <span>Sign In</span>
+                  <span className='text-2xl'>Sign In</span>
                 </button>
                 <button
                   onClick={() => {
@@ -313,9 +313,9 @@ export function Navbar() {
                   )}
                 >
                   <UserPlus size={18} />
-                  <span>Sign Up</span>
+                  <span className='text-2xl'>Sign Up</span>
                 </button>
-                <div className="h-px my-2" />
+                <div className="h-px my-0" />
                 <button
                   onClick={() => {
                     closeAuthDropdown();
@@ -328,7 +328,7 @@ export function Navbar() {
                   )}
                 >
                   <Store size={18} />
-                  <span>Become a Vendor</span>
+                  <span className='text-xl'>Become a Vendor</span>
                 </button>
               </div>
             </motion.div>

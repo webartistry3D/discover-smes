@@ -13,7 +13,7 @@ import type { Category } from '../../lib/shared';
 const HERO_STATS = [
   { label: 'Local Businesses', value: '600+' },
   { label: 'Happy Customers', value: '9K+' },
-  { label: 'Areas Covered', value: '12 Wards' },
+  { label: 'Wards Covered', value: '12' },
 ];
 
 const BUSINESS_TYPES = ['Restaurants', 'Pharmacies', 'Minimarts', 'Supermarts', 'Gas Stations', 'Boutiques', 'Hairdressers', 'Engineers', 'Technicians', 'Electricians', 'Mechanics', 'Plumbers', ' Businesses'];
@@ -54,7 +54,7 @@ export default function HomePage() {
           playsInline
           className="absolute inset-0 w-full h-full object-cover"
         >
-          <source src="/video-bg.mp4" type="video/mp4" />
+          <source src="/video-bg-lowest.mp4" type="video/mp4" />
         </video>
         
         {/* Dark Overlay for text readability */}
@@ -178,8 +178,8 @@ export default function HomePage() {
           >
             {HERO_STATS.map((stat) => (
               <div key={stat.label}>
-                <p className="font-display font-black text-2xl text-white">{stat.value}</p>
-                <p className="text-white/60 text-xs mt-0.5">{stat.label}</p>
+                <p className="font-display font-black text-4xl text-white">{stat.value}</p>
+                <p className="text-white/60 text-sm mt-0.5">{stat.label}</p>
               </div>
             ))}
           </motion.div>
