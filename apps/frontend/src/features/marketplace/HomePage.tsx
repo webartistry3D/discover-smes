@@ -16,7 +16,7 @@ const HERO_STATS = [
   { label: 'Areas Covered', value: '12 Wards' },
 ];
 
-const BUSINESS_TYPES = ['Restaurants', 'Pharmacies', 'Grocery Stores', 'Gas Stations', 'Boutiques', 'Fashion Vendors', 'Food Vendors', 'Beauty Salons', 'Pro Engineers', 'Technicians', 'Electricians', 'Auto Mechanics', 'Pro Plumbers', ' Business People'];
+const BUSINESS_TYPES = ['Restaurants', 'Pharmacies', 'Minimarts', 'Supermarts', 'Gas Stations', 'Boutiques', 'Hairdressers', 'Engineers', 'Technicians', 'Electricians', 'Mechanics', 'Plumbers', ' Businesses'];
 
 export default function HomePage() {
   const [, navigate] = useLocation();
@@ -87,7 +87,19 @@ export default function HomePage() {
             <h1 className="font-display font-black text-4xl sm:text-7xl lg:text-7xl leading-[1.1] text-balance">
               <div className="flex flex-wrap items-baseline gap-2">
                 <span>Discover</span>
-                <span className="text-festac-amber inline-block">
+                <span
+                  className="inline-grid bg-festac-amber px-4 py-1"
+                  style={{ gridTemplateAreas: "'content'" }}
+                >
+                  {BUSINESS_TYPES.map((type) => (
+                    <span
+                      key={`sizer-${type}`}
+                      className="invisible whitespace-nowrap text-5xl [grid-area:content]"
+                      aria-hidden="true"
+                    >
+                      {type}
+                    </span>
+                  ))}
                   <AnimatePresence mode="wait">
                     <motion.span
                       key={BUSINESS_TYPES[currentBusinessIndex]}
@@ -95,7 +107,7 @@ export default function HomePage() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
                       transition={{ duration: 0.3 }}
-                      className="inline-block"
+                      className="inline-block text-5xl text-black [grid-area:content]"
                     >
                       {BUSINESS_TYPES[currentBusinessIndex]}
                     </motion.span>

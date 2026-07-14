@@ -113,7 +113,7 @@ export function RecordListView<T>({
                 {listHeader}
               </thead>
             )}
-            <tbody className={clsx('text-sm', isDarkMode ? 'divide-gray-700' : 'divide-gray-200')}>
+            <tbody className={clsx('text-sm', isDarkMode ? 'text-gray-100 divide-gray-700' : 'text-gray-900 divide-gray-200')}>
               {paginatedItems.map((item) => (
                 <tr key={keyExtractor(item)} className={clsx('border-b last:border-b-0', isDarkMode ? 'border-gray-700 hover:bg-gray-700/50' : 'border-gray-200 hover:bg-gray-50')}>
                   {renderItem(item, viewMode)}

@@ -4,6 +4,7 @@ import { Link } from 'wouter';
 import { Plus, FileText, Calendar, Filter, Search, Edit, Trash2, Send, Download, CheckCircle, Clock, AlertCircle, XCircle, ChevronLeft } from 'lucide-react';
 import { useInvoices, useCreateInvoice, useUpdateInvoice, useDeleteInvoice } from '../../hooks/useVendors';
 import { Button, Skeleton, Badge } from '../../components/ui/index';
+import { RecordListView, type ViewMode } from '../../components/ui/RecordListView';
 import type { Invoice, InvoiceStatus } from '../../lib/shared';
 import toast from 'react-hot-toast';
 import { useUIStore } from '../../stores/ui.store';
@@ -145,6 +146,153 @@ export default function InvoiceManagerPage() {
     return INVOICE_STATUS.find((s) => s.value === status) || INVOICE_STATUS[0];
   };
 
+  const startEdit = (invoice: Invoice) => {
+    setFormData({
+      customerName: invoice.customerName,
+      customerEmail: invoice.customerEmail || '',
+      customerPhone: invoice.customerPhone || '',
+      customerAddress: invoice.customerAddress || '',
+      lineItems: invoice.lineItems.map((item) => ({
+        description: item.description,
+        quantity: item.quantity,
+        unitPrice: Number(item.unitPrice),
+      })),
+      taxRate: invoice.taxRate,
+      discountAmount: Number(invoice.discountAmount),
+      dueDate: invoice.dueDate ? new Date(invoice.dueDate).toISOString().split('T')[0] : '',
+      notes: invoice.notes || '',
+    });
+    setEditingId(invoice.id);
+    setIsAdding(true);
+  };
+
+  const renderInvoiceItem = (invoice: Invoice, viewMode: ViewMode) => {
+    const statusInfo = getStatusInfo(invoice.status);
+    const StatusIcon = statusInfo.icon;
+
+    if (viewMode === 'list') {
+      return (
+        <>
+          <td className="px-4 py-3 whitespace-nowrap">{new Date(invoice.createdAt).toLocaleDateString()}</td>
+          <td className="px-4 py-3 min-w-[120px] font-mono text-xs">{invoice.invoiceNumber}</td>
+          <td className="px-4 py-3 min-w-[200px] max-w-[300px]">
+            <span className={clsx('font-medium line-clamp-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
+              {invoice.customerName}
+            </span>
+          </td>
+          <td className="px-4 py-3 min-w-[100px]">
+            <Badge variant={invoice.status === 'PAID' ? 'green' : invoice.status === 'OVERDUE' ? 'red' : 'blue'} className="text-xs">
+              {statusInfo.label}
+            </Badge>
+          </td>
+          <td className="px-4 py-3 text-right font-mono font-semibold min-w-[120px]">{formatCurrencyCompact(Number(invoice.total))}</td>
+          <td className="px-4 py-3 text-right min-w-[120px]">
+            <div className="flex items-center justify-end gap-2">
+              {invoice.status === 'DRAFT' && (
+                <button
+                  onClick={() => handleStatusChange(invoice.id, 'SENT')}
+                  className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-blue-900/30' : 'hover:bg-blue-50')}
+                  title="Mark as Sent"
+                >
+                  <Send size={18} className="text-blue-600" />
+                </button>
+              )}
+              {invoice.status === 'SENT' && (
+                <button
+                  onClick={() => handleStatusChange(invoice.id, 'PAID')}
+                  className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-green-900/30' : 'hover:bg-green-50')}
+                  title="Mark as Paid"
+                >
+                  <CheckCircle size={18} className="text-green-600" />
+                </button>
+              )}
+              <button
+                onClick={() => startEdit(invoice)}
+                className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100')}
+              >
+                <Edit size={18} className={isDarkMode ? 'text-gray-400' : 'text-gray-600'} />
+              </button>
+              <button
+                onClick={() => handleDelete(invoice.id)}
+                className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-red-900/30' : 'hover:bg-red-50')}
+              >
+                <Trash2 size={18} className="text-red-600" />
+              </button>
+            </div>
+          </td>
+        </>
+      );
+    }
+
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className={clsx('w-full rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow', isDarkMode ? 'bg-gray-800' : 'bg-white')}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className={`p-3 ${statusInfo.color} bg-opacity-10 rounded-lg`}>
+              <StatusIcon size={20} className={statusInfo.color.replace('bg-', 'text-')} />
+            </div>
+            <div>
+              <p className={clsx('font-semibold', isDarkMode ? 'text-white' : 'text-gray-900')}>{invoice.customerName}</p>
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                <Badge variant={invoice.status === 'PAID' ? 'green' : invoice.status === 'OVERDUE' ? 'red' : 'blue'} className="text-xs">
+                  {statusInfo.label}
+                </Badge>
+                <span className={clsx('text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>{invoice.invoiceNumber}</span>
+                <span className={clsx('text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>
+                  {new Date(invoice.createdAt).toLocaleDateString()}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center justify-between sm:gap-4">
+            <div className="text-right sm:text-left">
+              <p className={clsx('font-bold text-lg font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>
+                {formatCurrencyCompact(Number(invoice.total))}
+              </p>
+              <p className={clsx('text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>{invoice.lineItems.length} items</p>
+            </div>
+            <div className="flex gap-2">
+              {invoice.status === 'DRAFT' && (
+                <button
+                  onClick={() => handleStatusChange(invoice.id, 'SENT')}
+                  className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-blue-900/30' : 'hover:bg-blue-50')}
+                  title="Mark as Sent"
+                >
+                  <Send size={18} className="text-blue-600" />
+                </button>
+              )}
+              {invoice.status === 'SENT' && (
+                <button
+                  onClick={() => handleStatusChange(invoice.id, 'PAID')}
+                  className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-green-900/30' : 'hover:bg-green-50')}
+                  title="Mark as Paid"
+                >
+                  <CheckCircle size={18} className="text-green-600" />
+                </button>
+              )}
+              <button
+                onClick={() => startEdit(invoice)}
+                className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100')}
+              >
+                <Edit size={18} className={isDarkMode ? 'text-gray-400' : 'text-gray-600'} />
+              </button>
+              <button
+                onClick={() => handleDelete(invoice.id)}
+                className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-red-900/30' : 'hover:bg-red-50')}
+              >
+                <Trash2 size={18} className="text-red-600" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    );
+  };
+
   return (
     <div className={clsx('min-h-screen pb-20', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       {/* Header */}
@@ -241,116 +389,31 @@ export default function InvoiceManagerPage() {
 
       {/* Invoice List */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        {isLoading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-24 rounded-xl" />
-            ))}
-          </div>
-        ) : filteredInvoices.length === 0 ? (
-          <div className={clsx('rounded-xl p-8 text-center', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
-            <FileText size={48} className={clsx('mx-auto mb-4', isDarkMode ? 'text-gray-600' : 'text-gray-300')} />
-            <p className={clsx(isDarkMode ? 'text-gray-400' : 'text-gray-500')}>No invoices found</p>
-            <Button onClick={() => setIsAdding(true)} variant="primary" className="mt-4">
-              Create Your First Invoice
-            </Button>
-          </div>
-        ) : (
-          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-            <div className="flex flex-col gap-4">
-              {filteredInvoices.map((invoice: Invoice) => {
-                const statusInfo = getStatusInfo(invoice.status);
-                const StatusIcon = statusInfo.icon;
-                return (
-                  <motion.div
-                    key={invoice.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={clsx('w-full rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow', isDarkMode ? 'bg-gray-800' : 'bg-white')}
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                      <div className={`p-3 ${statusInfo.color} bg-opacity-10 rounded-lg`}>
-                        <StatusIcon size={20} className={statusInfo.color.replace('bg-', 'text-')} />
-                      </div>
-                      <div>
-                        <p className={clsx('font-semibold', isDarkMode ? 'text-white' : 'text-gray-900')}>{invoice.customerName}</p>
-                        <div className="flex items-center gap-2 mt-1 flex-wrap">
-                          <Badge variant={invoice.status === 'PAID' ? 'green' : invoice.status === 'OVERDUE' ? 'red' : 'blue'} className="text-xs">
-                            {statusInfo.label}
-                          </Badge>
-                          <span className={clsx('text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>{invoice.invoiceNumber}</span>
-                          <span className={clsx('text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>
-                            {new Date(invoice.createdAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between sm:gap-4">
-                      <div className="text-right sm:text-left">
-                        <p className={clsx('font-bold text-lg font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>
-                          {formatCurrencyCompact(Number(invoice.total))}
-                        </p>
-                        <p className={clsx('text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>{invoice.lineItems.length} items</p>
-                      </div>
-                      <div className="flex gap-2">
-                        {invoice.status === 'DRAFT' && (
-                          <button
-                            onClick={() => handleStatusChange(invoice.id, 'SENT')}
-                            className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-blue-900/30' : 'hover:bg-blue-50')}
-                            title="Mark as Sent"
-                          >
-                            <Send size={18} className="text-blue-600" />
-                          </button>
-                        )}
-                        {invoice.status === 'SENT' && (
-                          <button
-                            onClick={() => handleStatusChange(invoice.id, 'PAID')}
-                            className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-green-900/30' : 'hover:bg-green-50')}
-                            title="Mark as Paid"
-                          >
-                            <CheckCircle size={18} className="text-green-600" />
-                          </button>
-                        )}
-                        <button
-                          onClick={() => {
-                            setFormData({
-                              customerName: invoice.customerName,
-                              customerEmail: invoice.customerEmail || '',
-                              customerPhone: invoice.customerPhone || '',
-                              customerAddress: invoice.customerAddress || '',
-                              lineItems: invoice.lineItems.map((item) => ({
-                                description: item.description,
-                                quantity: item.quantity,
-                                unitPrice: Number(item.unitPrice),
-                              })),
-                              taxRate: invoice.taxRate,
-                              discountAmount: Number(invoice.discountAmount),
-                              dueDate: invoice.dueDate ? new Date(invoice.dueDate).toISOString().split('T')[0] : '',
-                              notes: invoice.notes || '',
-                            });
-                            setEditingId(invoice.id);
-                            setIsAdding(true);
-                          }}
-                          className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100')}
-                        >
-                          <Edit size={18} className={isDarkMode ? 'text-gray-400' : 'text-gray-600'} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(invoice.id)}
-                          className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-red-900/30' : 'hover:bg-red-50')}
-                        >
-                          <Trash2 size={18} className="text-red-600" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
+        <RecordListView
+          items={filteredInvoices}
+          isLoading={isLoading}
+          keyExtractor={(invoice) => invoice.id}
+          renderItem={renderInvoiceItem}
+          listHeader={(
+            <tr>
+              <th className="px-4 py-2 font-medium">Date</th>
+              <th className="px-4 py-2 font-medium min-w-[120px]">Invoice #</th>
+              <th className="px-4 py-2 font-medium min-w-[200px]">Customer</th>
+              <th className="px-4 py-2 font-medium min-w-[100px]">Status</th>
+              <th className="px-4 py-2 font-medium text-right min-w-[120px]">Amount</th>
+              <th className="px-4 py-2 font-medium text-right min-w-[120px]">Actions</th>
+            </tr>
+          )}
+          emptyState={(
+            <div className={clsx('rounded-xl p-8 text-center', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+              <FileText size={48} className={clsx('mx-auto mb-4', isDarkMode ? 'text-gray-600' : 'text-gray-300')} />
+              <p className={clsx(isDarkMode ? 'text-gray-400' : 'text-gray-500')}>No invoices found</p>
+              <Button onClick={() => setIsAdding(true)} variant="primary" className="mt-4">
+                Create Your First Invoice
+              </Button>
             </div>
-          </div>
-        )}
+          )}
+        />
       </div>
 
       {/* Create/Edit Modal */}
@@ -359,7 +422,7 @@ export default function InvoiceManagerPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className={clsx('rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto', isDarkMode ? 'bg-gray-800' : 'bg-white')}
+            className={clsx('rounded-2xl w-full max-w-2xl max-h-[67.5vh] overflow-y-auto', isDarkMode ? 'bg-gray-800' : 'bg-white')}
           >
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
