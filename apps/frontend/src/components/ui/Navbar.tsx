@@ -19,23 +19,9 @@ export function Navbar() {
   const [isAuthDropdownOpen, setIsAuthDropdownOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   const authRef = useRef<HTMLDivElement>(null);
-  const [dropdownPos, setDropdownPos] = useState({ top: 0, right: 0 });
   const dropdownRef = useRef<HTMLDivElement>(null);
   const authDropdownRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (isProfileDropdownOpen && profileRef.current) {
-      const rect = profileRef.current.getBoundingClientRect();
-      setDropdownPos({ top: rect.bottom + 8, right: window.innerWidth - rect.right });
-    }
-  }, [isProfileDropdownOpen]);
-
-  useEffect(() => {
-    if (isAuthDropdownOpen && authRef.current) {
-      const rect = authRef.current.getBoundingClientRect();
-      setDropdownPos({ top: rect.bottom + 8, right: window.innerWidth - rect.right });
-    }
-  }, [isAuthDropdownOpen]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -218,18 +204,27 @@ export function Navbar() {
               onClick={closeProfileDropdown}
             />
             <motion.div
-              initial={{ opacity: 0, y: -20, scaleY: 0.9, originY: 0 }}
-              animate={{ opacity: 1, y: 0, scaleY: 1 }}
-              exit={{ opacity: 0, y: -16, scaleY: 0.9 }}
-              transition={{ type: 'spring', stiffness: 280, damping: 28, mass: 0.8 }}
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               ref={dropdownRef}
-              style={{ position: 'fixed', top: dropdownPos.top, right: dropdownPos.right, zIndex: 40 }}
               className={clsx(
-                'w-max shadow-2xl overflow-hidden rounded-none',
+                'fixed top-0 right-0 z-50 h-fit max-h-screen w-fit max-w-[85vw] shadow-2xl overflow-y-auto rounded-l-2xl',
                 isDarkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white border border-gray-200'
               )}
             >
-              <div className="p-2">
+              <div className="p-4">
+                <button
+                  onClick={closeProfileDropdown}
+                  className={clsx(
+                    'absolute top-2 right-2 p-2 rounded-lg transition-colors',
+                    isDarkMode ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'
+                  )}
+                  aria-label="Close"
+                >
+                  <X size={18} />
+                </button>
                 <Link
                   href="/profile"
                   onClick={closeProfileDropdown}
@@ -273,18 +268,27 @@ export function Navbar() {
               onClick={closeAuthDropdown}
             />
             <motion.div
-              initial={{ opacity: 0, y: -20, scaleY: 0.9, originY: 0 }}
-              animate={{ opacity: 1, y: 0, scaleY: 1 }}
-              exit={{ opacity: 0, y: -16, scaleY: 0.9 }}
-              transition={{ type: 'spring', stiffness: 280, damping: 28, mass: 0.8 }}
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               ref={authDropdownRef}
-              style={{ position: 'fixed', top: dropdownPos.top, right: dropdownPos.right, zIndex: 40 }}
               className={clsx(
-                'w-max shadow-2xl overflow-hidden rounded-2xl',
+                'fixed top-0 right-0 z-50 h-fit max-h-screen w-fit max-w-[85vw] shadow-2xl overflow-y-auto rounded-l-2xl',
                 isDarkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white border border-gray-200'
               )}
             >
-              <div className="p-2">
+              <div className="p-4">
+                <button
+                  onClick={closeAuthDropdown}
+                  className={clsx(
+                    'absolute top-2 right-2 p-2 rounded-lg transition-colors',
+                    isDarkMode ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'
+                  )}
+                  aria-label="Close"
+                >
+                  <X size={18} />
+                </button>
                 <button
                   onClick={() => {
                     closeAuthDropdown();

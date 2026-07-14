@@ -172,7 +172,7 @@ export function MobileBottomNav() {
       'operations': operationsRef,
       'monitor': monitorRef,
     };
-    
+
     const ref = refMap[dropdownKey];
     if (ref?.current) {
       const rect = ref.current.getBoundingClientRect();
@@ -181,7 +181,7 @@ export function MobileBottomNav() {
 
       setDropdownPosition({ left: Math.max(16, Math.min(window.innerWidth - dropdownWidth - 16, left)) });
     }
-    
+
     setActiveDropdown(dropdownKey);
     setPendingDropdown(null);
   };
@@ -336,10 +336,10 @@ export function MobileBottomNav() {
               onClick={() => setActiveDropdown(null)}
             />
             <motion.div
-              initial={{ opacity: 0, y: 20, scaleY: 0.9 }}
-              animate={{ opacity: 1, y: 0, scaleY: 1 }}
-              exit={{ opacity: 0, y: 16, scaleY: 0.9 }}
-              transition={{ type: 'spring', stiffness: 280, damping: 28, mass: 0.8 }}
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               style={{ left: `${dropdownPosition.left}px`, transformOrigin: 'bottom center' }}
               className={clsx(
                 'fixed bottom-16 z-40 shadow-2xl overflow-hidden rounded-2xl',

@@ -73,7 +73,7 @@ export default function FinancialReportsPage() {
   return (
     <div className={clsx('min-h-screen pb-20', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       {/* Header */}
-      <div className={clsx('rounded-b-2xl shadow-sm', isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900')}>
+      <div className={clsx('shadow-sm', isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900')}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
           <div className="flex items-center gap-4 mb-6">
             <Link href="/dashboard">
@@ -87,23 +87,20 @@ export default function FinancialReportsPage() {
           </div>
 
           {/* Period Selector */}
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className={clsx('flex flex-wrap items-center gap-2 rounded-lg p-2', isDarkMode ? 'bg-white/10' : 'bg-gray-100')}>
-              {(['month', 'quarter', 'year'] as const).map((p) => (
-                <button
-                  key={p}
-                  onClick={() => setPeriod(p)}
-                  className={clsx(
-                    'px-3 py-2 rounded-md text-sm font-medium transition-colors',
-                    period === p
-                      ? (isDarkMode ? 'bg-white text-gray-900' : 'bg-festac-green text-white')
-                      : (isDarkMode ? 'text-white/70 hover:text-white' : 'text-gray-600 hover:text-gray-900')
-                  )}
-                >
-                  {p.charAt(0).toUpperCase() + p.slice(1)}
-                </button>
-              ))}
-            </div>
+          <div className={clsx('flex gap-2 rounded-lg p-2 shadow-sm border overflow-x-auto', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100')}>
+            {(['month', 'quarter', 'year'] as const).map((p) => (
+              <button
+                key={p}
+                onClick={() => setPeriod(p)}
+                className={`flex-1 min-w-max px-3 sm:px-4 py-2 rounded-md font-medium text-sm transition-all ${
+                  period === p
+                    ? 'bg-festac-green text-white'
+                    : isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                {p.charAt(0).toUpperCase() + p.slice(1)}
+              </button>
+            ))}
           </div>
 
           {activeTab === 'profit-loss' && profitLossData && (
@@ -179,45 +176,51 @@ export default function FinancialReportsPage() {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         {/* Tabs */}
-        <div className={clsx('overflow-x-auto mb-6 border-b', isDarkMode ? 'border-gray-700' : 'border-gray-200')}>
-          <div className="flex flex-wrap gap-2 min-w-max py-2">
-            <button
-              onClick={() => setActiveTab('profit-loss')}
-              className={`px-3 py-2 text-sm font-medium whitespace-nowrap rounded-md ${
-                activeTab === 'profit-loss' ? 'text-blue-600 border-b-2 border-blue-600' : isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <TrendingUp size={16} className="inline mr-2" />
-              Profit & Loss
-            </button>
-            <button
-              onClick={() => setActiveTab('cash-flow')}
-              className={`px-3 py-2 text-sm font-medium whitespace-nowrap rounded-md ${
-                activeTab === 'cash-flow' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <DollarSign size={16} className="inline mr-2" />
-              Cash Flow
-            </button>
-            <button
-              onClick={() => setActiveTab('sales-analytics')}
-              className={`px-3 py-2 text-sm font-medium whitespace-nowrap rounded-md ${
-                activeTab === 'sales-analytics' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <BarChart3 size={16} className="inline mr-2" />
-              Sales Analytics
-            </button>
-            <button
-              onClick={() => setActiveTab('tax-summary')}
-              className={`px-3 py-2 text-sm font-medium whitespace-nowrap rounded-md ${
-                activeTab === 'tax-summary' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <FileText size={16} className="inline mr-2" />
-              Tax Summary
-            </button>
-          </div>
+        <div className={clsx('flex gap-2 rounded-lg p-2 shadow-sm border overflow-x-auto mb-6', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100')}>
+          <button
+            onClick={() => setActiveTab('profit-loss')}
+            className={`flex-1 min-w-max px-3 sm:px-4 py-2 rounded-md font-medium text-sm transition-all ${
+              activeTab === 'profit-loss'
+                ? 'bg-festac-green text-white'
+                : isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            <TrendingUp size={16} className="inline mr-2" />
+            Profit & Loss
+          </button>
+          <button
+            onClick={() => setActiveTab('cash-flow')}
+            className={`flex-1 min-w-max px-3 sm:px-4 py-2 rounded-md font-medium text-sm transition-all ${
+              activeTab === 'cash-flow'
+                ? 'bg-festac-green text-white'
+                : isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            <DollarSign size={16} className="inline mr-2" />
+            Cash Flow
+          </button>
+          <button
+            onClick={() => setActiveTab('sales-analytics')}
+            className={`flex-1 min-w-max px-3 sm:px-4 py-2 rounded-md font-medium text-sm transition-all ${
+              activeTab === 'sales-analytics'
+                ? 'bg-festac-green text-white'
+                : isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            <BarChart3 size={16} className="inline mr-2" />
+            Sales Analytics
+          </button>
+          <button
+            onClick={() => setActiveTab('tax-summary')}
+            className={`flex-1 min-w-max px-3 sm:px-4 py-2 rounded-md font-medium text-sm transition-all ${
+              activeTab === 'tax-summary'
+                ? 'bg-festac-green text-white'
+                : isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            <FileText size={16} className="inline mr-2" />
+            Tax Summary
+          </button>
         </div>
 
         {/* Report Content */}

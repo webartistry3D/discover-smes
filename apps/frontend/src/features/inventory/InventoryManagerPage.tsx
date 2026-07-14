@@ -56,6 +56,7 @@ export default function InventoryManagerPage() {
 
   const [formData, setFormData] = useState({
     sku: '',
+    barcode: '',
     name: '',
     description: '',
     categoryId: '',
@@ -80,6 +81,7 @@ export default function InventoryManagerPage() {
       setIsAdding(false);
       setFormData({
         sku: '',
+        barcode: '',
         name: '',
         description: '',
         categoryId: '',
@@ -109,6 +111,7 @@ export default function InventoryManagerPage() {
       setEditingId(null);
       setFormData({
         sku: '',
+        barcode: '',
         name: '',
         description: '',
         categoryId: '',
@@ -143,6 +146,7 @@ export default function InventoryManagerPage() {
     setEditingId(item.id);
     setFormData({
       sku: item.sku || '',
+      barcode: item.barcode || '',
       name: item.name,
       description: item.description || '',
       categoryId: item.categoryId || '',
@@ -458,7 +462,7 @@ export default function InventoryManagerPage() {
                 onChange={(e) => setLowStockOnly(e.target.checked)}
                 className={clsx('rounded text-festac-green focus:ring-festac-green', isDarkMode ? 'border-gray-600' : 'border-gray-300')}
               />
-              <span className={clsx('text-sm', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Low Stock Only</span>
+              <span className={clsx('text-sm', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Low Stock</span>
             </label>
           </div>
         </div>
@@ -604,7 +608,7 @@ export default function InventoryManagerPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className={clsx('rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto', isDarkMode ? 'bg-gray-800' : 'bg-white')}
+            className={clsx('rounded-2xl w-full max-w-lg max-h-[67.5vh] overflow-y-auto', isDarkMode ? 'bg-gray-800' : 'bg-white')}
           >
             <div className="p-6">
               <h2 className={clsx('text-xl font-bold mb-6', isDarkMode ? 'text-white' : 'text-gray-900')}>{editingId ? 'Edit Inventory Item' : 'Add Inventory Item'}</h2>
@@ -625,6 +629,16 @@ export default function InventoryManagerPage() {
                     type="text"
                     value={formData.sku}
                     onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                    className={clsx('w-full px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
+                  />
+                </div>
+                <div>
+                  <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Barcode</label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={formData.barcode}
+                    onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
                     className={clsx('w-full px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
                   />
                 </div>

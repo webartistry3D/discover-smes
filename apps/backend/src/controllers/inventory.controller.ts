@@ -25,6 +25,7 @@ export class InventoryController {
         where.OR = [
           { name: { contains: search, mode: 'insensitive' } },
           { sku: { contains: search, mode: 'insensitive' } },
+          { barcode: { contains: search, mode: 'insensitive' } },
           { description: { contains: search, mode: 'insensitive' } },
         ];
       }
@@ -96,6 +97,7 @@ export class InventoryController {
 
       const {
         sku,
+        barcode,
         name,
         description,
         category,
@@ -119,6 +121,7 @@ export class InventoryController {
         data: {
           vendorId,
           sku: sku as string | undefined,
+          barcode: barcode as string | undefined,
           name: name as string,
           description: description as string | undefined,
           category: resolvedCategory.name,
@@ -165,6 +168,7 @@ export class InventoryController {
       const { id } = req.params;
       const {
         sku,
+        barcode,
         name,
         description,
         category,
@@ -189,6 +193,7 @@ export class InventoryController {
         where: { id, vendorId },
         data: {
           sku: sku as string | undefined,
+          barcode: barcode as string | undefined,
           name: name as string | undefined,
           description: description as string | undefined,
           category: resolvedCategory.name,

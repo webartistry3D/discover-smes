@@ -15,9 +15,9 @@ interface VendorCardProps {
 }
 
 const priceRangeLabel: Record<string, string> = {
-  BUDGET: '₦',
-  MID_RANGE: '₦₦',
-  PREMIUM: '₦₦₦',
+  BUDGET: 'Budget',
+  MID_RANGE: 'Mid-range',
+  PREMIUM: 'Premium',
 };
 
 export function VendorCard({ vendor, variant = 'default', index = 0 }: VendorCardProps) {

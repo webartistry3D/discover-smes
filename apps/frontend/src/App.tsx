@@ -126,6 +126,16 @@ function ProtectedRoute({ children, roles }: { children: React.ReactNode; roles?
   return <>{children}</>;
 }
 
+function ScrollToTop() {
+  const [location] = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location]);
+
+  return null;
+}
+
 function AppLayout({ children }: { children: React.ReactNode }) {
   const { isDarkMode } = useUIStore();
   const [location] = useLocation();
@@ -134,6 +144,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className={clsx('min-h-screen flex flex-col', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
+      <ScrollToTop />
       <Navbar />
       <main className={clsx('flex-1', isAuthenticated ? 'pb-20' : '')}>
         {children}

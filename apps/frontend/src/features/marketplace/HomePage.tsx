@@ -23,7 +23,7 @@ export default function HomePage() {
   const { isDarkMode } = useUIStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [currentBusinessIndex, setCurrentBusinessIndex] = useState(0);
-  const { location, requestLocation } = useGeolocation(true);
+  const { location, isGranted, permission, requestLocation } = useGeolocation(true);
   const { data: categories, isLoading: catsLoading } = useCategories();
   const { data: featured, isLoading: featuredLoading } = useFeaturedVendors(8);
   const { data: nearby } = useNearbyVendors(location?.lat, location?.lng, 3);
@@ -66,7 +66,7 @@ export default function HomePage() {
           <div className="absolute -bottom-10 -left-10 w-56 h-56 bg-festac-amber rounded-full blur-3xl" />
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 pt-20 pb-28 text-white">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 pt-12 pb-28 text-white">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
@@ -81,11 +81,15 @@ export default function HomePage() {
               className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full text-sm text-white/80 mb-6"
             >
               <MapPin size={13} className="text-festac-amber" />
-              Amuwo-Odofin, Lagos
+              {isGranted && location
+                ? `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`
+                : permission === 'denied'
+                  ? 'Amuwo-Odofin, Lagos'
+                  : 'Locating...'}
             </motion.div>
 
             <h1 className="font-display font-black text-4xl sm:text-7xl lg:text-7xl leading-[1.1] text-balance">
-              <div className="flex flex-wrap items-baseline gap-2">
+              <div className="flex flex-wrap items-baseline gap-2 sm:flex-col">
                 <span>Discover</span>
                 <span
                   className="inline-grid bg-festac-amber px-4 py-1"
@@ -94,7 +98,7 @@ export default function HomePage() {
                   {BUSINESS_TYPES.map((type) => (
                     <span
                       key={`sizer-${type}`}
-                      className="invisible whitespace-nowrap text-5xl [grid-area:content]"
+                      className="invisible whitespace-nowrap text-5xl sm:text-7xl lg:text-7xl [grid-area:content]"
                       aria-hidden="true"
                     >
                       {type}
@@ -107,7 +111,7 @@ export default function HomePage() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
                       transition={{ duration: 0.3 }}
-                      className="inline-block text-5xl text-black [grid-area:content]"
+                      className="inline-block text-5xl sm:text-7xl lg:text-7xl text-black [grid-area:content]"
                     >
                       {BUSINESS_TYPES[currentBusinessIndex]}
                     </motion.span>
@@ -116,7 +120,7 @@ export default function HomePage() {
                 <span>Near You</span>
               </div>
             </h1>
-            <p className="text-white/70 text-lg mt-4 max-w-lg">
+            <p className="inline-block bg-white/10 backdrop-blur-sm px-4 py-2 text-white/80 text-lg mt-4 max-w-lg">
               Find trusted vendors and service providers. Connect via WhatsApp instantly.
             </p>
 
@@ -191,9 +195,11 @@ export default function HomePage() {
               subtitle="Businesses within 3km"
               href="/discover?sortBy=distance"
             />
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-5">
-              {nearby.slice(0, 4).map((v, i) => (
-                <VendorCard key={v.id} vendor={v} index={i} />
+            <div className="flex gap-4 mt-5 overflow-x-auto pb-4">
+              {nearby.slice(0, 6).map((v, i) => (
+                <div key={v.id} className="max-w-[250px] flex-shrink-0">
+                  <VendorCard vendor={v} index={i} />
+                </div>
               ))}
             </div>
           </section>

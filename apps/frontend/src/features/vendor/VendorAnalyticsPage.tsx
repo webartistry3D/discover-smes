@@ -10,7 +10,7 @@ import { clsx } from 'clsx';
 
 export default function VendorAnalyticsPage() {
   const { isDarkMode } = useUIStore();
-  const [period, setPeriod] = useState<'week' | 'month'>('month');
+  const [period, setPeriod] = useState<'week' | 'month' | 'year'>('month');
   const { data: analytics, isLoading: analyticsLoading } = useVendorAnalytics(period);
 
   // Transform analytics data for charts
@@ -47,6 +47,12 @@ export default function VendorAnalyticsPage() {
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${period === 'month' ? 'bg-white text-festac-green' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
             >
               This Month
+            </button>
+            <button
+              onClick={() => setPeriod('year')}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${period === 'year' ? 'bg-white text-festac-green' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
+            >
+              This Year
             </button>
           </div>
         </div>

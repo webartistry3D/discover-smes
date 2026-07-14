@@ -1,35 +1,53 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useUIStore } from '../stores/ui.store';
 import { FESTAC_CENTER } from '../lib/shared';
 
 export function useGeolocation(autoRequest = false) {
   const { userLocation, locationPermission, setUserLocation, setLocationPermission } = useUIStore();
+  const watchIdRef = useRef<number | null>(null);
 
-  const requestLocation = () => {
+  const startWatching = useCallback(() => {
     if (!navigator.geolocation) {
       setLocationPermission('denied');
+      setUserLocation(FESTAC_CENTER);
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
+    if (watchIdRef.current !== null) return;
+
+    watchIdRef.current = navigator.geolocation.watchPosition(
       (position) => {
         setUserLocation({ lat: position.coords.latitude, lng: position.coords.longitude });
         setLocationPermission('granted');
       },
       () => {
         setLocationPermission('denied');
-        // Fall back to Festac center
         setUserLocation(FESTAC_CENTER);
       },
-      { timeout: 10000, maximumAge: 5 * 60 * 1000 },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 },
     );
-  };
+  }, [setUserLocation, setLocationPermission]);
+
+  const requestLocation = useCallback(() => {
+    if (!navigator.geolocation) {
+      setLocationPermission('denied');
+      setUserLocation(FESTAC_CENTER);
+      return;
+    }
+    startWatching();
+  }, [startWatching, setLocationPermission, setUserLocation]);
 
   useEffect(() => {
-    if (autoRequest && locationPermission === 'unknown') {
-      requestLocation();
+    if (autoRequest && locationPermission !== 'denied') {
+      startWatching();
     }
-  }, [autoRequest]);
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+    };
+  }, [autoRequest, locationPermission, startWatching]);
 
   return {
     location: userLocation,

@@ -367,7 +367,7 @@ export default function TaxManagerPage() {
   return (
     <div className={clsx('min-h-screen pb-20', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       {/* Header */}
-      <div className={clsx('rounded-b-2xl shadow-sm', isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900')}>
+      <div className={clsx('shadow-sm', isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900')}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
           <div className="flex items-center gap-4 mb-4">
             <Link href="/dashboard">
@@ -435,33 +435,47 @@ export default function TaxManagerPage() {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         {/* Tabs */}
-        <div className={clsx('overflow-x-auto mb-6 border-b', isDarkMode ? 'border-gray-700' : 'border-gray-200')}>
-          <div className="flex gap-4 min-w-max">
-            <button
-              onClick={() => setActiveTab('records')}
-              className={`px-4 py-2 font-medium whitespace-nowrap ${activeTab === 'records' ? 'text-blue-600 border-b-2 border-blue-600' : isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-900'}`}
-            >
-              Tax Records
-            </button>
-            <button
-              onClick={() => setActiveTab('payments')}
-              className={`px-4 py-2 font-medium whitespace-nowrap ${activeTab === 'payments' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:text-gray-900'}`}
-            >
-              Payments
-            </button>
-            <button
-              onClick={() => setActiveTab('vat')}
-              className={`px-4 py-2 font-medium whitespace-nowrap ${activeTab === 'vat' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:text-gray-900'}`}
-            >
-              VAT Tracking
-            </button>
-            <button
-              onClick={() => setActiveTab('reports')}
-              className={`px-4 py-2 font-medium whitespace-nowrap ${activeTab === 'reports' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:text-gray-900'}`}
-            >
-              Compliance Reports
-            </button>
-          </div>
+        <div className={clsx('flex gap-2 rounded-lg p-2 shadow-sm border overflow-x-auto mb-6', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100')}>
+          <button
+            onClick={() => setActiveTab('records')}
+            className={`flex-1 min-w-max px-3 sm:px-4 py-2 rounded-md font-medium text-sm transition-all ${
+              activeTab === 'records'
+                ? 'bg-festac-green text-white'
+                : isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            Tax Records
+          </button>
+          <button
+            onClick={() => setActiveTab('payments')}
+            className={`flex-1 min-w-max px-3 sm:px-4 py-2 rounded-md font-medium text-sm transition-all ${
+              activeTab === 'payments'
+                ? 'bg-festac-green text-white'
+                : isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            Payments
+          </button>
+          <button
+            onClick={() => setActiveTab('vat')}
+            className={`flex-1 min-w-max px-3 sm:px-4 py-2 rounded-md font-medium text-sm transition-all ${
+              activeTab === 'vat'
+                ? 'bg-festac-green text-white'
+                : isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            VAT Tracking
+          </button>
+          <button
+            onClick={() => setActiveTab('reports')}
+            className={`flex-1 min-w-max px-3 sm:px-4 py-2 rounded-md font-medium text-sm transition-all ${
+              activeTab === 'reports'
+                ? 'bg-festac-green text-white'
+                : isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            Compliance Reports
+          </button>
         </div>
 
         {/* Filters */}
@@ -504,7 +518,21 @@ export default function TaxManagerPage() {
 
         {/* Tax Records Tab */}
         {activeTab === 'records' && (
-          <div className={clsx('rounded-lg shadow-sm border', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200')}>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className={clsx('rounded-xl p-4 sm:p-6 shadow-sm border', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100')}
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+              <h2 className={clsx('font-semibold text-lg flex items-center gap-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
+                <FileText size={20} className="text-blue-500" />
+                Tax Records
+              </h2>
+              <Button onClick={() => setIsAdding(true)} variant="primary" size="sm">
+                <Plus size={16} className="mr-2" />
+                Add Tax Record
+              </Button>
+            </div>
             <RecordListView
               items={filteredRecords}
               isLoading={isLoading}
@@ -527,22 +555,33 @@ export default function TaxManagerPage() {
                 </div>
               )}
             />
-          </div>
+          </motion.div>
         )}
 
         {/* Payments Tab */}
         {activeTab === 'payments' && !selectedRecordId && (
-          <div className={clsx('rounded-lg shadow-sm border p-12 text-center', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200')}>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className={clsx('rounded-xl p-4 sm:p-6 shadow-sm border p-12 text-center', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100')}
+          >
             <Receipt className={clsx('w-16 h-16 mx-auto mb-4', isDarkMode ? 'text-gray-600' : 'text-gray-300')} />
             <h3 className={clsx('text-lg font-medium mb-2', isDarkMode ? 'text-white' : 'text-gray-900')}>Select a Tax Record</h3>
             <p className={clsx('mb-4', isDarkMode ? 'text-gray-400' : 'text-gray-600')}>Go to the Tax Records tab and click on a record to view and manage payments</p>
             <Button onClick={() => setActiveTab('records')} variant="secondary">Go to Tax Records</Button>
-          </div>
+          </motion.div>
         )}
         {activeTab === 'payments' && selectedRecordId && (
-          <div className="space-y-6">
-            <div className={clsx('rounded-lg shadow-sm border p-6', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200')}>
-              <h3 className={clsx('text-lg font-medium mb-4', isDarkMode ? 'text-white' : 'text-gray-900')}>Record Payment</h3>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-6"
+          >
+            <div className={clsx('rounded-xl p-4 sm:p-6 shadow-sm border', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100')}>
+              <h3 className={clsx('font-semibold text-lg flex items-center gap-2 mb-4', isDarkMode ? 'text-white' : 'text-gray-900')}>
+                <Receipt size={20} className="text-green-500" />
+                Record Payment
+              </h3>
               <form onSubmit={handleCreatePayment} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -597,9 +636,12 @@ export default function TaxManagerPage() {
               </form>
             </div>
 
-            <div className={clsx('rounded-lg shadow-sm border', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200')}>
-              <div className={clsx('p-6 border-b', isDarkMode ? 'border-gray-700' : 'border-gray-200')}>
-                <h3 className={clsx('text-lg font-medium', isDarkMode ? 'text-white' : 'text-gray-900')}>Payment History</h3>
+            <div className={clsx('rounded-xl p-4 sm:p-6 shadow-sm border', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100')}>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+                <h3 className={clsx('font-semibold text-lg flex items-center gap-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
+                  <Receipt size={20} className="text-green-500" />
+                  Payment History
+                </h3>
               </div>
               <RecordListView
                 items={taxPayments || []}
@@ -621,14 +663,21 @@ export default function TaxManagerPage() {
                 )}
               />
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* VAT Tracking Tab */}
         {activeTab === 'vat' && (
-          <div className="space-y-6">
-            <div className={clsx('rounded-lg shadow-sm border p-6', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200')}>
-              <h3 className={clsx('text-lg font-medium mb-4', isDarkMode ? 'text-white' : 'text-gray-900')}>VAT Tracking</h3>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-6"
+          >
+            <div className={clsx('rounded-xl p-4 sm:p-6 shadow-sm border', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100')}>
+              <h3 className={clsx('font-semibold text-lg flex items-center gap-2 mb-4', isDarkMode ? 'text-white' : 'text-gray-900')}>
+                <TrendingUp size={20} className="text-purple-500" />
+                VAT Tracking
+              </h3>
               {!isVatLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className={clsx('p-4 rounded-lg', isDarkMode ? 'bg-blue-900/20' : 'bg-blue-50')}>
@@ -650,10 +699,15 @@ export default function TaxManagerPage() {
             </div>
 
             {/* Invoice VAT Breakdown */}
-            <div className={clsx('rounded-lg shadow-sm border', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200')}>
-              <div className={clsx('p-6 border-b', isDarkMode ? 'border-gray-700' : 'border-gray-200')}>
-                <h3 className={clsx('text-lg font-medium', isDarkMode ? 'text-white' : 'text-gray-900')}>VAT from Paid Invoices</h3>
-                <p className={clsx('text-sm mt-1', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>{paidInvoices?.length || 0} paid invoice{(paidInvoices?.length || 0) !== 1 ? 's' : ''} contributing {formatCurrencyCompact(invoiceVat)} in VAT</p>
+            <div className={clsx('rounded-xl p-4 sm:p-6 shadow-sm border', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100')}>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
+                <div>
+                  <h3 className={clsx('font-semibold text-lg flex items-center gap-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
+                    <Receipt size={20} className="text-purple-500" />
+                    VAT from Paid Invoices
+                  </h3>
+                  <p className={clsx('text-sm mt-1', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>{paidInvoices?.length || 0} paid invoice{(paidInvoices?.length || 0) !== 1 ? 's' : ''} contributing {formatCurrencyCompact(invoiceVat)} in VAT</p>
+                </div>
               </div>
               <RecordListView
                 items={paidInvoices || []}
@@ -676,23 +730,30 @@ export default function TaxManagerPage() {
                 )}
               />
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Compliance Reports Tab */}
         {activeTab === 'reports' && (
-          <div className="space-y-6">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-6"
+          >
             <div className="flex items-center justify-between">
               {!selectedRecordId && (
                 <p className={clsx('text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>Select a tax record from the Records tab to generate a new report</p>
               )}
               <Button onClick={handleGenerateReport} disabled={!selectedRecordId}>
-                Generate Compliance Report
+                Generate
               </Button>
             </div>
-            <div className={clsx('rounded-lg shadow-sm border', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200')}>
-              <div className={clsx('p-6 border-b', isDarkMode ? 'border-gray-700' : 'border-gray-200')}>
-                <h3 className={clsx('text-lg font-medium', isDarkMode ? 'text-white' : 'text-gray-900')}>Compliance Reports</h3>
+            <div className={clsx('rounded-xl p-4 sm:p-6 shadow-sm border', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100')}>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+                <h3 className={clsx('font-semibold text-lg flex items-center gap-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
+                  <BarChart3 size={20} className="text-blue-500" />
+                  Compliance Reports
+                </h3>
               </div>
               {complianceReports && complianceReports.length > 0 ? (
                 <div className={clsx('divide-y', isDarkMode ? 'divide-gray-700' : 'divide-gray-200')}>
@@ -732,7 +793,7 @@ export default function TaxManagerPage() {
                 </div>
               )}
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
 
