@@ -114,7 +114,7 @@ export default function FinancialReportsPage() {
                     </div>
                     <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Total Revenue</p>
                   </div>
-                  <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>₦{profitLossData.totalRevenue?.toLocaleString() || 0}</p>
+                  <p className={clsx('font-bold text-5xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>₦{profitLossData.totalRevenue?.toLocaleString() || 0}</p>
                 </div>
               </motion.div>
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
@@ -125,7 +125,7 @@ export default function FinancialReportsPage() {
                     </div>
                     <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Total Expenses</p>
                   </div>
-                  <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>₦{profitLossData.totalExpenses?.toLocaleString() || 0}</p>
+                  <p className={clsx('font-bold text-5xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>₦{profitLossData.totalExpenses?.toLocaleString() || 0}</p>
                 </div>
               </motion.div>
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
@@ -136,7 +136,7 @@ export default function FinancialReportsPage() {
                     </div>
                     <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Gross Profit</p>
                   </div>
-                  <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? ((profitLossData.grossProfit || 0) >= 0 ? 'text-green-300' : 'text-red-300') : ((profitLossData.grossProfit || 0) >= 0 ? 'text-green-600' : 'text-red-600'))}>
+                  <p className={clsx('font-bold text-5xl font-mono', isDarkMode ? ((profitLossData.grossProfit || 0) >= 0 ? 'text-green-300' : 'text-red-300') : ((profitLossData.grossProfit || 0) >= 0 ? 'text-green-600' : 'text-red-600'))}>
                     <span>₦{profitLossData.grossProfit?.toLocaleString() || 0}</span>
                   </p>
                 </div>

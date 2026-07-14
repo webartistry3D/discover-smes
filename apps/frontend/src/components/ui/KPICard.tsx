@@ -43,8 +43,8 @@ export function KPICard({
     isDarkMode ? 'bg-gray-700' : 'bg-gray-100'
   );
 
-  const defaultValueClass = 'text-6xl font-bold font-mono';
-  const defaultLabelClass = 'text-xs';
+  const defaultValueClass = 'text-5xl font-bold font-mono';
+  const defaultLabelClass = 'text-sm';
 
   const valueSizeMatch = valueClassName?.match(/\btext-(xs|sm|base|lg|xl|2xl|3xl|4xl|5xl|6xl|7xl|8xl|9xl)\b/);
   const valueSize = valueSizeMatch ? valueSizeMatch[1] : '6xl';
