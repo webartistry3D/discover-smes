@@ -159,7 +159,7 @@ export default function ChatMonitor() {
           </div>
 
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
@@ -168,7 +168,7 @@ export default function ChatMonitor() {
                   </div>
                   <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Total Sessions</p>
                 </div>
-                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{sessions?.length || 0}</p>
+                <p className={clsx('font-bold text-3xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{sessions?.length || 0}</p>
               </div>
             </motion.div>
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
@@ -179,7 +179,7 @@ export default function ChatMonitor() {
                   </div>
                   <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Active</p>
                 </div>
-                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{activeSessions.length}</p>
+                <p className={clsx('font-bold text-3xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{activeSessions.length}</p>
               </div>
             </motion.div>
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
@@ -190,7 +190,7 @@ export default function ChatMonitor() {
                   </div>
                   <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Bot Active</p>
                 </div>
-                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{botActiveSessions.length}</p>
+                <p className={clsx('font-bold text-3xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{botActiveSessions.length}</p>
               </div>
             </motion.div>
           </div>

@@ -81,7 +81,7 @@ export default function VendorDashboardPage() {
           </div>
 
           {/* ─── FINANCIAL SUMMARY ─────────────────────────────── */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
             <KPICard
               icon={<ArrowUpRight size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />}
               iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}

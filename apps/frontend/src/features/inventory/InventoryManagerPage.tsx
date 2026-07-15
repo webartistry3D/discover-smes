@@ -313,7 +313,7 @@ export default function InventoryManagerPage() {
   return (
     <div className={clsx('min-h-screen pb-20', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       {/* Header */}
-      <div className={clsx('rounded-b-2xl shadow-sm', isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900')}>
+      <div className={clsx('shadow-sm', isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900')}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
           <div className="flex items-center gap-4 mb-4">
             <Link href="/dashboard">
@@ -337,11 +337,18 @@ export default function InventoryManagerPage() {
           </div>
 
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             <KPICard
               icon={<Package size={20} className={isDarkMode ? 'text-festac-green/80' : 'text-festac-green'} />}
               iconContainerClassName="p-2 rounded-lg bg-festac-green/20"
-              label="Total Items"
+              label="Categories"
+              value={summary?.totalItems || 0}
+              isLoading={inventorySummaryLoading}
+            />
+            <KPICard
+              icon={<Package size={20} className={isDarkMode ? 'text-festac-green/80' : 'text-festac-green'} />}
+              iconContainerClassName="p-2 rounded-lg bg-festac-green/20"
+              label="Items"
               value={summary?.totalItems || 0}
               isLoading={inventorySummaryLoading}
             />

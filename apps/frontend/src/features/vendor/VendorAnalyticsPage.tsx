@@ -62,7 +62,7 @@ export default function VendorAnalyticsPage() {
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-5">
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {[
             {
               icon: <Eye size={18} />,

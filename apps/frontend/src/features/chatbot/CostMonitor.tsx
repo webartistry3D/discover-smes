@@ -135,7 +135,7 @@ export default function CostMonitor() {
           </div>
 
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className={clsx('rounded-xl border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent p-3 sm:p-4' : 'bg-gray-50 border-gray-200 p-3 sm:p-4')}>
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
@@ -144,7 +144,7 @@ export default function CostMonitor() {
                   </div>
                   <p className={clsx('text-[10px] sm:text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Total Cost</p>
                 </div>
-                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>₦{savings?.totalCost?.toLocaleString() || 0}</p>
+                <p className={clsx('font-bold text-3xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>₦{savings?.totalCost?.toLocaleString() || 0}</p>
               </div>
             </motion.div>
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className={clsx('rounded-xl border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent p-3 sm:p-4' : 'bg-gray-50 border-gray-200 p-3 sm:p-4')}>
@@ -155,7 +155,7 @@ export default function CostMonitor() {
                   </div>
                   <p className={clsx('text-[10px] sm:text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Cache Hit Rate</p>
                 </div>
-                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{savings?.savingsPercentage?.toFixed(1) || 0}%</p>
+                <p className={clsx('font-bold text-3xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{savings?.savingsPercentage?.toFixed(1) || 0}%</p>
               </div>
             </motion.div>
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className={clsx('rounded-xl border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent p-3 sm:p-4' : 'bg-gray-50 border-gray-200 p-3 sm:p-4')}>
@@ -166,7 +166,7 @@ export default function CostMonitor() {
                   </div>
                   <p className={clsx('text-[10px] sm:text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Quota Status</p>
                 </div>
-                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{quotaStatus}</p>
+                <p className={clsx('font-bold text-3xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{quotaStatus}</p>
               </div>
             </motion.div>
           </div>
@@ -181,7 +181,7 @@ export default function CostMonitor() {
             className={clsx('rounded-xl p-4 sm:p-6 shadow-sm border', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100')}
           >
             <div className="flex items-center justify-between mb-3 sm:mb-4">
-              <h2 className={clsx('font-semibold flex items-center gap-2 text-sm sm:text-base', isDarkMode ? 'text-white' : 'text-gray-900')}>
+              <h2 className={clsx('font-semibold flex items-center gap-2 text-lg lg:text-base', isDarkMode ? 'text-white' : 'text-gray-900')}>
                 <Database size={18} className="text-festac-green" />
                 Monthly Quota
               </h2>
@@ -212,19 +212,19 @@ export default function CostMonitor() {
 
               <div className="grid grid-cols-3 gap-3 sm:gap-4 pt-3 sm:pt-4">
                 <div className="text-center">
-                  <p className={clsx('text-lg sm:text-2xl font-bold', isDarkMode ? 'text-white' : 'text-gray-900')}>
+                  <p className={clsx('text-3xl sm:text-2xl font-bold', isDarkMode ? 'text-white' : 'text-gray-900')}>
                     {dashboard?.quota?.quota?.currentUsage?.toLocaleString() || 0}
                   </p>
                   <p className="text-[10px] sm:text-xs text-gray-500">Used</p>
                 </div>
                 <div className="text-center">
-                  <p className={clsx('text-lg sm:text-2xl font-bold', isDarkMode ? 'text-white' : 'text-gray-900')}>
+                  <p className={clsx('text-3xl sm:text-2xl font-bold', isDarkMode ? 'text-white' : 'text-gray-900')}>
                     {dashboard?.quota?.remaining?.toLocaleString() || 0}
                   </p>
                   <p className="text-[10px] sm:text-xs text-gray-500">Remaining</p>
                 </div>
                 <div className="text-center">
-                  <p className={clsx('text-lg sm:text-2xl font-bold', isDarkMode ? 'text-white' : 'text-gray-900')}>
+                  <p className={clsx('text-3xl sm:text-2xl font-bold', isDarkMode ? 'text-white' : 'text-gray-900')}>
                     {dashboard?.quota?.quota?.monthlyLimit?.toLocaleString() || 0}
                   </p>
                   <p className="text-[10px] sm:text-xs text-gray-500">Limit</p>
@@ -249,7 +249,7 @@ export default function CostMonitor() {
         transition={{ delay: 0.1 }}
         className={clsx('rounded-xl p-4 sm:p-6 shadow-sm border', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100')}
       >
-        <h2 className={clsx('font-semibold flex items-center gap-2 mb-3 sm:mb-4 text-sm sm:text-base', isDarkMode ? 'text-white' : 'text-gray-900')}>
+        <h2 className={clsx('font-semibold flex items-center gap-2 mb-3 sm:mb-4 text-lg lg:text-base', isDarkMode ? 'text-white' : 'text-gray-900')}>
           <DollarSign size={18} className="text-festac-green" />
           Cost Savings
         </h2>
@@ -260,7 +260,7 @@ export default function CostMonitor() {
               <TrendingDown size={14} className="text-green-600" />
               <span className={clsx('text-xs sm:text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-600')}>Total Saved</span>
             </div>
-            <p className="text-lg sm:text-2xl font-bold text-green-600">
+            <p className="text-3xl sm:text-2xl font-bold text-green-600">
               ₦{String(savings?.savings?.toFixed(2) || 0).replace('.00', '')}
             </p>
             <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">
@@ -273,7 +273,7 @@ export default function CostMonitor() {
               <Database size={14} className="text-blue-600" />
               <span className={clsx('text-xs sm:text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-600')}>Cache Hits</span>
             </div>
-            <p className="text-lg sm:text-2xl font-bold text-blue-600">
+            <p className="text-3xl sm:text-2xl font-bold text-blue-600">
               {savings?.cachedMessages?.toLocaleString() || 0}
             </p>
             <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">
@@ -286,7 +286,7 @@ export default function CostMonitor() {
               <BarChart3 size={14} className="text-purple-600" />
               <span className={clsx('text-xs sm:text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-600')}>API Calls</span>
             </div>
-            <p className="text-lg sm:text-2xl font-bold text-purple-600">
+            <p className="text-3xl sm:text-2xl font-bold text-purple-600">
               {savings?.apiCalls?.toLocaleString() || 0}
             </p>
             <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">
@@ -299,7 +299,7 @@ export default function CostMonitor() {
               <Clock size={14} className="text-amber-600" />
               <span className={clsx('text-xs sm:text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-600')}>Total Messages</span>
             </div>
-            <p className="text-lg sm:text-2xl font-bold text-amber-600">
+            <p className="text-3xl sm:text-2xl font-bold text-amber-600">
               {savings?.totalMessages?.toLocaleString() || 0}
             </p>
             <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">
@@ -316,26 +316,26 @@ export default function CostMonitor() {
         transition={{ delay: 0.2 }}
         className={clsx('rounded-xl p-4 sm:p-6 shadow-sm border', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100')}
       >
-        <h2 className={clsx('font-semibold flex items-center gap-2 mb-3 sm:mb-4 text-sm sm:text-base', isDarkMode ? 'text-white' : 'text-gray-900')}>
+        <h2 className={clsx('font-semibold flex items-center gap-2 mb-3 sm:mb-4 text-lg lg:text-base', isDarkMode ? 'text-white' : 'text-gray-900')}>
           <Database size={18} className="text-festac-green" />
           Cache Statistics
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           <div className={clsx('text-center p-3 sm:p-4 rounded-lg', isDarkMode ? 'bg-gray-700' : 'bg-gray-50')}>
-            <p className={clsx('text-lg sm:text-2xl font-bold', isDarkMode ? 'text-white' : 'text-gray-900')}>
+            <p className={clsx('text-3xl sm:text-2xl font-bold', isDarkMode ? 'text-white' : 'text-gray-900')}>
               {dashboard?.cache?.stats?.total || 0}
             </p>
             <p className={clsx('text-[10px] sm:text-xs mt-1', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>Total Entries</p>
           </div>
           <div className={clsx('text-center p-3 sm:p-4 rounded-lg', isDarkMode ? 'bg-gray-700' : 'bg-gray-50')}>
-            <p className={clsx('text-lg sm:text-2xl font-bold', isDarkMode ? 'text-white' : 'text-gray-900')}>
+            <p className={clsx('text-3xl sm:text-2xl font-bold', isDarkMode ? 'text-white' : 'text-gray-900')}>
               {dashboard?.cache?.stats?.activeEntries || 0}
             </p>
             <p className={clsx('text-[10px] sm:text-xs mt-1', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>Active</p>
           </div>
           <div className={clsx('text-center p-3 sm:p-4 rounded-lg', isDarkMode ? 'bg-gray-700' : 'bg-gray-50')}>
-            <p className={clsx('text-lg sm:text-2xl font-bold', isDarkMode ? 'text-white' : 'text-gray-900')}>
+            <p className={clsx('text-3xl sm:text-2xl font-bold', isDarkMode ? 'text-white' : 'text-gray-900')}>
               {dashboard?.cache?.stats?.totalHits?.toLocaleString() || 0}
             </p>
             <p className={clsx('text-[10px] sm:text-xs mt-1', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>Total Hits</p>
@@ -345,7 +345,7 @@ export default function CostMonitor() {
         <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-blue-50 rounded-lg">
           <div className="flex items-center justify-between">
             <span className={clsx('text-xs sm:text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-600')}>Cache Hit Rate</span>
-            <span className="text-base sm:text-lg font-bold text-blue-600">
+            <span className="text-3xl sm:text-lg font-bold text-blue-600">
               {dashboard?.cache?.hitRate?.hitRate?.toFixed(1) || 0}%
             </span>
           </div>

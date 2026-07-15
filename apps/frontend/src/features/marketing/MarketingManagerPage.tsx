@@ -102,7 +102,7 @@ export default function MarketingManagerPage() {
           </div>
 
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -115,7 +115,7 @@ export default function MarketingManagerPage() {
                   </div>
                   <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Active Promotions</p>
                 </div>
-                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{promotions?.length || 0}</p>
+                <p className={clsx('font-bold text-3xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{promotions?.length || 0}</p>
               </div>
             </motion.div>
 
@@ -132,7 +132,7 @@ export default function MarketingManagerPage() {
                   </div>
                   <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Loyalty Programs</p>
                 </div>
-                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{loyaltyPrograms?.length || 0}</p>
+                <p className={clsx('font-bold text-3xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{loyaltyPrograms?.length || 0}</p>
               </div>
             </motion.div>
 
@@ -149,7 +149,7 @@ export default function MarketingManagerPage() {
                   </div>
                   <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>WhatsApp Campaigns</p>
                 </div>
-                <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{campaigns?.length || 0}</p>
+                <p className={clsx('font-bold text-3xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{campaigns?.length || 0}</p>
               </div>
             </motion.div>
           </div>
