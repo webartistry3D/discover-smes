@@ -21,51 +21,29 @@ export default function VendorAnalyticsPage() {
   return (
     <div className={clsx('min-h-screen', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       {/* Header */}
-      <div className="bg-gradient-hero text-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+      <div className="text-black">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5">
           <div className="flex items-center gap-4 mb-4">
             <Link href="/dashboard">
               <button className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors">
                 <ChevronLeft size={20} />
               </button>
             </Link>
-            <div>
-              <h1 className="font-display font-bold text-2xl">Full Analytics</h1>
-              {/*<p className="text-white/60 text-sm mt-1">Detailed performance data and insights</p>*/}
-            </div>
-          </div>
-
-          {/* Period Selector */}
-          <div className="flex items-center gap-2 mt-5">
-            <button
-              onClick={() => setPeriod('week')}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${period === 'week' ? 'bg-white text-festac-green' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
-            >
-              This Week
-            </button>
-            <button
-              onClick={() => setPeriod('month')}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${period === 'month' ? 'bg-white text-festac-green' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
-            >
-              This Month
-            </button>
-            <button
-              onClick={() => setPeriod('year')}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${period === 'year' ? 'bg-white text-festac-green' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
-            >
-              This Year
-            </button>
+          <div>
+            <h1 className="font-display font-bold text-2xl">Full Analytics</h1>
+            {/*<p className="text-white/60 text-sm mt-1">Detailed performance data and insights</p>*/}
           </div>
         </div>
       </div>
+      </div>
 
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-5">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-0 space-y-5">
         {/* Stats Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {[
             {
-              icon: <Eye size={18} />,
+              icon: <Eye size={18} />, //{<Check size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />}
               label: 'Profile Views',
               value: analytics?.profileViews?.toLocaleString() || '0',
               change: analytics?.profileViewsChange || '+0%',
@@ -95,7 +73,7 @@ export default function VendorAnalyticsPage() {
           ].map((stat, index) => (
             <KPICard
               key={stat.label}
-              icon={stat.icon}
+              icon={stat.icon} 
               iconContainerClassName="p-2 bg-festac-green/10 rounded-xl text-festac-green"
               topRight={
                 <div className={`flex items-center gap-1 text-xs font-medium ${stat.positive ? 'text-green-600' : 'text-red-600'}`}>
@@ -112,6 +90,27 @@ export default function VendorAnalyticsPage() {
             />
           ))}
         </div>
+        {/* Period Selector */}
+          <div className="rounded-full text-white bg-gradient-hero flex items-center gap-2 mt-5">
+            <button
+              onClick={() => setPeriod('week')}
+              className={`px-4 py-1.5 rounded-full border border-green-900 text-sm font-medium transition-colors ${period === 'week' ? 'bg-white text-festac-green' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
+            >
+              This Week
+            </button>
+            <button
+              onClick={() => setPeriod('month')}
+              className={`px-4 py-1.5 rounded-full border border-green-900 text-sm font-medium transition-colors ${period === 'month' ? 'bg-white text-festac-green' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
+            >
+              This Month
+            </button>
+            <button
+              onClick={() => setPeriod('year')}
+              className={`px-4 py-1.5 rounded-full border border-green-900 text-sm font-medium transition-colors ${period === 'year' ? 'bg-white text-festac-green' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
+            >
+              This Year
+            </button>
+          </div>
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

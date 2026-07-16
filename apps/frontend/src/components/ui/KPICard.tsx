@@ -35,7 +35,7 @@ export function KPICard({
 
   const defaultContainer = clsx(
     'rounded-xl p-4 border flex flex-col gap-2',
-    isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200'
+    isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200 shadow-lg hover:shadow-xl transition-shadow duration-200'
   );
 
   const defaultIconContainer = clsx(

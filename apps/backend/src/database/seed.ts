@@ -93,8 +93,8 @@ async function main() {
         ward: 'Festac Town',
         lga: 'Amuwo-Odofin',
         state: 'Lagos',
-        latitude: 6.4641,
-        longitude: 3.2819,
+        latitude: 6.874712, //6.4641
+        longitude: 3.2819, //3.276963
         categoryId: foodCat.id,
         businessType: 'SERVICE',
         priceRange: 'BUDGET',
