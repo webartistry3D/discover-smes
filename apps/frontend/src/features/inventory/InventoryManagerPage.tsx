@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'wouter';
-import { Plus, Search, Filter, Package, AlertTriangle, TrendingUp, DollarSign, ArrowUp, ArrowDown, X, Edit, Trash2, MoreVertical, Clock, BarChart3, ChevronLeft } from 'lucide-react';
-import { useInventoryItems, useCreateInventoryItem, useUpdateInventoryItem, useDeleteInventoryItem, useInventorySummary, useInventoryItem, useStockMovements, useCreateStockMovement, useStockAlerts, useResolveStockAlert, useInventoryValuation, useCategories, useCreateCategory } from '../../hooks/useVendors';
+import { Plus, Search, Filter, Package, AlertTriangle, TrendingUp, ArrowUp, ArrowDown, X, Edit, Trash2, MoreVertical, Clock, BarChart3, ChevronLeft, Wrench } from 'lucide-react';
+import { useInventoryItems, useCreateInventoryItem, useUpdateInventoryItem, useDeleteInventoryItem, useInventorySummary, useInventoryItem, useStockMovements, useCreateStockMovement, useStockAlerts, useResolveStockAlert, useInventoryValuation, useCategories, useCreateCategory, useVendorDetail, useCreateService } from '../../hooks/useVendors';
 import { Button, Skeleton, Badge } from '../../components/ui/index';
 import { KPICard } from '../../components/ui/KPICard';
 import { RecordListView, type ViewMode } from '../../components/ui/RecordListView';
 import type { InventoryItem, MovementType, AlertSeverity } from '../../lib/shared';
 import toast from 'react-hot-toast';
 import { useUIStore } from '../../stores/ui.store';
+import { useAuthStore } from '../../stores/auth.store';
 import { clsx } from 'clsx';
 
 const MOVEMENT_TYPES: { value: MovementType; label: string; color: string }[] = [
@@ -30,8 +31,14 @@ const ALERT_SEVERITY: { value: AlertSeverity; label: string; color: string }[] =
 
 export default function InventoryManagerPage() {
   const { isDarkMode } = useUIStore();
+  const { user } = useAuthStore();
+  const vendorId = user?.vendorId;
+  const { data: vendor, isLoading: vendorLoading } = useVendorDetail(vendorId ?? '');
+  const createService = useCreateService();
   const [isAdding, setIsAdding] = useState(false);
   const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const [isAddingService, setIsAddingService] = useState(false);
+  const [serviceForm, setServiceForm] = useState({ name: '', description: '', price: '', priceLabel: '', durationMinutes: '', bookingRequired: false });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -202,6 +209,33 @@ export default function InventoryManagerPage() {
     }
   };
 
+  const handleCreateService = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!serviceForm.name.trim()) {
+      toast.error('Service name is required');
+      return;
+    }
+    if (!vendorId) return;
+    try {
+      await createService.mutateAsync({
+        vendorId,
+        data: {
+          name: serviceForm.name,
+          description: serviceForm.description,
+          price: serviceForm.price ? Number(serviceForm.price) : undefined,
+          priceLabel: serviceForm.priceLabel || undefined,
+          durationMinutes: serviceForm.durationMinutes ? Number(serviceForm.durationMinutes) : undefined,
+          bookingRequired: serviceForm.bookingRequired,
+        },
+      });
+      toast.success('Service added successfully');
+      setIsAddingService(false);
+      setServiceForm({ name: '', description: '', price: '', priceLabel: '', durationMinutes: '', bookingRequired: false });
+    } catch {
+      toast.error('Failed to add service');
+    }
+  };
+
   const getStockStatus = (item: InventoryItem) => {
     const qty = Number(item.quantity);
     const min = Number(item.minStock);
@@ -325,48 +359,52 @@ export default function InventoryManagerPage() {
               <h1 className="font-display font-bold text-2xl">Inventory Manager</h1>
             </div>
           </div>
-          <div className="flex justify-between mb-2 gap-2">
-            <Button onClick={() => setIsAddingCategory(true)} variant="secondary">
-              <Plus size={18} className="mr-2" />
+          <div className="flex flex-nowrap mb-2 gap-1.5 overflow-x-auto">
+            <Button onClick={() => setIsAddingCategory(true)} variant="primary" className="bg-green-500 hover:bg-green-500/30 whitespace-nowrap px-2 py-1.5 text-xs sm:text-sm">
+              <Plus size={16} className="mr-1" />
               Category
             </Button>
-            <Button onClick={() => setIsAdding(true)} variant="primary">
-              <Plus size={18} className="mr-2" />
+            <Button onClick={() => setIsAdding(true)} variant="primary" className="whitespace-nowrap px-2 py-1.5 text-xs sm:text-sm">
+              <Plus size={16} className="mr-1" />
               Item
+            </Button>
+            <Button onClick={() => setIsAddingService(true)} variant="primary" className="whitespace-nowrap px-2 py-1.5 text-xs sm:text-sm">
+              <Plus size={16} className="mr-1" />
+              Service
             </Button>
           </div>
 
           {/* Summary Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             <KPICard
-              icon={<Package size={20} className={isDarkMode ? 'text-festac-green/80' : 'text-festac-green'} />}
-              iconContainerClassName="p-2 rounded-lg bg-festac-green/20"
+              icon={<Package size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />}
+              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}
               label="Categories"
-              value={summary?.totalItems || 0}
-              isLoading={inventorySummaryLoading}
+              value={categoriesData?.length ?? 0}
+              isLoading={!categoriesData}
             />
             <KPICard
-              icon={<Package size={20} className={isDarkMode ? 'text-festac-green/80' : 'text-festac-green'} />}
-              iconContainerClassName="p-2 rounded-lg bg-festac-green/20"
+              icon={<Package size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />}
+              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}
               label="Items"
               value={summary?.totalItems || 0}
               isLoading={inventorySummaryLoading}
             />
             <KPICard
-              icon={<AlertTriangle size={20} className={isDarkMode ? 'text-yellow-300' : 'text-yellow-600'} />}
-              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-yellow-900/20' : 'bg-yellow-500/20')}
+              icon={<Wrench size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />}
+              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}
+              label="Services"
+              value={vendor?.services?.length ?? 0}
+              isLoading={vendorLoading}
+              delay={0.2}
+            />
+            <KPICard
+              icon={<AlertTriangle size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />}
+              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}
               label="Low Stock"
               value={summary?.lowStockCount || 0}
               isLoading={inventorySummaryLoading}
               delay={0.1}
-            />
-            <KPICard
-              icon={<AlertTriangle size={20} className={isDarkMode ? 'text-red-300' : 'text-red-600'} />}
-              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-red-900/20' : 'bg-red-500/20')}
-              label="Out of Stock"
-              value={summary?.outOfStockCount || 0}
-              isLoading={inventorySummaryLoading}
-              delay={0.2}
             />
           </div>
         </div>
@@ -376,7 +414,7 @@ export default function InventoryManagerPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         <div className={clsx('rounded-2xl p-6 shadow-card', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
           <h2 className={clsx('font-semibold mb-4 flex items-center gap-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
-            <DollarSign className="w-5 h-5 text-festac-green" />
+            <span className="text-festac-green font-semibold text-lg">₦</span>
             Inventory Valuation
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -502,6 +540,46 @@ export default function InventoryManagerPage() {
             </div>
           )}
         />
+      </div>
+
+      {/* Services */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        <div className={clsx('rounded-2xl p-6 shadow-card', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+          <h2 className={clsx('font-semibold mb-4 flex items-center gap-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
+            <Wrench className="w-5 h-5 text-festac-green" />
+            Services
+          </h2>
+          {vendorLoading ? (
+            <Skeleton className="h-24 rounded-xl" />
+          ) : vendor?.services?.length === 0 ? (
+            <div className={clsx('rounded-xl p-8 text-center', isDarkMode ? 'bg-gray-700' : 'bg-gray-50')}>
+              <Wrench size={48} className={clsx('mx-auto mb-4', isDarkMode ? 'text-gray-600' : 'text-gray-300')} />
+              <p className={clsx(isDarkMode ? 'text-gray-400' : 'text-gray-500')}>No services yet. Click + Service to add one.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {vendor?.services?.map((s: any) => (
+                <div key={s.id} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-100 shadow-sm')}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className={clsx('font-semibold text-sm', isDarkMode ? 'text-white' : 'text-gray-900')}>{s.name}</h3>
+                      {s.description && <p className={clsx('text-xs mt-1 line-clamp-2', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>{s.description}</p>}
+                      {s.durationMinutes ? (
+                        <p className={clsx('text-xs mt-1', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>{s.durationMinutes} mins</p>
+                      ) : null}
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-sm font-bold text-festac-green">
+                        {s.price ? `₦${Number(s.price).toLocaleString()}` : (s.priceLabel ?? 'Contact')}
+                      </p>
+                      {s.bookingRequired && <span className="text-xs text-blue-500">Booking req.</span>}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Item Detail View */}
@@ -846,6 +924,104 @@ export default function InventoryManagerPage() {
                   </Button>
                   <Button type="submit" variant="primary" className="flex-1" disabled={createCategory.isPending}>
                     {createCategory.isPending ? 'Creating...' : 'Create'}
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Add Service Modal */}
+      {isAddingService && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className={clsx('rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto', isDarkMode ? 'bg-gray-800' : 'bg-white')}
+          >
+            <div className="p-6">
+              <h2 className={clsx('text-xl font-bold mb-6', isDarkMode ? 'text-white' : 'text-gray-900')}>Add Service</h2>
+              <form onSubmit={handleCreateService} className="space-y-4">
+                <div>
+                  <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Service Name *</label>
+                  <input
+                    type="text"
+                    value={serviceForm.name}
+                    onChange={(e) => setServiceForm({ ...serviceForm, name: e.target.value })}
+                    className={clsx('w-full px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Description</label>
+                  <textarea
+                    value={serviceForm.description}
+                    onChange={(e) => setServiceForm({ ...serviceForm, description: e.target.value })}
+                    rows={3}
+                    className={clsx('w-full px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Price (₦)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={serviceForm.price}
+                      onChange={(e) => setServiceForm({ ...serviceForm, price: e.target.value })}
+                      className={clsx('w-full px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
+                    />
+                  </div>
+                  <div>
+                    <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Price Label</label>
+                    <input
+                      type="text"
+                      value={serviceForm.priceLabel}
+                      onChange={(e) => setServiceForm({ ...serviceForm, priceLabel: e.target.value })}
+                      placeholder="e.g. Negotiable"
+                      className={clsx('w-full px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Duration (mins)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={serviceForm.durationMinutes}
+                      onChange={(e) => setServiceForm({ ...serviceForm, durationMinutes: e.target.value })}
+                      className={clsx('w-full px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-festac-green/20 focus:border-festac-green', isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200')}
+                    />
+                  </div>
+                  <div className="flex items-center">
+                    <label className={clsx('flex items-center gap-2 text-sm', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>
+                      <input
+                        type="checkbox"
+                        checked={serviceForm.bookingRequired}
+                        onChange={(e) => setServiceForm({ ...serviceForm, bookingRequired: e.target.checked })}
+                        className={clsx('rounded text-festac-green focus:ring-festac-green', isDarkMode ? 'border-gray-600' : 'border-gray-300')}
+                      />
+                      Booking Required
+                    </label>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                      setIsAddingService(false);
+                      setServiceForm({ name: '', description: '', price: '', priceLabel: '', durationMinutes: '', bookingRequired: false });
+                    }}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" variant="primary" className="flex-1" disabled={createService.isPending}>
+                    {createService.isPending ? 'Creating...' : 'Create'}
                   </Button>
                 </div>
               </form>

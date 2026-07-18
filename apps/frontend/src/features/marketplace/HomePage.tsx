@@ -16,7 +16,7 @@ const HERO_STATS = [
   { label: 'Wards Covered', value: '12' },
 ];
 
-const BUSINESS_TYPES = ['Restaurants', 'Pharmacies', 'Minimarts', 'Supermarts', 'Gas Stations', 'Boutiques', 'Hairdressers', 'Engineers', 'Technicians', 'Electricians', 'Mechanics', 'Plumbers', ' Businesses'];
+const BUSINESS_TYPES = ['Pharmacies', 'Restaurants', 'Supermarts', 'Gas Stations', 'Tailors', 'Designers', 'Boutiques', 'Locticians', 'Hairdressers', 'Jewelers', 'Engineers', 'Technicians', 'Electricians', 'Mechanics', 'Plumbers', ' Businesses'];
 
 export default function HomePage() {
   const [, navigate] = useLocation();
@@ -80,7 +80,7 @@ export default function HomePage() {
               transition={{ delay: 0.1 }}
               className="flex flex-wrap items-center gap-2 mb-6"
             >
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full text-sm text-white/80">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-festac-green/90 backdrop-blur-sm rounded-full text-sm text-white/80">
                 <MapPin size={13} className="text-festac-amber" />
                 {isGranted && location
                   ? `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`
@@ -90,7 +90,7 @@ export default function HomePage() {
               </div>
               <Link
                 href="/map"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full text-sm text-white/80 hover:bg-white/20 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-festac-green/90 backdrop-blur-sm rounded-full text-sm text-white/80 hover:bg-festac-green/30 transition-colors"
               >
                 <MapIcon size={13} className="text-festac-amber" />
                 <span>View Map</span>
@@ -99,9 +99,9 @@ export default function HomePage() {
 
             <h1 className="font-display font-black text-4xl sm:text-7xl lg:text-7xl leading-[1.1] text-balance">
               <div className="flex flex-wrap items-baseline gap-2 sm:flex-col">
-                <span>Discover</span>
+                <span className="bg-festac-green/60 backdrop-blur-sm px-3 py-1 text-white">Discover</span>
                 <span
-                  className="inline-grid bg-festac-amber px-4 py-3"
+                  className="inline-grid px-4 py-3"
                   style={{ gridTemplateAreas: "'content'" }}
                 >
                   {BUSINESS_TYPES.map((type) => (
@@ -120,22 +120,24 @@ export default function HomePage() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
                       transition={{ duration: 0.3 }}
-                      className="inline-block text-5xl sm:text-7xl lg:text-7xl text-black [grid-area:content]"
+                      className="inline-block text-5xl sm:text-7xl lg:text-7xl text-white [grid-area:content]"
                     >
                       {BUSINESS_TYPES[currentBusinessIndex]}
                     </motion.span>
                   </AnimatePresence>
                 </span>
-                <span>Near You</span>
+                <span className="bg-festac-green/60 backdrop-blur-sm px-3 py-1 text-white">Near You</span>
               </div>
             </h1>
-            <p className="inline-block bg-white/10 backdrop-blur-sm px-4 py-2 text-white/80 text-lg mt-4 max-w-lg">
+            {/* TODO: Add a tagline here
+            <p className="inline-block bg-yellow-400/20 backdrop-blur-sm px-4 py-2 text-white/80 text-lg mt-4 max-w-lg">
               Find trusted vendors and service providers. Connect via WhatsApp instantly.
             </p>
+            */}
 
             {/* Search form */}
             <form onSubmit={handleSearch} className="mt-8 flex gap-3 max-w-lg">
-              <div className="flex-1 flex items-center gap-3 bg-white rounded-2xl px-4 py-3.5 shadow-xl">
+              <div className="flex-1 flex items-center gap-3 bg-white rounded-full px-4 py-3.5 shadow-xl">
                 <Search size={18} className="text-gray-400 flex-shrink-0" />
                 <input
                   type="text"
@@ -149,7 +151,7 @@ export default function HomePage() {
               <motion.button
                 whileTap={{ scale: 0.96 }}
                 type="submit"
-                className="px-6 py-3.5 bg-festac-amber text-white font-semibold rounded-2xl text-sm shadow-glow-amber hover:bg-amber-500 transition-colors flex-shrink-0"
+                className="px-6 py-3.5 bg-festac-amber text-white font-semibold rounded-full text-sm shadow-glow-amber hover:bg-amber-500 transition-colors flex-shrink-0"
               >
                 Search
               </motion.button>
@@ -161,7 +163,7 @@ export default function HomePage() {
                 <button
                   key={q}
                   onClick={() => navigate(`/discover?q=${encodeURIComponent(q)}`)}
-                  className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-full text-xs text-white/80 transition-colors"
+                  className="px-3 py-1.5 bg-festac-green/20 hover:bg-festac-green/30 backdrop-blur-sm rounded-full text-xs text-white/80 transition-colors"
                 >
                   {q}
                 </button>

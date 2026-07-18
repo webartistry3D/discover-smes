@@ -60,6 +60,14 @@ export default function MarketingManagerPage() {
   const sendCampaign = useSendWhatsAppCampaign();
 
   const [activeTab, setActiveTab] = useState<'promotions' | 'loyalty' | 'whatsapp'>('promotions');
+
+  const tabButtonClass = (tab: 'promotions' | 'loyalty' | 'whatsapp') => clsx(
+    'min-w-max px-4 py-1.5 rounded-full text-sm font-medium transition-colors',
+    activeTab === tab
+      ? (isDarkMode ? 'bg-white text-festac-green' : 'bg-festac-green text-white')
+      : (isDarkMode ? 'text-gray-300' : 'text-gray-600')
+  );
+
   const [isAddingPromotion, setIsAddingPromotion] = useState(false);
   const [isAddingLoyalty, setIsAddingLoyalty] = useState(false);
   const [isAddingCampaign, setIsAddingCampaign] = useState(false);
@@ -110,8 +118,8 @@ export default function MarketingManagerPage() {
             >
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
-                  <div className="p-2 bg-blue-500/20 rounded-lg">
-                    <Megaphone size={20} className={isDarkMode ? 'text-blue-300' : 'text-blue-600'} />
+                  <div className={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}>
+                    <Megaphone size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />
                   </div>
                   <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Active Promotions</p>
                 </div>
@@ -127,8 +135,8 @@ export default function MarketingManagerPage() {
             >
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
-                  <div className="p-2 bg-purple-500/20 rounded-lg">
-                    <Gift size={20} className={isDarkMode ? 'text-purple-300' : 'text-purple-600'} />
+                  <div className={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}>
+                    <Gift size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />
                   </div>
                   <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Loyalty Programs</p>
                 </div>
@@ -144,7 +152,7 @@ export default function MarketingManagerPage() {
             >
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
-                  <div className="p-2 bg-green-500/20 rounded-lg">
+                  <div className={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}>
                     <MessageSquare size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />
                   </div>
                   <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>WhatsApp Campaigns</p>
@@ -161,31 +169,19 @@ export default function MarketingManagerPage() {
         <div className={clsx('flex gap-2 rounded-lg p-2 shadow-sm border overflow-x-auto', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100')}>
           <button
             onClick={() => setActiveTab('promotions')}
-            className={`flex-1 min-w-max px-3 sm:px-4 py-2 rounded-md font-medium text-sm transition-all ${
-              activeTab === 'promotions'
-                ? 'bg-festac-green text-white'
-                : isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-50'
-            }`}
+            className={tabButtonClass('promotions')}
           >
             Promotions
           </button>
           <button
             onClick={() => setActiveTab('loyalty')}
-            className={`flex-1 min-w-max px-3 sm:px-4 py-2 rounded-md font-medium text-sm transition-all ${
-              activeTab === 'loyalty'
-                ? 'bg-festac-green text-white'
-                : 'text-gray-600 hover:bg-gray-50'
-            }`}
+            className={tabButtonClass('loyalty')}
           >
             Loyalty Programs
           </button>
           <button
             onClick={() => setActiveTab('whatsapp')}
-            className={`flex-1 min-w-max px-3 sm:px-4 py-2 rounded-md font-medium text-sm transition-all ${
-              activeTab === 'whatsapp'
-                ? 'bg-festac-green text-white'
-                : 'text-gray-600 hover:bg-gray-50'
-            }`}
+            className={tabButtonClass('whatsapp')}
           >
             WhatsApp Campaigns
           </button>

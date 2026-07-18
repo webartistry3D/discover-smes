@@ -7,6 +7,8 @@ import {
   Edit, Save, X, Plus,
 } from 'lucide-react';
 import { useVendorDetail, useCreateProduct, useUpdateProduct, useDeleteProduct, useCreateService, useUpdateService, useDeleteService, useUploadProductImages } from '../../hooks/useVendors';
+import { useChatbotRules } from '../../hooks/useChatbot';
+import { ChatbotRuleType } from '../../lib/shared';
 import { useAuthStore } from '../../stores/auth.store';
 import { useUIStore } from '../../stores/ui.store';
 import { VerificationBadge } from '../../components/ui/VerificationBadge';
@@ -21,12 +23,12 @@ export default function VendorMyProfilePage() {
   const vendorId = user?.vendorId;
 
   // Use vendor detail hook to fetch the vendor's own profile
-  const { data: vendor, isLoading } = useVendorDetail(
-    vendorId ?? ''
-  );
+  const { data: vendor, isLoading } = useVendorDetail(vendorId ?? '');
+  const { data: chatbotRules } = useChatbotRules();
+  const faqRules = chatbotRules?.filter((r) => r.ruleType === ChatbotRuleType.FAQ) ?? [];
 
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'services' | 'reviews'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'services' | 'faqs' | 'reviews'>('overview');
   const [showFullDesc, setShowFullDesc] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [isAddingProduct, setIsAddingProduct] = useState(false);
@@ -356,8 +358,9 @@ export default function VendorMyProfilePage() {
 
   const TABS = [
     { id: 'overview', label: 'Overview' },
-    { id: 'products', label: `Products (${vendor.products?.length ?? 0})` },
+    { id: 'products', label: `Products (${vendor.inventoryItems?.length ?? 0})` },
     { id: 'services', label: `Services (${vendor.services?.length ?? 0})` },
+    { id: 'faqs', label: `FAQs (${faqRules.length})` },
     { id: 'reviews', label: `Reviews (${vendor.totalReviews})` },
   ];
 
@@ -889,14 +892,6 @@ export default function VendorMyProfilePage() {
               </button>
             ))}
           </div>
-          {(activeTab === 'products' || activeTab === 'services') && (
-            <button
-              onClick={() => activeTab === 'products' ? setIsAddingProduct(true) : setIsAddingService(true)}
-              className="flex-shrink-0 p-2 bg-festac-green text-white rounded-xl hover:bg-green-600 transition-colors"
-            >
-              <Plus size={18} />
-            </button>
-          )}
         </div>
 
         {/* Tab Content */}
@@ -925,30 +920,6 @@ export default function VendorMyProfilePage() {
                   </div>
                 )}
 
-                {/* FAQs */}
-                <div className={clsx('rounded-2xl p-5 shadow-card', cardBg)}>
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className={clsx('font-semibold', headingColor)}>Frequently Asked Questions</h3>
-                    <Link href="/chatbot/faq">
-                      <button className="text-xs font-medium text-festac-green hover:underline flex items-center gap-1">
-                        Manage FAQs <ExternalLink size={12} />
-                      </button>
-                    </Link>
-                  </div>
-                  {vendor.faqs?.length > 0 ? (
-                    <div className="space-y-3">
-                      {vendor.faqs.map((faq: any) => (
-                        <div key={faq.id} className={clsx('border-b last:border-0 pb-3 last:pb-0', isDarkMode ? 'border-gray-700' : 'border-gray-50')}>
-                          <p className={clsx('text-sm font-medium', isDarkMode ? 'text-gray-200' : 'text-gray-800')}>Q: {faq.question}</p>
-                          <p className={clsx('text-sm mt-1', mutedColor)}>A: {faq.answer}</p>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className={clsx('text-sm', mutedColor)}>No FAQs yet. Manage them on the FAQ page.</p>
-                  )}
-                </div>
-
                 {/* Current Promotions */}
                 {vendor.promotions?.length > 0 && (
                   <div className="bg-festac-amber/10 border border-festac-amber/20 rounded-2xl p-5">
@@ -966,44 +937,24 @@ export default function VendorMyProfilePage() {
 
             {activeTab === 'products' && (
               <motion.div key="products" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
-                {vendor.products?.length === 0 ? (
+                {vendor.inventoryItems?.length === 0 ? (
                   <div className={clsx('text-center py-12', mutedColor)}>
                     <Package size={32} className="mx-auto mb-2" />
-                    <p className="text-sm">No products yet. Click the + button to add your first product.</p>
+                    <p className="text-sm">No products yet. Manage them in Inventory Manager.</p>
                   </div>
                 ) : (
-                  vendor.products?.map((p: any) => (
+                  vendor.inventoryItems?.map((p: any) => (
                     <div key={p.id} className={clsx('rounded-2xl p-4 shadow-card flex items-center gap-4', cardBg)}>
                       <div className={clsx('w-16 h-16 rounded-xl overflow-hidden flex-shrink-0', subtleBg)}>
-                        {p.images?.[0] ? (
-                          <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center"><Package size={20} className={mutedColor} /></div>
-                        )}
+                        <div className="w-full h-full flex items-center justify-center"><Package size={20} className={mutedColor} /></div>
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className={clsx('font-semibold text-sm', headingColor)}>{p.name}</p>
                         {p.description && <p className={clsx('text-xs mt-0.5 line-clamp-2', mutedColor)}>{p.description}</p>}
                       </div>
                       <div className="text-right flex-shrink-0">
-                        <p className="font-bold text-festac-green text-sm">{formatNaira(Number(p.price))}</p>
+                        <p className="font-bold text-festac-green text-sm">{formatNaira(Number(p.sellingPrice || 0))}</p>
                         {p.unit && <p className={clsx('text-xs', mutedColor)}>per {p.unit}</p>}
-                      </div>
-                      <div className="flex items-center gap-1 flex-shrink-0">
-                        <button
-                          onClick={() => handleEditProduct(p)}
-                          className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100')}
-                          title="Edit"
-                        >
-                          <Edit size={14} className="text-gray-500" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteProduct(p.id)}
-                          className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-red-900/20' : 'hover:bg-red-50')}
-                          title="Delete"
-                        >
-                          <X size={14} className="text-red-500" />
-                        </button>
                       </div>
                     </div>
                   ))
@@ -1055,6 +1006,39 @@ export default function VendorMyProfilePage() {
                       </div>
                     </div>
                   ))
+                )}
+              </motion.div>
+            )}
+
+            {activeTab === 'faqs' && (
+              <motion.div key="faqs" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
+                {faqRules.length === 0 ? (
+                  <div className={clsx('rounded-2xl p-8 shadow-card text-center', cardBg)}>
+                    <ExternalLink size={32} className={clsx('mx-auto mb-2', mutedColor)} />
+                    <p className={clsx('text-sm', mutedColor)}>No FAQs yet. Manage them on the FAQ page.</p>
+                    <Link href="/chatbot/faq" className="block mt-2 text-xs font-medium text-festac-green hover:underline">
+                      Manage FAQs
+                    </Link>
+                  </div>
+                ) : (
+                  <div className={clsx('rounded-2xl p-5 shadow-card', cardBg)}>
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className={clsx('font-semibold', headingColor)}>Frequently Asked Questions</h3>
+                      <Link href="/chatbot/faq">
+                        <button className="text-xs font-medium text-festac-green hover:underline flex items-center gap-1">
+                          Manage FAQs <ExternalLink size={12} />
+                        </button>
+                      </Link>
+                    </div>
+                    <div className="space-y-3">
+                      {faqRules.map((faq: any) => (
+                        <div key={faq.id} className={clsx('border-b last:border-0 pb-3 last:pb-0', isDarkMode ? 'border-gray-700' : 'border-gray-50')}>
+                          <p className={clsx('text-sm font-medium', isDarkMode ? 'text-gray-200' : 'text-gray-800')}>Q: {faq.questionPattern || faq.keyword}</p>
+                          <p className={clsx('text-sm mt-1', mutedColor)}>A: {faq.response}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </motion.div>
             )}

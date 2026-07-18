@@ -40,7 +40,7 @@ export function KPICard({
 
   const defaultIconContainer = clsx(
     'p-2 rounded-lg',
-    isDarkMode ? 'bg-gray-700' : 'bg-gray-100'
+    isDarkMode ? 'bg-green-900/20 text-green-300' : 'bg-green-500/20 text-green-600'
   );
 
   const defaultValueClass = 'text-3xl font-bold font-mono';

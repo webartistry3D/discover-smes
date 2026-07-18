@@ -163,8 +163,8 @@ export default function ChatMonitor() {
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
-                  <div className="p-2 bg-blue-500/20 rounded-lg">
-                    <MessageSquare size={20} className={isDarkMode ? 'text-blue-300' : 'text-blue-600'} />
+                  <div className={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}>
+                    <MessageSquare size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />
                   </div>
                   <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Total Sessions</p>
                 </div>
@@ -174,7 +174,7 @@ export default function ChatMonitor() {
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
-                  <div className="p-2 bg-green-500/20 rounded-lg">
+                  <div className={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}>
                     <Activity size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />
                   </div>
                   <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Active</p>
@@ -185,8 +185,8 @@ export default function ChatMonitor() {
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
-                  <div className="p-2 bg-purple-500/20 rounded-lg">
-                    <Zap size={20} className={isDarkMode ? 'text-purple-300' : 'text-purple-600'} />
+                  <div className={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}>
+                    <Zap size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />
                   </div>
                   <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Bot Active</p>
                 </div>

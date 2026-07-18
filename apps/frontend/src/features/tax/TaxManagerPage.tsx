@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'wouter';
-import { Plus, Search, Filter, FileText, DollarSign, AlertTriangle, TrendingUp, ArrowUp, ArrowDown, X, Edit, Trash2, MoreVertical, Clock, BarChart3, ChevronLeft, Receipt, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Plus, Search, Filter, FileText, AlertTriangle, TrendingUp, ArrowUp, ArrowDown, X, Edit, Trash2, MoreVertical, Clock, BarChart3, ChevronLeft, Receipt, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { useTaxRecords, useTaxRecord, useCreateTaxRecord, useUpdateTaxRecord, useDeleteTaxRecord, useTaxPayments, useCreateTaxPayment, useDeleteTaxPayment, useTaxCalculation, useVatTracking, useComplianceReports, useGenerateComplianceReport, useTaxSummary, useInvoices } from '../../hooks/useVendors';
 import { Button, Skeleton, Badge } from '../../components/ui/index';
 import { KPICard } from '../../components/ui/KPICard';
@@ -387,8 +387,8 @@ export default function TaxManagerPage() {
           {/* Summary Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <KPICard
-              icon={<DollarSign size={20} className={isDarkMode ? 'text-blue-300' : 'text-blue-600'} />}
-              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-blue-900/20' : 'bg-blue-500/20')}
+              icon={<span className={clsx('text-xl font-semibold', isDarkMode ? 'text-green-300' : 'text-green-600')}>₦</span>}
+              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}
               label="Total Tax Liability"
               value={formatCurrencyCompact(kpiTotalLiability)}
               isLoading={taxSummaryLoading || isPaidInvoicesLoading}
@@ -402,16 +402,16 @@ export default function TaxManagerPage() {
               delay={0.1}
             />
             <KPICard
-              icon={<Clock size={20} className={isDarkMode ? 'text-yellow-300' : 'text-yellow-600'} />}
-              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-yellow-900/20' : 'bg-yellow-500/20')}
+              icon={<Clock size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />}
+              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}
               label="Pending"
               value={formatCurrencyCompact(kpiTotalPending)}
               isLoading={taxSummaryLoading || isPaidInvoicesLoading}
               delay={0.2}
             />
             <KPICard
-              icon={<AlertTriangle size={20} className={isDarkMode ? 'text-red-300' : 'text-red-600'} />}
-              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-red-900/20' : 'bg-red-500/20')}
+              icon={<AlertTriangle size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />}
+              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}
               label="Overdue"
               value={formatCurrencyCompact(kpiTotalOverdue)}
               isLoading={taxSummaryLoading || isPaidInvoicesLoading}

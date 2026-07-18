@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { Calendar, Clock, User, Phone, ChevronLeft, CheckCircle, MessageCircle } from 'lucide-react';
 import { useVendorDetail, useCreateBooking } from '../../hooks/useVendors';
 import { useAuthStore } from '../../stores/auth.store';
+import { useUIStore } from '../../stores/ui.store';
+import { clsx } from 'clsx';
 import { Button, Spinner } from '../../components/ui/index';
 import { generateWhatsAppUrl } from '../../lib/shared';
 import toast from 'react-hot-toast';
@@ -18,6 +20,7 @@ export default function BookingPage() {
   const { vendorId } = useParams<{ vendorId: string }>();
   const [, navigate] = useLocation();
   const { user, isAuthenticated } = useAuthStore();
+  const { isDarkMode } = useUIStore();
   const { data: vendor, isLoading } = useVendorDetail(vendorId!);
   const createBooking = useCreateBooking();
 
@@ -75,7 +78,7 @@ export default function BookingPage() {
   );
 
   if (step === 'success') return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className={clsx('min-h-screen flex items-center justify-center p-4', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -111,15 +114,15 @@ export default function BookingPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={clsx('min-h-screen', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 sticky top-16 z-10">
+      <div className={clsx('border-b sticky top-16 z-10 shadow-sm', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100')}>
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-3">
-          <button onClick={() => navigate(`/vendors/${vendor.slug}`)} className="p-1.5 hover:bg-gray-100 rounded-xl transition-colors">
-            <ChevronLeft size={20} className="text-gray-600" />
+          <button onClick={() => navigate(`/vendors/${vendor.slug}`)} className={clsx('p-1.5 rounded-xl transition-colors', isDarkMode ? 'hover:bg-white/10' : 'hover:bg-gray-100')}>
+            <ChevronLeft size={20} className={isDarkMode ? 'text-gray-300' : 'text-gray-600'} />
           </button>
           <div>
-            <h1 className="font-semibold text-gray-900">Book Appointment</h1>
+            <h1 className={clsx('font-semibold', isDarkMode ? 'text-white' : 'text-gray-900')}>Book Appointment</h1>
             <p className="text-xs text-gray-400">{vendor.businessName}</p>
           </div>
         </div>

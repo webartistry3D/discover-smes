@@ -230,8 +230,8 @@ export default function FAQManager() {
           {/* Summary Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             <KPICard
-              icon={<MessageSquare size={20} className={isDarkMode ? 'text-blue-300' : 'text-blue-600'} />}
-              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-blue-900/20' : 'bg-blue-500/20')}
+              icon={<MessageSquare size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />}
+              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}
               label="Total Rules"
               value={rules?.length || 0}
               isLoading={isLoading}
@@ -245,8 +245,8 @@ export default function FAQManager() {
               delay={0.1}
             />
             <KPICard
-              icon={<Zap size={20} className={isDarkMode ? 'text-purple-300' : 'text-purple-600'} />}
-              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-purple-900/20' : 'bg-purple-500/20')}
+              icon={<Zap size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />}
+              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}
               label="FAQ Type"
               value={rules?.filter((r) => r.ruleType === ChatbotRuleType.FAQ).length || 0}
               isLoading={isLoading}

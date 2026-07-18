@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'wouter';
-import { ChevronLeft, TrendingUp, TrendingDown, DollarSign, BarChart3, FileText, Download, Calendar, Filter } from 'lucide-react';
+import { ChevronLeft, TrendingUp, TrendingDown, BarChart3, FileText, Download, Calendar, Filter } from 'lucide-react';
 import { useProfitLossReport, useCashFlowReport, useSalesAnalytics, useTaxSummaryReport } from '../../hooks/useVendors';
 import { Button, Skeleton } from '../../components/ui/index';
 import toast from 'react-hot-toast';
@@ -14,6 +14,46 @@ export default function FinancialReportsPage() {
   const { isDarkMode } = useUIStore();
   const [activeTab, setActiveTab] = useState<ReportTab>('profit-loss');
   const [period, setPeriod] = useState('month');
+
+  const pillButtonClass = (active: boolean) => clsx(
+    'min-w-max px-4 py-1.5 rounded-full text-sm font-medium transition-colors',
+    active
+      ? (isDarkMode ? 'bg-white text-festac-green' : 'bg-festac-green text-white')
+      : (isDarkMode ? 'text-gray-300' : 'text-gray-600')
+  );
+
+  const formatCompact = (amount: number, prefix = '') => {
+    if (amount === 0) return `${prefix}0`;
+    const sign = amount < 0 ? '-' : '';
+    const absAmount = Math.abs(amount);
+    let value: number;
+    let suffix = '';
+    if (absAmount >= 1000000) {
+      value = absAmount / 1000000;
+      suffix = 'M';
+    } else if (absAmount >= 1000) {
+      value = absAmount / 1000;
+      suffix = 'K';
+    } else {
+      value = absAmount;
+    }
+    let formatted = value.toFixed(2);
+    if (formatted.endsWith('.00')) {
+      formatted = formatted.slice(0, -3);
+    }
+    return `${sign}${prefix}${formatted}${suffix}`;
+  };
+
+  const selectTab = (tab: ReportTab) => {
+    setActiveTab(tab);
+    if (tab !== 'profit-loss') {
+      setTimeout(() => {
+        const element = document.getElementById(tab);
+        element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 0);
+    }
+  };
+
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
@@ -92,24 +132,20 @@ export default function FinancialReportsPage() {
               <button
                 key={p}
                 onClick={() => setPeriod(p)}
-                className={`flex-1 min-w-max px-3 sm:px-4 py-2 rounded-md font-medium text-sm transition-all ${
-                  period === p
-                    ? 'bg-festac-green text-white'
-                    : isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-50'
-                }`}
+                className={pillButtonClass(period === p)}
               >
                 {p.charAt(0).toUpperCase() + p.slice(1)}
               </button>
             ))}
           </div>
 
-          {activeTab === 'profit-loss' && profitLossData && (
+          {profitLossData && (
             <>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
                 <div className="flex flex-col gap-2">
                   <div className="flex justify-between items-start">
-                    <div className="p-2 bg-green-500/20 rounded-lg">
+                    <div className={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}>
                       <TrendingUp size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />
                     </div>
                     <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Total Revenue</p>
@@ -120,8 +156,8 @@ export default function FinancialReportsPage() {
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
                 <div className="flex flex-col gap-2">
                   <div className="flex justify-between items-start">
-                    <div className="p-2 bg-red-500/20 rounded-lg">
-                      <TrendingDown size={20} className={isDarkMode ? 'text-red-300' : 'text-red-600'} />
+                    <div className={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}>
+                      <TrendingDown size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />
                     </div>
                     <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Total Expenses</p>
                   </div>
@@ -131,18 +167,22 @@ export default function FinancialReportsPage() {
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
                 <div className="flex flex-col gap-2">
                   <div className="flex justify-between items-start">
-                    <div className="p-2 bg-blue-500/20 rounded-lg">
-                      <DollarSign size={20} className={isDarkMode ? 'text-blue-300' : 'text-blue-600'} />
+                    <div className={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}>
+                      <span className={clsx('text-xl font-semibold', isDarkMode ? 'text-green-300' : 'text-green-600')}>₦</span>
                     </div>
                     <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Gross Profit</p>
                   </div>
                   <p className={clsx('font-bold text-3xl font-mono', isDarkMode ? ((profitLossData.grossProfit || 0) >= 0 ? 'text-green-300' : 'text-red-300') : ((profitLossData.grossProfit || 0) >= 0 ? 'text-green-600' : 'text-red-600'))}>
-                    <span>₦{profitLossData.grossProfit?.toLocaleString() || 0}</span>
+                    <span>{(profitLossData.grossProfit || 0) < 0 ? '-' : ''}₦{Math.abs(profitLossData.grossProfit || 0).toLocaleString()}</span>
                   </p>
                 </div>
               </motion.div>
             </div>
+            </>
+          )}
 
+          {activeTab === 'profit-loss' && profitLossData && (
+            <>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center mt-6">
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                   <Calendar size={18} className={isDarkMode ? 'text-white/70' : 'text-gray-500'} />
@@ -178,45 +218,29 @@ export default function FinancialReportsPage() {
         {/* Tabs */}
         <div className={clsx('flex gap-2 rounded-lg p-2 shadow-sm border overflow-x-auto mb-6', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100')}>
           <button
-            onClick={() => setActiveTab('profit-loss')}
-            className={`flex-1 min-w-max px-3 sm:px-4 py-2 rounded-md font-medium text-sm transition-all ${
-              activeTab === 'profit-loss'
-                ? 'bg-festac-green text-white'
-                : isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-50'
-            }`}
+            onClick={() => selectTab('profit-loss')}
+            className={pillButtonClass(activeTab === 'profit-loss')}
           >
             <TrendingUp size={16} className="inline mr-2" />
             Profit & Loss
           </button>
           <button
-            onClick={() => setActiveTab('cash-flow')}
-            className={`flex-1 min-w-max px-3 sm:px-4 py-2 rounded-md font-medium text-sm transition-all ${
-              activeTab === 'cash-flow'
-                ? 'bg-festac-green text-white'
-                : isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-50'
-            }`}
+            onClick={() => selectTab('cash-flow')}
+            className={pillButtonClass(activeTab === 'cash-flow')}
           >
-            <DollarSign size={16} className="inline mr-2" />
+            <span className="inline mr-2">₦</span>
             Cash Flow
           </button>
           <button
-            onClick={() => setActiveTab('sales-analytics')}
-            className={`flex-1 min-w-max px-3 sm:px-4 py-2 rounded-md font-medium text-sm transition-all ${
-              activeTab === 'sales-analytics'
-                ? 'bg-festac-green text-white'
-                : isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-50'
-            }`}
+            onClick={() => selectTab('sales-analytics')}
+            className={pillButtonClass(activeTab === 'sales-analytics')}
           >
             <BarChart3 size={16} className="inline mr-2" />
             Sales Analytics
           </button>
           <button
-            onClick={() => setActiveTab('tax-summary')}
-            className={`flex-1 min-w-max px-3 sm:px-4 py-2 rounded-md font-medium text-sm transition-all ${
-              activeTab === 'tax-summary'
-                ? 'bg-festac-green text-white'
-                : isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-50'
-            }`}
+            onClick={() => selectTab('tax-summary')}
+            className={pillButtonClass(activeTab === 'tax-summary')}
           >
             <FileText size={16} className="inline mr-2" />
             Tax Summary
@@ -237,7 +261,7 @@ export default function FinancialReportsPage() {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="space-y-6"
+                className="space-y-6 scroll-mt-40"
               >
                 <div className={clsx('rounded-xl p-6 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-white border-gray-100')}>
                   <h3 className={clsx('font-semibold mb-4', isDarkMode ? 'text-white' : 'text-gray-900')}>Gross Margin</h3>
@@ -281,41 +305,41 @@ export default function FinancialReportsPage() {
 
             {/* Cash Flow Report */}
             {activeTab === 'cash-flow' && cashFlowData && (
-              <motion.div
+              <motion.div id="cash-flow"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="space-y-6"
+                className="space-y-6 scroll-mt-40"
               >
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
                     <div className="flex flex-col gap-2">
                       <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Operating Cash Flow</p>
-                      <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? ((cashFlowData.operatingCashFlow || 0) >= 0 ? 'text-green-300' : 'text-red-300') : ((cashFlowData.operatingCashFlow || 0) >= 0 ? 'text-green-600' : 'text-red-600'))}>
-                        <span>₦{cashFlowData.operatingCashFlow?.toLocaleString() || 0}</span>
+                      <p className={clsx('font-bold text-3xl font-mono', isDarkMode ? ((cashFlowData.operatingCashFlow || 0) >= 0 ? 'text-green-300' : 'text-red-300') : ((cashFlowData.operatingCashFlow || 0) >= 0 ? 'text-green-600' : 'text-red-600'))}>
+                        <span>{formatCompact(cashFlowData.operatingCashFlow || 0, '₦')}</span>
                       </p>
                     </div>
                   </div>
                   <div className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
                     <div className="flex flex-col gap-2">
                       <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Investing Cash Flow</p>
-                      <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? ((cashFlowData.investingCashFlow || 0) >= 0 ? 'text-green-300' : 'text-red-300') : ((cashFlowData.investingCashFlow || 0) >= 0 ? 'text-green-600' : 'text-red-600'))}>
-                        <span>₦{cashFlowData.investingCashFlow?.toLocaleString() || 0}</span>
+                      <p className={clsx('font-bold text-3xl font-mono', isDarkMode ? ((cashFlowData.investingCashFlow || 0) >= 0 ? 'text-green-300' : 'text-red-300') : ((cashFlowData.investingCashFlow || 0) >= 0 ? 'text-green-600' : 'text-red-600'))}>
+                        <span>{formatCompact(cashFlowData.investingCashFlow || 0, '₦')}</span>
                       </p>
                     </div>
                   </div>
                   <div className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
                     <div className="flex flex-col gap-2">
                       <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Financing Cash Flow</p>
-                      <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? ((cashFlowData.financingCashFlow || 0) >= 0 ? 'text-green-300' : 'text-red-300') : ((cashFlowData.financingCashFlow || 0) >= 0 ? 'text-green-600' : 'text-red-600'))}>
-                        <span>₦{cashFlowData.financingCashFlow?.toLocaleString() || 0}</span>
+                      <p className={clsx('font-bold text-3xl font-mono', isDarkMode ? ((cashFlowData.financingCashFlow || 0) >= 0 ? 'text-green-300' : 'text-red-300') : ((cashFlowData.financingCashFlow || 0) >= 0 ? 'text-green-600' : 'text-red-600'))}>
+                        <span>{formatCompact(cashFlowData.financingCashFlow || 0, '₦')}</span>
                       </p>
                     </div>
                   </div>
                   <div className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
                     <div className="flex flex-col gap-2">
                       <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Net Cash Flow</p>
-                      <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? ((cashFlowData.netCashFlow || 0) >= 0 ? 'text-green-300' : 'text-red-300') : ((cashFlowData.netCashFlow || 0) >= 0 ? 'text-green-600' : 'text-red-600'))}>
-                        <span>₦{cashFlowData.netCashFlow?.toLocaleString() || 0}</span>
+                      <p className={clsx('font-bold text-3xl font-mono', isDarkMode ? ((cashFlowData.netCashFlow || 0) >= 0 ? 'text-green-300' : 'text-red-300') : ((cashFlowData.netCashFlow || 0) >= 0 ? 'text-green-600' : 'text-red-600'))}>
+                        <span>{formatCompact(cashFlowData.netCashFlow || 0, '₦')}</span>
                       </p>
                     </div>
                   </div>
@@ -351,34 +375,34 @@ export default function FinancialReportsPage() {
 
             {/* Sales Analytics */}
             {activeTab === 'sales-analytics' && salesData && (
-              <motion.div
+              <motion.div id="sales-analytics"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="space-y-6"
+                className="space-y-6 scroll-mt-40"
               >
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
                     <div className="flex flex-col gap-2">
                       <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Total Sales</p>
-                      <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>₦{salesData.totalSales?.toLocaleString() || 0}</p>
+                      <p className={clsx('font-bold text-3xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{formatCompact(salesData.totalSales || 0, '₦')}</p>
                     </div>
                   </div>
                   <div className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
                     <div className="flex flex-col gap-2">
                       <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Total Orders</p>
-                      <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{salesData.totalOrders || 0}</p>
+                      <p className={clsx('font-bold text-3xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{formatCompact(salesData.totalOrders || 0)}</p>
                     </div>
                   </div>
                   <div className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
                     <div className="flex flex-col gap-2">
                       <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Avg Order Value</p>
-                      <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>₦{salesData.averageOrderValue?.toLocaleString() || 0}</p>
+                      <p className={clsx('font-bold text-3xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{formatCompact(salesData.averageOrderValue || 0, '₦')}</p>
                     </div>
                   </div>
                   <div className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
                     <div className="flex flex-col gap-2">
                       <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Conversion Rate</p>
-                      <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{salesData.conversionRate?.toFixed(1) || 0}%</p>
+                      <p className={clsx('font-bold text-3xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{(salesData.conversionRate || 0).toFixed(2)}%</p>
                     </div>
                   </div>
                 </div>
@@ -412,37 +436,37 @@ export default function FinancialReportsPage() {
 
             {/* Tax Summary */}
             {activeTab === 'tax-summary' && taxData && (
-              <motion.div
+              <motion.div id="tax-summary"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="space-y-6"
+                className="space-y-6 scroll-mt-40"
               >
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
                     <div className="flex flex-col gap-2">
                       <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Total Tax Liability</p>
-                      <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>₦{taxData.totalTaxLiability?.toLocaleString() || 0}</p>
+                      <p className={clsx('font-bold text-3xl font-mono', isDarkMode ? 'text-white' : 'text-gray-900')}>{formatCompact(taxData.totalTaxLiability || 0, '₦')}</p>
                     </div>
                   </div>
                   <div className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
                     <div className="flex flex-col gap-2">
                       <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Total Tax Paid</p>
-                      <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? 'text-green-300' : 'text-green-600')}>₦{taxData.totalTaxPaid?.toLocaleString() || 0}</p>
+                      <p className={clsx('font-bold text-3xl font-mono', isDarkMode ? 'text-green-300' : 'text-green-600')}>{formatCompact(taxData.totalTaxPaid || 0, '₦')}</p>
                     </div>
                   </div>
                   <div className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
                     <div className="flex flex-col gap-2">
                       <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Tax Balance</p>
-                      <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? ((taxData.taxBalance || 0) > 0 ? 'text-red-300' : 'text-green-300') : ((taxData.taxBalance || 0) > 0 ? 'text-red-600' : 'text-green-600'))}>
-                        ₦{taxData.taxBalance?.toLocaleString() || 0}
+                      <p className={clsx('font-bold text-3xl font-mono', isDarkMode ? ((taxData.taxBalance || 0) > 0 ? 'text-red-300' : 'text-green-300') : ((taxData.taxBalance || 0) > 0 ? 'text-red-600' : 'text-green-600'))}>
+                        {formatCompact(taxData.taxBalance || 0, '₦')}
                       </p>
                     </div>
                   </div>
                   <div className={clsx('rounded-xl p-4 border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200')}>
                     <div className="flex flex-col gap-2">
                       <p className={clsx('text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Net VAT</p>
-                      <p className={clsx('font-bold text-6xl font-mono', isDarkMode ? ((taxData.netVat || 0) >= 0 ? 'text-green-300' : 'text-red-300') : ((taxData.netVat || 0) >= 0 ? 'text-green-600' : 'text-red-600'))}>
-                        ₦{taxData.netVat?.toLocaleString() || 0}
+                      <p className={clsx('font-bold text-3xl font-mono', isDarkMode ? ((taxData.netVat || 0) >= 0 ? 'text-green-300' : 'text-red-300') : ((taxData.netVat || 0) >= 0 ? 'text-green-600' : 'text-red-600'))}>
+                        {formatCompact(taxData.netVat || 0, '₦')}
                       </p>
                     </div>
                   </div>

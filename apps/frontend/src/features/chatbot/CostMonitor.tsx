@@ -10,7 +10,6 @@ import {
   CheckCircle,
   Clock,
   BarChart3,
-  DollarSign,
   Shield,
   Trash2,
   RefreshCw,
@@ -139,8 +138,8 @@ export default function CostMonitor() {
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className={clsx('rounded-xl border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent p-3 sm:p-4' : 'bg-gray-50 border-gray-200 p-3 sm:p-4')}>
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
-                  <div className="p-2 bg-green-500/20 rounded-lg">
-                    <DollarSign size={18} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />
+                  <div className={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}>
+                    <span className={clsx('text-xl font-semibold', isDarkMode ? 'text-green-300' : 'text-green-600')}>₦</span>
                   </div>
                   <p className={clsx('text-[10px] sm:text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Total Cost</p>
                 </div>
@@ -150,8 +149,8 @@ export default function CostMonitor() {
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className={clsx('rounded-xl border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent p-3 sm:p-4' : 'bg-gray-50 border-gray-200 p-3 sm:p-4')}>
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
-                  <div className="p-2 bg-blue-500/20 rounded-lg">
-                    <Database size={18} className={isDarkMode ? 'text-blue-300' : 'text-blue-600'} />
+                  <div className={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}>
+                    <Database size={18} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />
                   </div>
                   <p className={clsx('text-[10px] sm:text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Cache Hit Rate</p>
                 </div>
@@ -161,8 +160,8 @@ export default function CostMonitor() {
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className={clsx('rounded-xl border', isDarkMode ? 'bg-white/10 backdrop-blur border-transparent p-3 sm:p-4' : 'bg-gray-50 border-gray-200 p-3 sm:p-4')}>
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-start">
-                  <div className="p-2 bg-purple-500/20 rounded-lg">
-                    <Activity size={18} className={isDarkMode ? 'text-purple-300' : 'text-purple-600'} />
+                  <div className={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}>
+                    <Activity size={18} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />
                   </div>
                   <p className={clsx('text-[10px] sm:text-xs', isDarkMode ? 'text-white/60' : 'text-gray-500')}>Quota Status</p>
                 </div>
@@ -250,7 +249,7 @@ export default function CostMonitor() {
         className={clsx('rounded-xl p-4 sm:p-6 shadow-sm border', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100')}
       >
         <h2 className={clsx('font-semibold flex items-center gap-2 mb-3 sm:mb-4 text-lg lg:text-base', isDarkMode ? 'text-white' : 'text-gray-900')}>
-          <DollarSign size={18} className="text-festac-green" />
+          <span className="text-festac-green font-semibold text-lg">₦</span>
           Cost Savings
         </h2>
 

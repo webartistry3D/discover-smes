@@ -145,6 +145,7 @@ export class VendorService {
         owner: { select: { id: true, isPhoneVerified: true } },
         products: { where: { isAvailable: true }, orderBy: { sortOrder: 'asc' } },
         services: { where: { isAvailable: true }, orderBy: { sortOrder: 'asc' } },
+        inventoryItems: { where: { isActive: true }, orderBy: { name: 'asc' } },
         faqs: { orderBy: { sortOrder: 'asc' } },
         reviews: {
           take: 10,

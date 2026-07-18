@@ -1,18 +1,26 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'wouter';
-import { ChevronLeft, BarChart3, TrendingUp, Users, Eye, Calendar, ArrowUp, ArrowDown, DollarSign } from 'lucide-react';
+import { ChevronLeft, BarChart3, TrendingUp, Users, Eye, Calendar } from 'lucide-react';
 import { Skeleton } from '../../components/ui/index';
 import { KPICard } from '../../components/ui/KPICard';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useVendorAnalytics } from '../../hooks/useVendors';
 import { useUIStore } from '../../stores/ui.store';
 import { clsx } from 'clsx';
+import { formatCurrencyCompact } from '../../lib/utils';
 
 export default function VendorAnalyticsPage() {
   const { isDarkMode } = useUIStore();
   const [period, setPeriod] = useState<'week' | 'month' | 'year'>('month');
   const { data: analytics, isLoading: analyticsLoading } = useVendorAnalytics(period);
+
+  const periodButtonClass = (active: boolean) => clsx(
+    'min-w-max px-4 py-1.5 rounded-full text-sm font-medium transition-colors',
+    active
+      ? (isDarkMode ? 'bg-white text-festac-green' : 'bg-festac-green text-white')
+      : (isDarkMode ? 'text-gray-300 hover:bg-white/10' : 'text-gray-600 hover:bg-gray-100')
+  );
 
   // Transform analytics data for charts
   const profileViewsData = analytics?.profileViewsTrend || [];
@@ -21,92 +29,87 @@ export default function VendorAnalyticsPage() {
   return (
     <div className={clsx('min-h-screen', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       {/* Header */}
-      <div className="text-black">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5">
+      <div className={clsx('shadow-sm', isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900')}>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
           <div className="flex items-center gap-4 mb-4">
             <Link href="/dashboard">
-              <button className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors">
+              <button className={clsx('p-2 rounded-xl transition-colors', isDarkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-gray-100 hover:bg-gray-200 text-gray-600')}>
                 <ChevronLeft size={20} />
               </button>
             </Link>
-          <div>
+          <div className="flex-1">
             <h1 className="font-display font-bold text-2xl">Full Analytics</h1>
-            {/*<p className="text-white/60 text-sm mt-1">Detailed performance data and insights</p>*/}
           </div>
         </div>
       </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-0 space-y-5">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-6">
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {[
             {
-              icon: <Eye size={18} />, //{<Check size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />}
+              icon: <Eye size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />,
+              iconContainerClassName: clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20'),
               label: 'Profile Views',
               value: analytics?.profileViews?.toLocaleString() || '0',
               change: analytics?.profileViewsChange || '+0%',
               positive: (analytics?.profileViewsChange || '+0%').includes('+'),
             },
             {
-              icon: <Users size={18} />,
+              icon: <Users size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />,
+              iconContainerClassName: clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20'),
               label: 'New Followers',
               value: analytics?.newFollowers?.toLocaleString() || '0',
               change: analytics?.followersChange || '+0%',
               positive: (analytics?.followersChange || '+0%').includes('+'),
             },
             {
-              icon: <Calendar size={18} />,
+              icon: <Calendar size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />,
+              iconContainerClassName: clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20'),
               label: 'Bookings',
               value: analytics?.bookings?.toLocaleString() || '0',
               change: analytics?.bookingsChange || '+0%',
               positive: (analytics?.bookingsChange || '+0%').includes('+'),
             },
             {
-              icon: <DollarSign size={18} />,
+              icon: <span className={clsx('text-xl font-semibold', isDarkMode ? 'text-green-300' : 'text-green-600')}>₦</span>,
+              iconContainerClassName: clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20'),
               label: 'Revenue',
-              value: `₦${(analytics?.revenue || 0).toLocaleString()}`,
+              value: formatCurrencyCompact(analytics?.revenue || 0),
               change: analytics?.revenueChange || '+0%',
               positive: (analytics?.revenueChange || '+0%').includes('+'),
             },
           ].map((stat, index) => (
             <KPICard
               key={stat.label}
-              icon={stat.icon} 
-              iconContainerClassName="p-2 bg-festac-green/10 rounded-xl text-festac-green"
-              topRight={
-                <div className={`flex items-center gap-1 text-xs font-medium ${stat.positive ? 'text-green-600' : 'text-red-600'}`}>
-                  {stat.positive ? <ArrowUp size={12} /> : <ArrowDown size={12} />}
-                  {stat.change}
-                </div>
-              }
+              icon={stat.icon}
+              iconContainerClassName={stat.iconContainerClassName}
               label={stat.label}
               value={stat.value}
               isLoading={analyticsLoading}
-              labelPosition="bottom"
-              containerClassName={clsx('rounded-2xl p-4 shadow-card gap-2', isDarkMode ? 'bg-gray-800' : 'bg-white')}
-              delay={index * 0.05}
+              delay={index * 0.1}
             />
           ))}
         </div>
         {/* Period Selector */}
-          <div className="rounded-full text-white bg-gradient-hero flex items-center gap-2 mt-5">
+          <div className={clsx('flex gap-2 rounded-lg p-2 shadow-sm border overflow-x-auto', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100')}>
             <button
               onClick={() => setPeriod('week')}
-              className={`px-4 py-1.5 rounded-full border border-green-900 text-sm font-medium transition-colors ${period === 'week' ? 'bg-white text-festac-green' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
+              className={periodButtonClass(period === 'week')}
             >
               This Week
             </button>
             <button
               onClick={() => setPeriod('month')}
-              className={`px-4 py-1.5 rounded-full border border-green-900 text-sm font-medium transition-colors ${period === 'month' ? 'bg-white text-festac-green' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
+              className={periodButtonClass(period === 'month')}
             >
               This Month
             </button>
             <button
               onClick={() => setPeriod('year')}
-              className={`px-4 py-1.5 rounded-full border border-green-900 text-sm font-medium transition-colors ${period === 'year' ? 'bg-white text-festac-green' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
+              className={periodButtonClass(period === 'year')}
             >
               This Year
             </button>

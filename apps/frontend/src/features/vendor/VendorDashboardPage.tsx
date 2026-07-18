@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   BarChart3, MessageCircle, Eye, Star, Calendar, TrendingUp,
   Settings, Bell, ChevronRight, CheckCircle, AlertCircle, Users,
   ArrowUpRight, ArrowDownRight, Wallet, Package, FileText,
-  PieChart, Bot, Megaphone, MessageSquare, DollarSign
+  PieChart, Bot, Megaphone, MessageSquare
 } from 'lucide-react';
-import { useVendorAnalytics, useVendorBookings, useFinancialSummary, useVendorProfile } from '../../hooks/useVendors';
+import { useInvoices, useTaxSummary, useVendorAnalytics, useVendorBookings, useFinancialSummary, useVendorProfile } from '../../hooks/useVendors';
 import { useAuthStore } from '../../stores/auth.store';
 import { useUIStore } from '../../stores/ui.store';
 import { Skeleton, Badge, Button } from '../../components/ui/index';
@@ -22,7 +22,15 @@ export default function VendorDashboardPage() {
   const { data: analytics, isLoading: analyticsLoading } = useVendorAnalytics(period);
   const { data: bookings, isLoading: bookingsLoading } = useVendorBookings();
   const { data: financialSummary, isLoading: financialSummaryLoading } = useFinancialSummary();
+  const { data: taxSummary, isLoading: taxSummaryLoading } = useTaxSummary();
+  const { data: paidInvoices, isLoading: isPaidInvoicesLoading } = useInvoices({ status: 'PAID' });
   const { data: vendorProfile } = useVendorProfile();
+
+  const invoiceVat = useMemo(() =>
+    (paidInvoices || []).reduce((sum: number, invoice: any) => sum + Number(invoice.taxAmount || 0), 0),
+    [paidInvoices]
+  );
+  const kpiTotalLiability = (taxSummary?.totalTaxLiability || 0) + invoiceVat;
 
   const pendingBookings = (bookings as any[])?.filter((b: any) => b.status === 'PENDING') ?? [];
   const confirmedBookings = (bookings as any[])?.filter((b: any) => b.status === 'CONFIRMED') ?? [];
@@ -90,21 +98,29 @@ export default function VendorDashboardPage() {
               isLoading={financialSummaryLoading}
             />
             <KPICard
-              icon={<ArrowDownRight size={20} className={isDarkMode ? 'text-red-300' : 'text-red-600'} />}
-              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-red-900/20' : 'bg-red-500/20')}
+              icon={<ArrowDownRight size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />}
+              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}
               label="Expenses"
               value={formatCurrencyCompact(financialSummary?.expense || 0)}
               isLoading={financialSummaryLoading}
               delay={0.1}
             />
             <KPICard
-              icon={<Wallet size={20} className={isDarkMode ? 'text-blue-300' : 'text-blue-600'} />}
-              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-blue-900/20' : 'bg-blue-500/20')}
+              icon={<Wallet size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />}
+              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}
               label="Net Profit"
               value={formatCurrencyCompact(financialSummary?.profit || 0)}
               isLoading={financialSummaryLoading}
-              valueClassName={isDarkMode ? (financialSummary?.profit >= 0 ? 'text-green-300' : 'text-red-300') : (financialSummary?.profit >= 0 ? 'text-green-600' : 'text-red-600')}
+              valueClassName={isDarkMode ? ((financialSummary?.profit || 0) >= 0 ? '!text-green-300' : '!text-red-300') : ((financialSummary?.profit || 0) >= 0 ? 'text-green-600' : 'text-red-600')}
               delay={0.2}
+            />
+            <KPICard
+              icon={<span className={clsx('text-xl font-semibold', isDarkMode ? 'text-green-300' : 'text-green-600')}>₦</span>}
+              iconContainerClassName={clsx('p-1 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}
+              label="Tax Liability"
+              value={formatCurrencyCompact(kpiTotalLiability)}
+              isLoading={taxSummaryLoading || isPaidInvoicesLoading}
+              delay={0.3}
             />
           </div>
 
@@ -137,15 +153,14 @@ export default function VendorDashboardPage() {
         {/* ─── ANALYTICS CARDS ──────────────────────────────── */}
         <div className="grid grid-cols-3 gap-3">
           {[
-            { label: 'Profile Views', value: analytics?.profileViews, icon: <Eye size={18} />, color: 'blue' },
-            { label: 'WhatsApp Clicks', value: analytics?.whatsappClicks, icon: <MessageCircle size={18} />, color: 'green' },
-            { label: 'Booking Requests', value: analytics?.bookingRequests, icon: <Calendar size={18} />, color: 'purple' },
-            //{ label: 'New Reviews', value: analytics?.newReviews, icon: <Star size={18} />, color: 'amber' },
+            { label: 'Profile Views', value: analytics?.profileViews, icon: <Eye size={18} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />, iconContainerClassName: clsx('w-8 h-8 rounded-xl flex items-center justify-center mb-2', isDarkMode ? 'bg-green-900/30' : 'bg-green-50') },
+            { label: 'WhatsApp Clicks', value: analytics?.whatsappClicks, icon: <MessageCircle size={18} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />, iconContainerClassName: clsx('w-8 h-8 rounded-xl flex items-center justify-center mb-2', isDarkMode ? 'bg-green-900/30' : 'bg-green-50') },
+            { label: 'Booking Requests', value: analytics?.bookingRequests, icon: <Calendar size={18} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />, iconContainerClassName: clsx('w-8 h-8 rounded-xl flex items-center justify-center mb-2', isDarkMode ? 'bg-green-900/30' : 'bg-green-50') },
           ].map((stat, index) => (
             <KPICard
               key={stat.label}
               icon={stat.icon}
-              iconContainerClassName={clsx('w-8 h-8 rounded-xl flex items-center justify-center mb-2', isDarkMode ? `bg-${stat.color}-900/30 text-${stat.color}-400` : `bg-${stat.color}-50 text-${stat.color}-600`)}
+              iconContainerClassName={stat.iconContainerClassName}
               label={stat.label}
               value={(stat.value ?? 0).toLocaleString()}
               isLoading={analyticsLoading}

@@ -80,6 +80,7 @@ export function useVendorDetail(slug: string) {
   return useQuery({
     queryKey: queryKeys.vendors.detail(slug),
     queryFn: () => vendorApi.bySlug(slug).then((r) => r.data.data),
+    enabled: !!slug,
     staleTime: 5 * 60 * 1000, // 5 min
   });
 }

@@ -49,15 +49,15 @@ export default function BookingsPage() {
   return (
     <div className={clsx('min-h-screen pb-20', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       {/* Header */}
-      <div className="bg-gradient-hero text-white">
+      <div className={clsx('shadow-sm', isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900')}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
           <div className="flex items-center gap-4 mb-6">
             <Link href="/dashboard">
-              <button className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors">
+              <button className={clsx('p-2 rounded-xl transition-colors', isDarkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-gray-100 hover:bg-gray-200 text-gray-600')}>
                 <ChevronLeft size={20} />
               </button>
             </Link>
-            <div>
+            <div className="flex-1">
               <h1 className="font-display font-bold text-2xl">My Bookings</h1>
               {/*<p className="text-white/60 text-sm mt-1">Manage your appointments and reservations</p>*/}
             </div>
@@ -69,11 +69,7 @@ export default function BookingsPage() {
               <button
                 key={status}
                 onClick={() => setStatusFilter(status)}
-                className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                  statusFilter === status
-                    ? 'bg-white text-festac-green'
-                    : 'bg-white/10 text-white hover:bg-white/20'
-                }`}
+                className={clsx('flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all', statusFilter === status ? (isDarkMode ? 'bg-white text-festac-green' : 'bg-festac-green text-white') : (isDarkMode ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'))}
               >
                 {status.charAt(0).toUpperCase() + status.slice(1)}
               </button>
