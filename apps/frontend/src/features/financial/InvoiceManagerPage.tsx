@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'wouter';
-import { Plus, FileText, Calendar, Filter, Search, Edit, Trash2, Send, Download, CheckCircle, Clock, AlertCircle, XCircle, ChevronLeft } from 'lucide-react';
+import { Plus, FileText, Calendar, Filter, Search, Trash2, Send, Download, CheckCircle, Clock, AlertCircle, XCircle, ChevronLeft } from 'lucide-react';
 import { useInvoices, useCreateInvoice, useUpdateInvoice, useDeleteInvoice } from '../../hooks/useVendors';
 import { Button, Skeleton, Badge } from '../../components/ui/index';
 import { KPICard } from '../../components/ui/KPICard';
@@ -175,24 +175,24 @@ export default function InvoiceManagerPage() {
     if (viewMode === 'list') {
       return (
         <>
-          <td className="px-4 py-3 whitespace-nowrap">{new Date(invoice.createdAt).toLocaleDateString()}</td>
-          <td className="px-4 py-3 min-w-[120px] font-mono text-xs">{invoice.invoiceNumber}</td>
-          <td className="px-4 py-3 min-w-[200px] max-w-[300px]">
+          <td onClick={() => startEdit(invoice)} className="px-4 py-3 whitespace-nowrap cursor-pointer">{new Date(invoice.createdAt).toLocaleDateString()}</td>
+          <td onClick={() => startEdit(invoice)} className="px-4 py-3 min-w-[120px] font-mono text-xs cursor-pointer">{invoice.invoiceNumber}</td>
+          <td onClick={() => startEdit(invoice)} className="px-4 py-3 min-w-[200px] max-w-[300px] cursor-pointer">
             <span className={clsx('font-medium line-clamp-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
               {invoice.customerName}
             </span>
           </td>
-          <td className="px-4 py-3 min-w-[100px]">
+          <td onClick={() => startEdit(invoice)} className="px-4 py-3 min-w-[100px] cursor-pointer">
             <Badge variant={invoice.status === 'PAID' ? 'green' : invoice.status === 'OVERDUE' ? 'red' : 'blue'} className="text-xs">
               {statusInfo.label}
             </Badge>
           </td>
-          <td className="px-4 py-3 text-right font-mono font-semibold min-w-[120px]">{formatCurrencyCompact(Number(invoice.total))}</td>
+          <td onClick={() => startEdit(invoice)} className="px-4 py-3 text-right font-mono font-semibold min-w-[120px] cursor-pointer">{formatCurrencyCompact(Number(invoice.total))}</td>
           <td className="px-4 py-3 text-right min-w-[120px]">
             <div className="flex items-center justify-end gap-2">
               {invoice.status === 'DRAFT' && (
                 <button
-                  onClick={() => handleStatusChange(invoice.id, 'SENT')}
+                  onClick={(e) => { e.stopPropagation(); handleStatusChange(invoice.id, 'SENT'); }}
                   className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-blue-900/30' : 'hover:bg-blue-50')}
                   title="Mark as Sent"
                 >
@@ -201,7 +201,7 @@ export default function InvoiceManagerPage() {
               )}
               {invoice.status === 'SENT' && (
                 <button
-                  onClick={() => handleStatusChange(invoice.id, 'PAID')}
+                  onClick={(e) => { e.stopPropagation(); handleStatusChange(invoice.id, 'PAID'); }}
                   className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-green-900/30' : 'hover:bg-green-50')}
                   title="Mark as Paid"
                 >
@@ -209,13 +209,7 @@ export default function InvoiceManagerPage() {
                 </button>
               )}
               <button
-                onClick={() => startEdit(invoice)}
-                className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100')}
-              >
-                <Edit size={18} className={isDarkMode ? 'text-gray-400' : 'text-gray-600'} />
-              </button>
-              <button
-                onClick={() => handleDelete(invoice.id)}
+                onClick={(e) => { e.stopPropagation(); handleDelete(invoice.id); }}
                 className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-red-900/30' : 'hover:bg-red-50')}
               >
                 <Trash2 size={18} className="text-red-600" />
@@ -230,7 +224,8 @@ export default function InvoiceManagerPage() {
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className={clsx('w-full rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow', isDarkMode ? 'bg-gray-800' : 'bg-white')}
+        onClick={() => startEdit(invoice)}
+        className={clsx('w-full rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer', isDarkMode ? 'bg-gray-800' : 'bg-white')}
       >
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -260,7 +255,7 @@ export default function InvoiceManagerPage() {
             <div className="flex gap-2">
               {invoice.status === 'DRAFT' && (
                 <button
-                  onClick={() => handleStatusChange(invoice.id, 'SENT')}
+                  onClick={(e) => { e.stopPropagation(); handleStatusChange(invoice.id, 'SENT'); }}
                   className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-blue-900/30' : 'hover:bg-blue-50')}
                   title="Mark as Sent"
                 >
@@ -269,7 +264,7 @@ export default function InvoiceManagerPage() {
               )}
               {invoice.status === 'SENT' && (
                 <button
-                  onClick={() => handleStatusChange(invoice.id, 'PAID')}
+                  onClick={(e) => { e.stopPropagation(); handleStatusChange(invoice.id, 'PAID'); }}
                   className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-green-900/30' : 'hover:bg-green-50')}
                   title="Mark as Paid"
                 >
@@ -277,13 +272,7 @@ export default function InvoiceManagerPage() {
                 </button>
               )}
               <button
-                onClick={() => startEdit(invoice)}
-                className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100')}
-              >
-                <Edit size={18} className={isDarkMode ? 'text-gray-400' : 'text-gray-600'} />
-              </button>
-              <button
-                onClick={() => handleDelete(invoice.id)}
+                onClick={(e) => { e.stopPropagation(); handleDelete(invoice.id); }}
                 className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-red-900/30' : 'hover:bg-red-50')}
               >
                 <Trash2 size={18} className="text-red-600" />
@@ -416,11 +405,11 @@ export default function InvoiceManagerPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className={clsx('rounded-2xl w-full max-w-2xl max-h-[67.5vh] overflow-y-auto', isDarkMode ? 'bg-gray-800' : 'bg-white')}
+            className={clsx('rounded-2xl w-full max-w-2xl max-h-[55vh] overflow-y-auto', isDarkMode ? 'bg-gray-800' : 'bg-white')}
           >
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className={clsx('text-xl font-bold', isDarkMode ? 'text-white' : 'text-gray-900')}>{editingId ? 'Edit Invoice' : 'Create Invoice'}</h2>
+                <h2 className={clsx('text-xl font-bold', isDarkMode ? 'text-white' : 'text-gray-900')}>{editingId ? 'Update Invoice' : 'Create Invoice'}</h2>
                 <button
                   onClick={() => {
                     setIsAdding(false);

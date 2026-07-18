@@ -177,7 +177,7 @@ export default function VendorVerificationPage() {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
         {/* Current Status */}
-        <div className={clsx('rounded-2xl p-6 shadow-card mb-6', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+        <div className={clsx('rounded-2xl p-6 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 mb-6', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
           <h2 className={clsx('font-semibold mb-4 flex items-center gap-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
             <Star className={clsx('w-5 h-5 text-festac-green')} />
             Your Verification Status
@@ -236,7 +236,7 @@ export default function VendorVerificationPage() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className={clsx('rounded-2xl p-6 shadow-card border-2', isDarkMode ? 'bg-gray-800' : 'bg-white',
+                className={clsx('rounded-2xl p-6 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 border-2', isDarkMode ? 'bg-gray-800' : 'bg-white',
                   status === 'completed' ? 'border-green-500' : 
                   status === 'in_review' ? 'border-amber-500' :
                   status === 'pending' ? 'border-purple-500' : 

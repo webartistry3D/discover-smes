@@ -287,7 +287,7 @@ export function MobileBottomNav() {
                   className={clsx(
                     'flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all duration-200 min-w-[70px]',
                     isDropdownOpen || isSectionActive
-                      ? 'text-festac-green'
+                      ? (isDarkMode ? 'text-green-300' : 'text-festac-green')
                       : isDarkMode
                         ? 'text-gray-400 hover:text-gray-300'
                         : 'text-gray-500 hover:text-gray-700'
@@ -309,7 +309,7 @@ export function MobileBottomNav() {
                   className={clsx(
                     'flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all duration-200 min-w-[70px]',
                     isItemActive
-                      ? 'text-festac-green'
+                      ? (isDarkMode ? 'text-green-300' : 'text-festac-green')
                       : isDarkMode
                         ? 'text-gray-400 hover:text-gray-300'
                         : 'text-gray-500 hover:text-gray-700'

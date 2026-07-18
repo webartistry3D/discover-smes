@@ -87,7 +87,7 @@ export default function BookingsPage() {
             ))}
           </div>
         ) : !filteredBookings || filteredBookings.length === 0 ? (
-          <div className={clsx('rounded-2xl p-12 shadow-card text-center', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+          <div className={clsx('rounded-2xl p-12 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 text-center', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
             <Calendar size={40} className={clsx('mx-auto mb-3', isDarkMode ? 'text-gray-600' : 'text-gray-300')} />
             <p className={clsx('font-medium', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>No bookings found</p>
             <p className={clsx('text-sm mt-1', isDarkMode ? 'text-gray-500' : 'text-gray-400')}>Book an appointment with a vendor to see it here</p>
@@ -102,7 +102,7 @@ export default function BookingsPage() {
                 key={booking.id}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={clsx('rounded-2xl p-5 shadow-card hover:shadow-card-hover transition-shadow', isDarkMode ? 'bg-gray-800' : 'bg-white')}
+                className={clsx('rounded-2xl p-5 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 hover:shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200-hover transition-shadow', isDarkMode ? 'bg-gray-800' : 'bg-white')}
               >
                 <div className="flex items-start justify-between gap-4 mb-3">
                   <div className="flex-1">

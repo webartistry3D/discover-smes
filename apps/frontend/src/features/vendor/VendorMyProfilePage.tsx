@@ -408,7 +408,7 @@ export default function VendorMyProfilePage() {
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         {/* Business Header Card */}
-        <div className={clsx('rounded-3xl shadow-card -mt-10 relative z-10 p-6', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+        <div className={clsx('rounded-3xl shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 -mt-10 relative z-10 p-6', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
           <div className="flex items-start gap-4">
             {/* Logo */}
             <div className={clsx('w-16 h-16 rounded-2xl border-2 shadow-md overflow-hidden flex-shrink-0', isDarkMode ? 'bg-gray-700 border-gray-700' : 'bg-gray-100 border-white')}>
@@ -900,7 +900,7 @@ export default function VendorMyProfilePage() {
             {activeTab === 'overview' && (
               <motion.div key="overview" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
                 {/* Description */}
-                <div className={clsx('rounded-2xl p-5 shadow-card', cardBg)}>
+                <div className={clsx('rounded-2xl p-5 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200', cardBg)}>
                   <h3 className={clsx('font-semibold mb-2', headingColor)}>About</h3>
                   <p className={clsx('text-sm leading-relaxed', bodyColor, !showFullDesc && 'line-clamp-4')}>
                     {vendor.description}
@@ -914,7 +914,7 @@ export default function VendorMyProfilePage() {
 
                 {/* Opening Hours */}
                 {vendor.openingHours && (
-                  <div className={clsx('rounded-2xl p-5 shadow-card', cardBg)}>
+                  <div className={clsx('rounded-2xl p-5 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200', cardBg)}>
                     <h3 className={clsx('font-semibold mb-3', headingColor)}>Opening Hours</h3>
                     <OpeningHoursGrid hours={vendor.openingHours as any} isDarkMode={isDarkMode} />
                   </div>
@@ -944,7 +944,7 @@ export default function VendorMyProfilePage() {
                   </div>
                 ) : (
                   vendor.inventoryItems?.map((p: any) => (
-                    <div key={p.id} className={clsx('rounded-2xl p-4 shadow-card flex items-center gap-4', cardBg)}>
+                    <div key={p.id} className={clsx('rounded-2xl p-4 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 flex items-center gap-4', cardBg)}>
                       <div className={clsx('w-16 h-16 rounded-xl overflow-hidden flex-shrink-0', subtleBg)}>
                         <div className="w-full h-full flex items-center justify-center"><Package size={20} className={mutedColor} /></div>
                       </div>
@@ -971,7 +971,7 @@ export default function VendorMyProfilePage() {
                   </div>
                 ) : (
                   vendor.services?.map((s: any) => (
-                    <div key={s.id} className={clsx('rounded-2xl p-4 shadow-card flex items-center gap-4', cardBg)}>
+                    <div key={s.id} className={clsx('rounded-2xl p-4 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 flex items-center gap-4', cardBg)}>
                       <div className="w-12 h-12 bg-festac-green/10 rounded-xl flex items-center justify-center flex-shrink-0">
                         <Wrench size={20} className="text-festac-green" />
                       </div>
@@ -1013,7 +1013,7 @@ export default function VendorMyProfilePage() {
             {activeTab === 'faqs' && (
               <motion.div key="faqs" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
                 {faqRules.length === 0 ? (
-                  <div className={clsx('rounded-2xl p-8 shadow-card text-center', cardBg)}>
+                  <div className={clsx('rounded-2xl p-8 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 text-center', cardBg)}>
                     <ExternalLink size={32} className={clsx('mx-auto mb-2', mutedColor)} />
                     <p className={clsx('text-sm', mutedColor)}>No FAQs yet. Manage them on the FAQ page.</p>
                     <Link href="/chatbot/faq" className="block mt-2 text-xs font-medium text-festac-green hover:underline">
@@ -1021,7 +1021,7 @@ export default function VendorMyProfilePage() {
                     </Link>
                   </div>
                 ) : (
-                  <div className={clsx('rounded-2xl p-5 shadow-card', cardBg)}>
+                  <div className={clsx('rounded-2xl p-5 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200', cardBg)}>
                     <div className="flex items-center justify-between mb-3">
                       <h3 className={clsx('font-semibold', headingColor)}>Frequently Asked Questions</h3>
                       <Link href="/chatbot/faq">
@@ -1085,7 +1085,7 @@ function VendorProfileSkeleton() {
     <div className="min-h-screen bg-gray-50">
       <div className="h-64 sm:h-80 bg-gray-200 animate-pulse" />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 -mt-10">
-        <div className="bg-white rounded-3xl p-6 shadow-card">
+        <div className="bg-white rounded-3xl p-6 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200">
           <div className="flex gap-4">
             <Skeleton className="w-16 h-16 rounded-2xl" />
             <div className="flex-1">

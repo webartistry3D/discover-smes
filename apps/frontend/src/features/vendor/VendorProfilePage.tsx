@@ -126,7 +126,7 @@ export default function VendorProfilePage() {
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         {/* Business Header Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-card -mt-10 relative z-10 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 -mt-10 relative z-10 p-6">
           <div className="flex items-start gap-4">
             {/* Logo */}
             <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-700 border-2 border-white shadow-md overflow-hidden flex-shrink-0">
@@ -223,7 +223,7 @@ export default function VendorProfilePage() {
             {activeTab === 'overview' && (
               <motion.div key="overview" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
                 {/* Description */}
-                <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-card">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200">
                   <h3 className="font-semibold text-gray-900 dark:text-white mb-2">About</h3>
                   <p className={`text-gray-600 dark:text-gray-300 text-sm leading-relaxed ${!showFullDesc && 'line-clamp-4'}`}>
                     {vendor.description}
@@ -237,7 +237,7 @@ export default function VendorProfilePage() {
 
                 {/* Opening Hours */}
                 {vendor.openingHours && (
-                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-card">
+                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200">
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="font-semibold text-gray-900 dark:text-white">Opening Hours</h3>
                       {isOwner && !editingHours && (
@@ -284,7 +284,7 @@ export default function VendorProfilePage() {
             {activeTab === 'products' && (
               <motion.div key="products" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
                 {vendor.inventoryItems?.map((p: any) => (
-                  <div key={p.id} className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-card flex items-center gap-4">
+                  <div key={p.id} className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 flex items-center gap-4">
                     <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-xl overflow-hidden flex-shrink-0">
                       <div className="w-full h-full flex items-center justify-center"><Package size={20} className="text-gray-400 dark:text-gray-300" /></div>
                     </div>
@@ -304,7 +304,7 @@ export default function VendorProfilePage() {
             {activeTab === 'services' && (
               <motion.div key="services" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
                 {vendor.services?.map((s: any) => (
-                  <div key={s.id} className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-card flex items-center gap-4">
+                  <div key={s.id} className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 flex items-center gap-4">
                     <div className="w-12 h-12 bg-festac-green/10 rounded-xl flex items-center justify-center flex-shrink-0">
                       <Wrench size={20} className="text-festac-green" />
                     </div>
@@ -329,7 +329,7 @@ export default function VendorProfilePage() {
             {activeTab === 'faqs' && (
               <motion.div key="faqs" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
                 {faqRules.length === 0 ? (
-                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-card text-center">
+                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 text-center">
                     <p className="text-sm text-gray-500 dark:text-gray-300">No FAQs yet.</p>
                     {isOwner && (
                       <Link href="/chatbot/faq" className="block mt-2 text-festac-green hover:underline text-sm">
@@ -338,7 +338,7 @@ export default function VendorProfilePage() {
                     )}
                   </div>
                 ) : (
-                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-card">
+                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200">
                     <div className="space-y-3">
                       {faqRules.map((faq: any) => (
                         <div key={faq.id} className="border-b border-gray-50 dark:border-gray-700 last:border-0 pb-3 last:pb-0">
@@ -355,7 +355,7 @@ export default function VendorProfilePage() {
             {activeTab === 'reviews' && (
               <motion.div key="reviews" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
                 {(reviewsData as any)?.data?.map((r: any) => (
-                  <div key={r.id} className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-card">
+                  <div key={r.id} className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200">
                     <div className="flex items-start gap-3">
                       <Avatar src={r.user?.avatar} name={`${r.user?.firstName} ${r.user?.lastName}`} size="sm" />
                       <div className="flex-1">

@@ -95,7 +95,7 @@ export default function AdminPanelPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-5">
         {/* Tabs */}
-        <div className="flex gap-1 bg-white rounded-2xl p-1 shadow-card w-fit">
+        <div className="flex gap-1 bg-white rounded-2xl p-1 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 w-fit">
           {[
             { id: 'overview', label: 'Overview', icon: <BarChart3 size={14} /> },
             { id: 'vendors', label: 'Vendors', icon: <Store size={14} /> },
@@ -123,7 +123,7 @@ export default function AdminPanelPage() {
                 { label: 'Total Users', value: analytics?.totalUsers, icon: <Users size={18} />, color: 'purple' },
                 { label: 'Pending Review', value: analytics?.totalVendors - analytics?.activeVendors, icon: <Clock size={18} />, color: 'amber' },
               ].map((stat) => (
-                <motion.div key={stat.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl p-4 shadow-card">
+                <motion.div key={stat.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl p-4 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200">
                   {analyticsLoading ? (
                     <Skeleton className="h-16 w-full" />
                   ) : (
@@ -141,7 +141,7 @@ export default function AdminPanelPage() {
 
             {/* Category Distribution */}
             {analytics?.categoryDistribution && (
-              <div className="bg-white rounded-2xl p-5 shadow-card">
+              <div className="bg-white rounded-2xl p-5 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200">
                 <h2 className="font-semibold text-gray-900 mb-4">Category Distribution</h2>
                 <div className="space-y-3">
                   {analytics.categoryDistribution.slice(0, 8).map((cat: any) => (
@@ -172,7 +172,7 @@ export default function AdminPanelPage() {
                   key={s}
                   onClick={() => setVendorStatusFilter(s)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
-                    vendorStatusFilter === s ? 'bg-festac-dark text-white' : 'bg-white text-gray-600 hover:bg-gray-100 shadow-card'
+                    vendorStatusFilter === s ? 'bg-festac-dark text-white' : 'bg-white text-gray-600 hover:bg-gray-100 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200'
                   }`}
                 >
                   {s}
@@ -180,7 +180,7 @@ export default function AdminPanelPage() {
               ))}
             </div>
 
-            <div className="bg-white rounded-2xl shadow-card overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 overflow-hidden">
               {vendorsLoading ? (
                 <div className="p-5 space-y-3">
                   {[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
@@ -256,13 +256,13 @@ export default function AdminPanelPage() {
                 {[1, 2, 3].map((i) => <Skeleton key={i} className="h-24 w-full rounded-2xl" />)}
               </div>
             ) : (verificationReqs as any[])?.length === 0 ? (
-              <div className="bg-white rounded-2xl p-12 shadow-card text-center text-gray-400">
+              <div className="bg-white rounded-2xl p-12 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 text-center text-gray-400">
                 <ShieldCheck size={32} className="mx-auto mb-2" />
                 <p className="text-sm">No pending verification requests</p>
               </div>
             ) : (
               (verificationReqs as any[])?.map((req: any) => (
-                <div key={req.id} className="bg-white rounded-2xl p-5 shadow-card">
+                <div key={req.id} className="bg-white rounded-2xl p-5 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200">
                   <div className="flex items-start justify-between gap-4 mb-4">
                     <div>
                       <p className="font-semibold text-gray-900">{req.vendor?.businessName}</p>

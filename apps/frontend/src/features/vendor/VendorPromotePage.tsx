@@ -99,7 +99,7 @@ export default function VendorPromotePage() {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         {/* Current Promotion Status */}
-        <div className={clsx('rounded-2xl p-6 shadow-card mb-8', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+        <div className={clsx('rounded-2xl p-6 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 mb-8', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
           <h2 className={clsx('font-semibold mb-4 flex items-center gap-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
             <Rocket className={clsx('w-5 h-5 text-festac-green')} />
             Current Promotion Status
@@ -140,7 +140,7 @@ export default function VendorPromotePage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className={clsx('relative rounded-2xl shadow-card overflow-hidden', isDarkMode ? 'bg-gray-800' : 'bg-white',
+              className={clsx('relative rounded-2xl shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 overflow-hidden', isDarkMode ? 'bg-gray-800' : 'bg-white',
                 selectedPlan === plan.key ? 'ring-2 ring-festac-green' : ''
               , plan.popular ? 'transform scale-105' : '')}
             >
@@ -185,7 +185,7 @@ export default function VendorPromotePage() {
         </div>
 
         {/* Benefits Section */}
-        <div className={clsx('rounded-2xl p-6 shadow-card', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+        <div className={clsx('rounded-2xl p-6 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
           <h2 className={clsx('font-semibold mb-4 flex items-center gap-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
             <Star className={clsx('w-5 h-5 text-festac-green')} />
             Why Boost Your Listing?

@@ -400,7 +400,7 @@ export default function VendorOnboardingPage() {
 
 function StepCard({ title, icon, children, isDarkMode }: { title: string; icon: React.ReactNode; children: React.ReactNode; isDarkMode: boolean }) {
   return (
-    <div className={clsx('rounded-2xl shadow-card p-6', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+    <div className={clsx('rounded-2xl shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 p-6', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
       <div className="flex items-center gap-2 mb-5">
         {icon}
         <h2 className={clsx('font-display font-semibold', isDarkMode ? 'text-white' : 'text-gray-900')}>{title}</h2>

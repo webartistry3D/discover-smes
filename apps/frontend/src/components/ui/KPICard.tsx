@@ -35,13 +35,10 @@ export function KPICard({
 
   const defaultContainer = clsx(
     'rounded-xl p-4 border flex flex-col gap-2',
-    isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200 shadow-lg hover:shadow-xl transition-shadow duration-200'
+    isDarkMode ? 'bg-white/10 backdrop-blur border-transparent' : 'bg-gray-50 border-gray-200 shadow-xl hover:shadow-2xl transition-shadow duration-200'
   );
 
-  const defaultIconContainer = clsx(
-    'p-2 rounded-lg',
-    isDarkMode ? 'bg-green-900/20 text-green-300' : 'bg-green-500/20 text-green-600'
-  );
+  const defaultIconContainer = 'p-2 rounded-lg';
 
   const defaultValueClass = 'text-3xl font-bold font-mono';
   const defaultLabelClass = 'text-sm';
@@ -104,7 +101,7 @@ export function KPICard({
         {labelPosition === 'top-left' ? (
           <div className="text-left">{topLeftContent}</div>
         ) : icon ? (
-          <div className={clsx(iconContainerClassName || defaultIconContainer)}>
+          <div className={clsx((iconContainerClassName || '').replace(/\s?bg-[^\s]+/g, '') || defaultIconContainer)}>
             {isLoading ? (
               <Skeleton
                 className={clsx(

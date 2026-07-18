@@ -271,7 +271,7 @@ export default function InventoryManagerPage() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         onClick={() => setSelectedItemId(item.id)}
-        className={clsx('w-full rounded-xl p-4 shadow-card hover:shadow-md transition-shadow cursor-pointer', isDarkMode ? 'bg-gray-800' : 'bg-white')}
+        className={clsx('w-full rounded-xl p-4 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 hover:shadow-md transition-shadow cursor-pointer', isDarkMode ? 'bg-gray-800' : 'bg-white')}
       >
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -412,7 +412,7 @@ export default function InventoryManagerPage() {
 
       {/* Inventory Valuation */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        <div className={clsx('rounded-2xl p-6 shadow-card', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+        <div className={clsx('rounded-2xl p-6 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
           <h2 className={clsx('font-semibold mb-4 flex items-center gap-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
             <span className="text-festac-green font-semibold text-lg">₦</span>
             Inventory Valuation
@@ -544,7 +544,7 @@ export default function InventoryManagerPage() {
 
       {/* Services */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        <div className={clsx('rounded-2xl p-6 shadow-card', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+        <div className={clsx('rounded-2xl p-6 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
           <h2 className={clsx('font-semibold mb-4 flex items-center gap-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
             <Wrench className="w-5 h-5 text-festac-green" />
             Services
@@ -588,7 +588,7 @@ export default function InventoryManagerPage() {
           <div className="flex items-center gap-4 mb-6">
             <button
               onClick={() => setSelectedItemId(null)}
-              className={clsx('p-2 rounded-xl shadow-card hover:shadow-md transition-shadow', isDarkMode ? 'bg-gray-800' : 'bg-white')}
+              className={clsx('p-2 rounded-xl shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 hover:shadow-md transition-shadow', isDarkMode ? 'bg-gray-800' : 'bg-white')}
             >
               <X size={20} />
             </button>
@@ -600,7 +600,7 @@ export default function InventoryManagerPage() {
           </div>
 
           {/* Stock Movement Form */}
-          <div className={clsx('rounded-2xl p-6 shadow-card mb-6', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+          <div className={clsx('rounded-2xl p-6 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 mb-6', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
             <h3 className={clsx('font-semibold mb-4 flex items-center gap-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
               <BarChart3 className="w-5 h-5 text-festac-green" />
               Record Stock Movement
@@ -657,7 +657,7 @@ export default function InventoryManagerPage() {
           </div>
 
           {/* Stock Movement History */}
-          <div className={clsx('rounded-2xl p-6 shadow-card mb-6', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+          <div className={clsx('rounded-2xl p-6 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 mb-6', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
             <h3 className={clsx('font-semibold mb-4 flex items-center gap-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
               <Clock className="w-5 h-5 text-festac-green" />
               Stock Movement History

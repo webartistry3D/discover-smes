@@ -202,7 +202,7 @@ export default function CRMManagerPage() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         onClick={() => setSelectedCustomerId(customer.id)}
-        className={clsx('w-full rounded-xl p-4 shadow-card hover:shadow-md transition-shadow cursor-pointer', isDarkMode ? 'bg-gray-800' : 'bg-white')}
+        className={clsx('w-full rounded-xl p-4 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 hover:shadow-md transition-shadow cursor-pointer', isDarkMode ? 'bg-gray-800' : 'bg-white')}
       >
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -381,7 +381,7 @@ export default function CRMManagerPage() {
           <div className="flex items-center gap-4 mb-6">
             <button
               onClick={() => setSelectedCustomerId(null)}
-              className={clsx('p-2 rounded-xl shadow-card hover:shadow-md transition-shadow', isDarkMode ? 'bg-gray-800' : 'bg-white')}
+              className={clsx('p-2 rounded-xl shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 hover:shadow-md transition-shadow', isDarkMode ? 'bg-gray-800' : 'bg-white')}
             >
               <X size={20} />
             </button>
@@ -396,7 +396,7 @@ export default function CRMManagerPage() {
 
           {/* Purchase History */}
           {selectedCustomerId && (
-            <div className={clsx('rounded-2xl p-6 shadow-card mb-6', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+            <div className={clsx('rounded-2xl p-6 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 mb-6', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
               <h3 className={clsx('font-semibold mb-4 flex items-center gap-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
                 <DollarSign size={18} className="text-festac-green" />
                 Purchase History
@@ -463,7 +463,7 @@ export default function CRMManagerPage() {
           )}
 
           {/* Tags */}
-          <div className={clsx('rounded-2xl p-6 shadow-card mb-6', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+          <div className={clsx('rounded-2xl p-6 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 mb-6', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
             <h3 className={clsx('font-semibold mb-4 flex items-center gap-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
               <Tag size={18} className="text-festac-green" />
               Tags
@@ -503,7 +503,7 @@ export default function CRMManagerPage() {
           </div>
 
           {/* Notes */}
-          <div className={clsx('rounded-2xl p-6 shadow-card mb-6', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+          <div className={clsx('rounded-2xl p-6 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 mb-6', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
             <h3 className={clsx('font-semibold mb-4 flex items-center gap-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
               <StickyNote size={18} className="text-festac-green" />
               Notes
@@ -534,7 +534,7 @@ export default function CRMManagerPage() {
           </div>
 
           {/* Communications */}
-          <div className={clsx('rounded-2xl p-6 shadow-card mb-6', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+          <div className={clsx('rounded-2xl p-6 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 mb-6', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
             <h3 className={clsx('font-semibold mb-4 flex items-center gap-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
               <MessageSquare size={18} className="text-festac-green" />
               Communications
@@ -594,7 +594,7 @@ export default function CRMManagerPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className={clsx('rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto', isDarkMode ? 'bg-gray-800' : 'bg-white')}
+            className={clsx('rounded-2xl w-full max-w-lg max-h-[67.5vh] overflow-y-auto', isDarkMode ? 'bg-gray-800' : 'bg-white')}
           >
             <div className="p-6">
               <h2 className={clsx('text-xl font-bold mb-6', isDarkMode ? 'text-white' : 'text-gray-900')}>{editingId ? 'Edit Customer' : 'Add Customer'}</h2>

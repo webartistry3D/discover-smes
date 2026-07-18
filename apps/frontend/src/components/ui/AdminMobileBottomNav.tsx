@@ -72,7 +72,7 @@ export function AdminMobileBottomNav() {
               className={clsx(
                 'flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all duration-200 min-w-[70px]',
                 isActive(item.href)
-                  ? 'text-festac-green'
+                  ? 'text-green-300'
                   : 'text-gray-400 hover:text-gray-300'
               )}
             >

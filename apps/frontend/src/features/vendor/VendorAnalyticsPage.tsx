@@ -117,7 +117,7 @@ export default function VendorAnalyticsPage() {
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className={clsx('rounded-2xl p-5 shadow-card', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+          <div className={clsx('rounded-2xl p-5 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
             <h2 className={clsx('font-semibold mb-4 flex items-center gap-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
               <BarChart3 className="w-5 h-5 text-festac-green" />
               Profile Views Over Time
@@ -172,7 +172,7 @@ export default function VendorAnalyticsPage() {
             </div>
           </div>
 
-          <div className={clsx('rounded-2xl p-5 shadow-card', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+          <div className={clsx('rounded-2xl p-5 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
             <h2 className={clsx('font-semibold mb-4 flex items-center gap-2', isDarkMode ? 'text-white' : 'text-gray-900')}>
               <TrendingUp className="w-5 h-5 text-festac-green" />
               Booking Trends
@@ -223,7 +223,7 @@ export default function VendorAnalyticsPage() {
         </div>
 
         {/* Detailed Metrics */}
-        <div className={clsx('rounded-2xl p-5 shadow-card', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+        <div className={clsx('rounded-2xl p-5 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
           <h2 className={clsx('font-semibold mb-4', isDarkMode ? 'text-white' : 'text-gray-900')}>Detailed Metrics</h2>
           {analyticsLoading ? (
             <div className="space-y-3">

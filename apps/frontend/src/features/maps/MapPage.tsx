@@ -257,7 +257,7 @@ export default function MapPage() {
       <div className="max-w-6xl mx-auto">
         <div
           className={clsx(
-            'overflow-hidden shadow-card border relative',
+            'overflow-hidden shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 border relative',
             isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200',
             'h-[calc(75vh-105px)] sm:h-[calc(100vh-160px)]'
           )}
@@ -279,7 +279,7 @@ export default function MapPage() {
           {/* Top controls */}
           <div className="absolute top-4 left-4 right-4 z-20 flex items-start justify-between pointer-events-none">
             <div className="flex flex-col gap-2 pointer-events-auto">
-              <div className={clsx('rounded-2xl shadow-card-hover px-4 py-2.5 flex items-center gap-2 w-fit', isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900')}>
+              <div className={clsx('rounded-2xl shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200-hover px-4 py-2.5 flex items-center gap-2 w-fit', isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900')}>
                 <MapPin size={14} className="text-festac-green" />
                 <span className="text-sm font-semibold">{vendorsWithCoordinates.length} businesses nearby</span>
                 {isLoading && <Spinner size="sm" />}
@@ -288,7 +288,7 @@ export default function MapPage() {
 
             <button
               onClick={handleCenterOnMe}
-              className={clsx('rounded-2xl shadow-card-hover p-2.5 transition-colors pointer-events-auto', isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50')}
+              className={clsx('rounded-2xl shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200-hover p-2.5 transition-colors pointer-events-auto', isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50')}
               title="Center on my location"
             >
               <Navigation size={18} className="text-festac-green" />
@@ -296,7 +296,7 @@ export default function MapPage() {
           </div>
 
           {/* Legend */}
-          <div className={clsx('absolute bottom-4 left-4 z-20 rounded-xl shadow-card px-3 py-2 flex items-center gap-3 pointer-events-auto', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+          <div className={clsx('absolute bottom-4 left-4 z-20 rounded-xl shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 px-3 py-2 flex items-center gap-3 pointer-events-auto', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
             <div className="flex items-center gap-1.5">
               <div className="w-3 h-3 rounded-full bg-festac-green" />
               <span className={clsx('text-xs', isDarkMode ? 'text-gray-300' : 'text-gray-600')}>Business</span>
@@ -378,7 +378,7 @@ export default function MapPage() {
         </div>
 
         {/* Search & nearby businesses */}
-        <div className={clsx('mt-4 rounded-2xl shadow-card border p-4', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200')}>
+        <div className={clsx('mt-4 rounded-2xl shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 border p-4', isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200')}>
           <form onSubmit={handleCoordinateSearch} className="flex flex-wrap items-center gap-3 mb-4">
             <span className={clsx('text-sm font-semibold', isDarkMode ? 'text-white' : 'text-gray-900')}>Search coordinates</span>
             <div className={clsx('flex items-center gap-2 rounded-xl px-3 py-2', isDarkMode ? 'bg-gray-700' : 'bg-gray-100')}>

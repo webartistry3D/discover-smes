@@ -98,12 +98,12 @@ export function Navbar() {
             {/* Logo */}
             <Link href="/">
               <motion.div whileTap={{ scale: 0.97 }} className="flex items-center gap-2 cursor-pointer">
-                <div className="w-8 h-8 bg-gradient-festac rounded-xl flex items-center justify-center shadow-glow">
+                {/*<div className="w-8 h-8 bg-gradient-festac rounded-xl flex items-center justify-center shadow-glow">
                   <span className="text-white font-black text-sm">D</span>
-                </div>
-                <div className="hidden sm:block">
-                  <span className="font-display font-bold text-lg leading-none text-gray-900">Discover</span>
-                  <span className="font-display font-bold text-festac-green text-lg leading-none ml-1">SMEs</span>
+                </div>*/}
+                <div className="block">
+                  <span className={clsx('font-display font-bold text-lg leading-none', isDarkMode ? 'text-white' : 'text-gray-900')}>Discover</span>
+                  <span className={clsx('font-display font-bold text-lg leading-none ml-1', isDarkMode ? 'text-green-300' : 'text-festac-green')}>SMEs</span>
                 </div>
               </motion.div>
             </Link>

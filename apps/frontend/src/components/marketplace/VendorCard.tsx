@@ -174,7 +174,7 @@ function CompactCard({ vendor, onWhatsApp, isDarkMode }: { vendor: VendorSummary
     <Link href={`/vendors/${vendor.slug}`}>
       <motion.div
         whileTap={{ scale: 0.98 }}
-        className={clsx('flex items-center gap-3 p-3 rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-200', isDarkMode ? 'bg-gray-800' : 'bg-white')}
+        className={clsx('flex items-center gap-3 p-3 rounded-2xl shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 hover:shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200-hover transition-all duration-200', isDarkMode ? 'bg-gray-800' : 'bg-white')}
       >
         <div className={clsx('w-14 h-14 rounded-xl overflow-hidden flex-shrink-0', isDarkMode ? 'bg-gray-700' : 'bg-gray-100')}>
           {vendor.coverImage ? (
@@ -211,7 +211,7 @@ function FeaturedCard({ vendor, index, onWhatsApp, isDarkMode }: { vendor: Vendo
       transition={{ delay: index * 0.08 }}
     >
       <Link href={`/vendors/${vendor.slug}`}>
-        <div className={clsx('relative w-64 flex-shrink-0 rounded-2xl overflow-hidden shadow-card group cursor-pointer', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+        <div className={clsx('relative w-64 flex-shrink-0 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 group cursor-pointer', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
           <div className={clsx('h-36', isDarkMode ? 'bg-gradient-to-br from-gray-700 to-gray-800' : 'bg-gradient-to-br from-gray-200 to-gray-300')}>
             {vendor.coverImage && (
               <img

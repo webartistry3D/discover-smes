@@ -168,14 +168,14 @@ export default function VendorDashboardPage() {
               valueClassName="text-4xl font-display font-black"
               labelPosition="bottom"
               labelClassName="mt-0.5"
-              containerClassName={clsx('rounded-2xl p-4 shadow-card gap-0', isDarkMode ? 'bg-gray-800' : 'bg-white')}
+              containerClassName={clsx('rounded-2xl p-4 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 gap-0', isDarkMode ? 'bg-gray-800' : 'bg-white')}
               delay={index * 0.05}
             />
           ))}
         </div>
 
         {/* ─── BOOKINGS ─────────────────────────────────────── */}
-        <div className={clsx('rounded-2xl shadow-card overflow-hidden', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+        <div className={clsx('rounded-2xl shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 overflow-hidden', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
           <div className={clsx('flex items-center justify-between px-5 py-4 border-b', isDarkMode ? 'border-gray-700' : 'border-gray-50')}>
             <div className="flex items-center gap-2">
               <Calendar size={16} className="text-festac-green" />
@@ -221,7 +221,7 @@ export default function VendorDashboardPage() {
         {/* ─── QUICK ACTIONS ──────────────────────────────────── */}
 
         {/* ─── PROFILE COMPLETENESS ──────────────────────────── */}
-        <div className={clsx('rounded-2xl p-5 shadow-card', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+        <div className={clsx('rounded-2xl p-5 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
           <div className="flex items-center justify-between mb-3">
             <h2 className={clsx('font-semibold', isDarkMode ? 'text-white' : 'text-gray-900')}>Profile Completeness</h2>
             <span className="text-sm font-bold text-festac-green">{completenessPercentage}%</span>

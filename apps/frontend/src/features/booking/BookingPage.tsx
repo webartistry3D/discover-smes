@@ -82,7 +82,7 @@ export default function BookingPage() {
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-card-hover"
+        className="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200-hover"
       >
         <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <CheckCircle size={32} className="text-green-600" />
@@ -131,7 +131,7 @@ export default function BookingPage() {
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
         {/* Service selection */}
         {vendor.services?.length > 0 && (
-          <div className="bg-white rounded-2xl p-5 shadow-card">
+          <div className="bg-white rounded-2xl p-5 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200">
             <h3 className="font-semibold text-gray-900 mb-3">Select Service</h3>
             <div className="space-y-2">
               <button
@@ -158,7 +158,7 @@ export default function BookingPage() {
         )}
 
         {/* Date & Time */}
-        <div className="bg-white rounded-2xl p-5 shadow-card">
+        <div className="bg-white rounded-2xl p-5 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200">
           <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <Calendar size={16} className="text-festac-green" /> Date & Time
           </h3>
@@ -200,7 +200,7 @@ export default function BookingPage() {
         </div>
 
         {/* Contact Details */}
-        <div className="bg-white rounded-2xl p-5 shadow-card">
+        <div className="bg-white rounded-2xl p-5 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200">
           <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <User size={16} className="text-festac-green" /> Your Details
           </h3>

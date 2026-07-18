@@ -414,7 +414,7 @@ export default function POSPage() {
     <div className={clsx('min-h-[calc(100vh-64px)] w-full p-4 sm:p-6', isDarkMode ? 'bg-gray-900' : 'bg-gray-50')}>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-gradient-hero text-white rounded-2xl shadow-card mb-4">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-gradient-hero text-white rounded-2xl shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 mb-4">
           <div className="px-6 py-5 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Link href="/financial/invoices">
@@ -447,7 +447,7 @@ export default function POSPage() {
         <div className="flex-1 flex flex-col gap-4">
 
           {/* Barcode Scan Input */}
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className={clsx('rounded-2xl p-4 shadow-card', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className={clsx('rounded-2xl p-4 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
             <div className="flex items-center gap-2 mb-3">
               <ScanLine size={18} className="text-festac-green" />
               <h2 className={clsx('font-semibold text-sm', isDarkMode ? 'text-white' : 'text-gray-900')}>
@@ -489,7 +489,7 @@ export default function POSPage() {
           </motion.div>
 
           {/* Item Search */}
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className={clsx('rounded-2xl shadow-card overflow-hidden', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className={clsx('rounded-2xl shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 overflow-hidden', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
             <div className={clsx('flex items-center gap-2 px-4 py-3 border-b', isDarkMode ? 'border-gray-700' : 'border-gray-100')}>
               <Search size={16} className={isDarkMode ? 'text-gray-400' : 'text-gray-400'} />
               <input
@@ -580,7 +580,7 @@ export default function POSPage() {
         <div id="pos-cart-panel" className="w-full lg:w-96 flex flex-col gap-4">
 
           {/* Cart Items */}
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className={clsx('rounded-2xl shadow-card overflow-hidden flex-1', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className={clsx('rounded-2xl shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 overflow-hidden flex-1', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
             <div className={clsx('flex items-center justify-between px-4 py-3 border-b', isDarkMode ? 'border-gray-700' : 'border-gray-100')}>
               <div className="flex items-center gap-2">
                 <ShoppingCart size={16} className="text-festac-green" />
@@ -663,7 +663,7 @@ export default function POSPage() {
           </motion.div>
 
           {/* Checkout Panel */}
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className={clsx('rounded-2xl shadow-card p-4 space-y-4', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className={clsx('rounded-2xl shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 p-4 space-y-4', isDarkMode ? 'bg-gray-800' : 'bg-white')}>
             {/* Customer Name (optional) */}
             <div>
               <label className={clsx('text-xs font-medium mb-1 block', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>

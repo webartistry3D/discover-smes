@@ -387,9 +387,9 @@ export default function TaxManagerPage() {
           {/* Summary Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <KPICard
-              icon={<span className={clsx('text-xl font-semibold', isDarkMode ? 'text-red-300' : 'text-red-600')}>₦</span>}
-              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-red-900/20' : 'bg-red-500/20')}
-              label="Total Tax Liability"
+              icon={<span className={clsx('text-xl font-semibold', isDarkMode ? 'text-green-300' : 'text-green-600')}>₦</span>}
+              iconContainerClassName={clsx('p-1 rounded-lg', isDarkMode ? 'bg-red-900/20' : 'bg-red-500/20')}
+              label="Tax Liability"
               value={formatCurrencyCompact(kpiTotalLiability)}
               isLoading={taxSummaryLoading || isPaidInvoicesLoading}
               valueClassName={isDarkMode ? '!text-red-300' : 'text-red-600'}

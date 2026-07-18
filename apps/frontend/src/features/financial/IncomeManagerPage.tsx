@@ -24,6 +24,7 @@ export default function IncomeManagerPage() {
   const { isDarkMode } = useUIStore();
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [viewingIncome, setViewingIncome] = useState<Income | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState({
@@ -148,21 +149,25 @@ export default function IncomeManagerPage() {
     return INCOME_CATEGORIES.find((c) => c.value === category) || INCOME_CATEGORIES[4];
   };
 
+  const handleView = (income: Income) => {
+    setViewingIncome(income);
+  };
+
   const renderIncomeItem = (income: Income, viewMode: ViewMode) => {
     const catInfo = getCategoryInfo(income.category);
     const isInvoiceIncome = income.source === 'Invoice';
     if (viewMode === 'list') {
       return (
         <>
-          <td className="px-4 py-3 whitespace-nowrap">{new Date(income.date).toLocaleDateString()}</td>
-          <td className="px-4 py-3 min-w-[240px] max-w-[360px]">
+          <td onClick={() => handleView(income)} className="px-4 py-3 whitespace-nowrap cursor-pointer">{new Date(income.date).toLocaleDateString()}</td>
+          <td onClick={() => handleView(income)} className="px-4 py-3 min-w-[240px] max-w-[360px] cursor-pointer">
             <div className="flex items-center gap-2 flex-wrap">
               <span className={clsx('font-medium line-clamp-2', isDarkMode ? 'text-white' : 'text-gray-900')}>{income.description || income.source}</span>
               {isInvoiceIncome && <Badge variant="green" className="text-xs">Invoice</Badge>}
             </div>
           </td>
-          <td className="px-4 py-3 min-w-[140px]"><Badge variant="blue" className="text-xs">{catInfo.label}</Badge></td>
-          <td className="px-4 py-3 text-right font-mono font-semibold text-green-600 min-w-[140px] text-base">+{formatCurrencyCompact(Number(income.amount))}</td>
+          <td onClick={() => handleView(income)} className="px-4 py-3 min-w-[140px] cursor-pointer"><Badge variant="blue" className="text-xs">{catInfo.label}</Badge></td>
+          <td onClick={() => handleView(income)} className="px-4 py-3 text-right font-mono font-semibold text-green-600 min-w-[140px] text-base cursor-pointer">+{formatCurrencyCompact(Number(income.amount))}</td>
         </>
       );
     }
@@ -171,7 +176,8 @@ export default function IncomeManagerPage() {
         key={income.id}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className={clsx('w-full rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow', isDarkMode ? 'bg-gray-800' : 'bg-white')}
+        onClick={() => handleView(income)}
+        className={clsx('w-full rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer', isDarkMode ? 'bg-gray-800' : 'bg-white')}
       >
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-12">
           <div className="flex items-center gap-4">
@@ -202,13 +208,13 @@ export default function IncomeManagerPage() {
             {!isInvoiceIncome && (
               <div className="flex gap-2">
                 <button
-                  onClick={() => handleEdit(income)}
+                  onClick={(e) => { e.stopPropagation(); handleEdit(income); }}
                   className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100')}
                 >
                   <Edit size={18} className={isDarkMode ? 'text-gray-400' : 'text-gray-600'} />
                 </button>
                 <button
-                  onClick={() => handleDelete(income.id)}
+                  onClick={(e) => { e.stopPropagation(); handleDelete(income.id); }}
                   className={clsx('p-2 rounded-lg transition-colors', isDarkMode ? 'hover:bg-red-900/30' : 'hover:bg-red-50')}
                 >
                   <Trash2 size={18} className="text-red-600" />
@@ -459,6 +465,65 @@ export default function IncomeManagerPage() {
           </motion.div>
         </div>
       )}
+
+      {viewingIncome && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className={clsx('rounded-2xl w-full max-w-md max-h-[55vh] overflow-y-auto', isDarkMode ? 'bg-gray-800' : 'bg-white')}
+          >
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className={clsx('text-xl font-bold', isDarkMode ? 'text-white' : 'text-gray-900')}>View Income</h2>
+                <button
+                  onClick={() => setViewingIncome(null)}
+                  className={clsx('p-2 rounded-lg', isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100')}
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Description / Source</label>
+                  <p className={clsx('px-4 py-2 rounded-lg', isDarkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900')}>{viewingIncome.description || viewingIncome.source}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Category</label>
+                    <p className={clsx('px-4 py-2 rounded-lg', isDarkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900')}>{getCategoryInfo(viewingIncome.category).label}</p>
+                  </div>
+                  <div>
+                    <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Date</label>
+                    <p className={clsx('px-4 py-2 rounded-lg', isDarkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900')}>{new Date(viewingIncome.date).toLocaleDateString()}</p>
+                  </div>
+                </div>
+                <div>
+                  <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Amount</label>
+                  <p className={clsx('px-4 py-2 rounded-lg font-bold font-mono text-lg text-green-600', isDarkMode ? 'bg-gray-700' : 'bg-gray-50')}>+{formatCurrencyCompact(Number(viewingIncome.amount))}</p>
+                </div>
+                {viewingIncome.notes && (
+                  <div>
+                    <label className={clsx('block text-sm font-medium mb-1', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>Notes</label>
+                    <p className={clsx('px-4 py-2 rounded-lg', isDarkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900')}>{viewingIncome.notes}</p>
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-3 pt-4">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setViewingIncome(null)}
+                  className="flex-1"
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
     </div>
   );
 }

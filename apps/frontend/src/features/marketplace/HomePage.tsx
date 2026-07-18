@@ -80,7 +80,7 @@ export default function HomePage() {
               transition={{ delay: 0.1 }}
               className="flex flex-wrap items-center gap-2 mb-6"
             >
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-festac-green/90 backdrop-blur-sm rounded-full text-sm text-white/80">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-festac-green/30 backdrop-blur-sm rounded-full text-sm text-white/80">
                 <MapPin size={13} className="text-festac-amber" />
                 {isGranted && location
                   ? `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`
@@ -90,7 +90,7 @@ export default function HomePage() {
               </div>
               <Link
                 href="/map"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-festac-green/90 backdrop-blur-sm rounded-full text-sm text-white/80 hover:bg-festac-green/30 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-festac-green/30 backdrop-blur-sm rounded-full text-sm text-white/80 hover:bg-festac-green/30 transition-colors"
               >
                 <MapIcon size={13} className="text-festac-amber" />
                 <span>View Map</span>
@@ -305,7 +305,7 @@ export default function HomePage() {
               <motion.div
                 key={feat.title}
                 whileHover={{ y: -4 }}
-                className={clsx('text-center p-6 rounded-2xl shadow-card', isDarkMode ? 'bg-gray-800' : 'bg-white')}
+                className={clsx('text-center p-6 rounded-2xl shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200', isDarkMode ? 'bg-gray-800' : 'bg-white')}
               >
                 <div className={clsx('w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4', isDarkMode ? feat.bgDark : feat.bg)}>
                   {feat.icon}
@@ -383,7 +383,7 @@ function CategoryCard({ category, index, isDarkMode }: { category: Category; ind
       transition={{ delay: index * 0.04 }}
       whileTap={{ scale: 0.95 }}
       onClick={() => navigate(`/discover?categoryId=${category.id}`)}
-      className={clsx('flex flex-col items-center gap-2 p-4 rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-200 group', isDarkMode ? 'bg-gray-800' : 'bg-white')}
+      className={clsx('flex flex-col items-center gap-2 p-4 rounded-2xl shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200 hover:shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200-hover transition-all duration-200 group', isDarkMode ? 'bg-gray-800' : 'bg-white')}
     >
       <div
         className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform"
