@@ -55,6 +55,17 @@ export default function ExpenseManagerPage() {
 
   const totalExpense = filteredExpenses.reduce((sum: number, expense: Expense) => sum + Number(expense.amount), 0);
 
+  const thisWeek = filteredExpenses
+    .filter((expense: Expense) => {
+      const expenseDate = new Date(expense.date);
+      const now = new Date();
+      const startOfWeek = new Date(now);
+      startOfWeek.setHours(0, 0, 0, 0);
+      startOfWeek.setDate(now.getDate() - now.getDay());
+      return expenseDate >= startOfWeek;
+    })
+    .reduce((sum: number, expense: Expense) => sum + Number(expense.amount), 0);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     let receiptUrl = formData.receiptUrl;
@@ -247,11 +258,12 @@ export default function ExpenseManagerPage() {
           {/* Summary Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             <KPICard
-              icon={<TrendingDown size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />}
-              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}
+              icon={<TrendingDown size={20} className={isDarkMode ? 'text-red-300' : 'text-red-600'} />}
+              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-red-900/20' : 'bg-red-500/20')}
               label="Total Expenses"
               value={formatCurrencyCompact(totalExpense)}
               isLoading={isLoading}
+              valueClassName={isDarkMode ? '!text-red-300' : 'text-red-600'}
             />
             <KPICard
               icon={<Calendar size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />}
@@ -262,8 +274,16 @@ export default function ExpenseManagerPage() {
               delay={0.1}
             />
             <KPICard
-              icon={<ArrowDownRight size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />}
-              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}
+              icon={<Calendar size={20} className={isDarkMode ? 'text-red-300' : 'text-red-600'} />}
+              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-red-900/20' : 'bg-red-500/20')}
+              label="This Week"
+              value={formatCurrencyCompact(thisWeek)}
+              isLoading={isLoading}
+              delay={0.15}
+            />
+            <KPICard
+              icon={<ArrowDownRight size={20} className={isDarkMode ? 'text-red-300' : 'text-red-600'} />}
+              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-red-900/20' : 'bg-red-500/20')}
               label="This Month"
               value={formatCurrencyCompact(summary?.expense || 0)}
               isLoading={summaryLoading}

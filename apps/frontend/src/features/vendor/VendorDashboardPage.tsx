@@ -115,11 +115,12 @@ export default function VendorDashboardPage() {
               delay={0.2}
             />
             <KPICard
-              icon={<span className={clsx('text-xl font-semibold', isDarkMode ? 'text-green-300' : 'text-green-600')}>₦</span>}
-              iconContainerClassName={clsx('p-1 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}
+              icon={<span className={clsx('text-xl font-semibold', isDarkMode ? 'text-red-300' : 'text-red-600')}>₦</span>}
+              iconContainerClassName={clsx('p-1 rounded-lg', isDarkMode ? 'bg-red-900/20' : 'bg-red-500/20')}
               label="Tax Liability"
               value={formatCurrencyCompact(kpiTotalLiability)}
               isLoading={taxSummaryLoading || isPaidInvoicesLoading}
+              valueClassName={isDarkMode ? '!text-red-300' : 'text-red-600'}
               delay={0.3}
             />
           </div>

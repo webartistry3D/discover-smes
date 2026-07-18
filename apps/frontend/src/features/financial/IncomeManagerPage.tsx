@@ -83,6 +83,17 @@ export default function IncomeManagerPage() {
     })
     .reduce((sum: number, income: Income) => sum + Number(income.amount), 0);
 
+  const thisWeek = allIncomeRecords
+    .filter((income: Income) => {
+      const incomeDate = new Date(income.date);
+      const now = new Date();
+      const startOfWeek = new Date(now);
+      startOfWeek.setHours(0, 0, 0, 0);
+      startOfWeek.setDate(now.getDate() - now.getDay());
+      return incomeDate >= startOfWeek;
+    })
+    .reduce((sum: number, income: Income) => sum + Number(income.amount), 0);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -237,6 +248,7 @@ export default function IncomeManagerPage() {
               label="Total Income"
               value={formatCurrencyCompact(totalIncome)}
               isLoading={isLoading}
+              valueClassName={isDarkMode ? '!text-green-300' : 'text-green-600'}
             />
             <KPICard
               icon={<Calendar size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />}
@@ -245,6 +257,14 @@ export default function IncomeManagerPage() {
               value={filteredIncomes.length}
               isLoading={isLoading}
               delay={0.1}
+            />
+            <KPICard
+              icon={<Calendar size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />}
+              iconContainerClassName={clsx('p-2 rounded-lg', isDarkMode ? 'bg-green-900/20' : 'bg-green-500/20')}
+              label="This Week"
+              value={formatCurrencyCompact(thisWeek)}
+              isLoading={isLoading}
+              delay={0.15}
             />
             <KPICard
               icon={<ArrowUpRight size={20} className={isDarkMode ? 'text-green-300' : 'text-green-600'} />}
