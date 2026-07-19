@@ -14,11 +14,11 @@ const prisma = new PrismaClient({
 });
 
 async function seedSuperuser() {
-  const email = 'admin@discoverfestac.com';
-  const phone = '+2348000000001';
-  const password = 'Admin@123456';
-  const firstName = 'Super';
-  const lastName = 'Admin';
+  const email = process.env.SUPERUSER_EMAIL || 'admin@discoverfestac.com';
+  const phone = process.env.SUPERUSER_PHONE || '+2348000000001';
+  const password = process.env.SUPERUSER_PASSWORD || 'Admin@123456';
+  const firstName = process.env.SUPERUSER_FIRST_NAME || 'Super';
+  const lastName = process.env.SUPERUSER_LAST_NAME || 'Admin';
 
   // Check if superuser exists
   const existing = await prisma.user.findFirst({

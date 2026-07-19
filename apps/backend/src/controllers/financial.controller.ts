@@ -471,10 +471,12 @@ export class FinancialController {
       const { startDate, endDate, period } = req.query as Record<string, string>;
       
       const start = startDate ? new Date(startDate) : new Date(new Date().getFullYear(), 0, 1);
+      if (startDate) start.setHours(0, 0, 0, 0);
       const end = endDate ? new Date(endDate) : new Date();
+      if (endDate) end.setHours(23, 59, 59, 999);
 
-      // Get income and expense data
-      const [incomes, expenses] = await Promise.all([
+      // Get income, expense and paid invoice data
+      const [incomes, expenses, paidInvoices] = await Promise.all([
         prisma.income.findMany({
           where: { vendorId, date: { gte: start, lte: end } },
           orderBy: { date: 'asc' },
@@ -482,6 +484,10 @@ export class FinancialController {
         prisma.expense.findMany({
           where: { vendorId, date: { gte: start, lte: end } },
           orderBy: { date: 'asc' },
+        }),
+        prisma.invoice.findMany({
+          where: { vendorId, status: 'PAID', paidDate: { gte: start, lte: end } },
+          orderBy: { paidDate: 'asc' },
         }),
       ]);
 
@@ -492,13 +498,18 @@ export class FinancialController {
         return acc;
       }, {} as Record<string, number>);
 
+      const invoiceTotal = paidInvoices.reduce((sum, inv) => sum + Number(inv.total), 0);
+      if (invoiceTotal > 0) {
+        incomeByCategory['Invoice Payments'] = (incomeByCategory['Invoice Payments'] || 0) + invoiceTotal;
+      }
+
       const expenseByCategory = expenses.reduce((acc, exp) => {
         const category = exp.category;
         acc[category] = (acc[category] || 0) + Number(exp.amount);
         return acc;
       }, {} as Record<string, number>);
 
-      const totalRevenue = incomes.reduce((sum, inc) => sum + Number(inc.amount), 0);
+      const totalRevenue = incomes.reduce((sum, inc) => sum + Number(inc.amount), 0) + invoiceTotal;
       const totalExpenses = expenses.reduce((sum, exp) => sum + Number(exp.amount), 0);
       const grossProfit = totalRevenue - totalExpenses;
 
@@ -561,7 +572,9 @@ export class FinancialController {
       const { startDate, endDate, period } = req.query as Record<string, string>;
       
       const start = startDate ? new Date(startDate) : new Date(new Date().getFullYear(), 0, 1);
+      if (startDate) start.setHours(0, 0, 0, 0);
       const end = endDate ? new Date(endDate) : new Date();
+      if (endDate) end.setHours(23, 59, 59, 999);
 
       // Get income (cash inflows) and expenses (cash outflows)
       const [incomes, expenses, invoices] = await Promise.all([
@@ -657,7 +670,9 @@ export class FinancialController {
       const { startDate, endDate, period } = req.query as Record<string, string>;
       
       const start = startDate ? new Date(startDate) : new Date(new Date().getFullYear(), 0, 1);
+      if (startDate) start.setHours(0, 0, 0, 0);
       const end = endDate ? new Date(endDate) : new Date();
+      if (endDate) end.setHours(23, 59, 59, 999);
 
       // Get sales data from income and invoices
       const [salesIncomes, invoices, bookings] = await Promise.all([
@@ -688,10 +703,12 @@ export class FinancialController {
         }),
       ]);
 
-      const totalSales = salesIncomes.reduce((sum, inc) => sum + Number(inc.amount), 0);
+      const incomeSales = salesIncomes.reduce((sum, inc) => sum + Number(inc.amount), 0);
       const totalInvoiceSales = invoices.reduce((sum, inv) => sum + Number(inv.total), 0);
+      const totalBookingSales = bookings.reduce((sum, b) => sum + Number(b.price || 0), 0);
+      const totalSales = incomeSales + totalInvoiceSales + totalBookingSales;
       const totalOrders = invoices.length + bookings.length;
-      const averageOrderValue = totalOrders > 0 ? (totalSales + totalInvoiceSales) / totalOrders : 0;
+      const averageOrderValue = totalOrders > 0 ? totalSales / totalOrders : 0;
 
       // Calculate conversion rate (bookings / views - simplified)
       const conversionRate = 0; // Would need analytics data
@@ -701,21 +718,39 @@ export class FinancialController {
         acc[inc.category] = (acc[inc.category] || 0) + Number(inc.amount);
         return acc;
       }, {} as Record<string, number>);
+      if (totalInvoiceSales > 0) {
+        salesByCategory['Invoice Payments'] = (salesByCategory['Invoice Payments'] || 0) + totalInvoiceSales;
+      }
+      if (totalBookingSales > 0) {
+        salesByCategory['Service Bookings'] = (salesByCategory['Service Bookings'] || 0) + totalBookingSales;
+      }
 
       const reportData = {
         period: period || 'custom',
         startDate: start.toISOString(),
         endDate: end.toISOString(),
-        totalSales: totalSales + totalInvoiceSales,
+        totalSales,
         totalOrders,
         averageOrderValue,
         conversionRate,
         salesByCategory,
-        salesTrend: salesIncomes.map(inc => ({
-          date: inc.date.toISOString(),
-          amount: Number(inc.amount),
-          category: inc.category,
-        })),
+        salesTrend: [
+          ...salesIncomes.map(inc => ({
+            date: inc.date.toISOString(),
+            amount: Number(inc.amount),
+            category: inc.category,
+          })),
+          ...invoices.map(inv => ({
+            date: inv.createdAt.toISOString(),
+            amount: Number(inv.total),
+            category: 'PRODUCT_SALE' as const,
+          })),
+          ...bookings.map(b => ({
+            date: (b.createdAt ?? b.scheduledAt).toISOString(),
+            amount: Number(b.price || 0),
+            category: 'SERVICE_BOOKING' as const,
+          })),
+        ],
         topProducts: invoices
           .flatMap(inv => inv.lineItems)
           .reduce((acc, item) => {
@@ -733,7 +768,7 @@ export class FinancialController {
           startDate: start,
           endDate: end,
           data: reportData,
-          totalSales: totalSales + totalInvoiceSales,
+          totalSales,
           averageOrderValue,
           totalOrders,
           conversionRate,

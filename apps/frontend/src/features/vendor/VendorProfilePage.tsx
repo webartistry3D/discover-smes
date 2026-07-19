@@ -6,7 +6,7 @@ import {
   Share2, Heart, ArrowLeft, CheckCircle, Truck, Calendar,
   Edit2, Save, X,
 } from 'lucide-react';
-import { useVendorDetail, useReviews, useTrackWhatsApp } from '../../hooks/useVendors';
+import { useVendorDetail, useReviews, useTrackWhatsApp, useCreateReview } from '../../hooks/useVendors';
 import { useChatbotRules } from '../../hooks/useChatbot';
 import { ChatbotRuleType } from '../../lib/shared';
 import { VerificationBadge } from '../../components/ui/VerificationBadge';
@@ -21,20 +21,26 @@ import toast from 'react-hot-toast';
 
 export default function VendorProfilePage() {
   const { slug } = useParams<{ slug: string }>();
+  const { user } = useAuthStore();
   const { data: vendor, isLoading } = useVendorDetail(slug!);
   const { data: reviewsData } = useReviews(vendor?.id ?? '', 1);
-  const { data: chatbotRules } = useChatbotRules();
+  const { data: chatbotRules } = useChatbotRules(!!user);
   const faqRules = chatbotRules?.filter((r) => r.ruleType === ChatbotRuleType.FAQ) ?? [];
   const trackWa = useTrackWhatsApp();
-  const { user } = useAuthStore();
+  const createReview = useCreateReview(vendor?.id ?? '');
   const { isDarkMode } = useUIStore();
   const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'services' | 'faqs' | 'reviews'>('overview');
   const [showFullDesc, setShowFullDesc] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [editingHours, setEditingHours] = useState(false);
   const [hours, setHours] = useState<Record<string, { open: string; close: string; isClosed?: boolean }>>({});
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewGuestName, setReviewGuestName] = useState('');
+  const [reviewGuestPhone, setReviewGuestPhone] = useState('');
+  const [reviewGuestEmail, setReviewGuestEmail] = useState('');
 
-  const isOwner = user?.id === vendor?.ownerId;
+  const isOwner = !!user && user.id === vendor?.owner?.id;
 
   const updateHoursMutation = useMutation({
     mutationFn: (data: { openingHours: Record<string, { open: string; close: string; isClosed?: boolean }> }) =>
@@ -59,8 +65,9 @@ export default function VendorProfilePage() {
   );
 
   const isOpen = isVendorOpenNow(vendor.openingHours as any);
-  const waUrl = vendor.whatsappPhone
-    ? generateWhatsAppUrl(vendor.whatsappPhone, generateWhatsAppGreeting(vendor.businessName))
+  const waPhone = vendor.whatsappPhone || vendor.phone;
+  const waUrl = waPhone
+    ? generateWhatsAppUrl(waPhone, generateWhatsAppGreeting(vendor.businessName))
     : null;
 
   const handleWhatsApp = () => {
@@ -236,35 +243,33 @@ export default function VendorProfilePage() {
                 </div>
 
                 {/* Opening Hours */}
-                {vendor.openingHours && (
-                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-semibold text-gray-900 dark:text-white">Opening Hours</h3>
-                      {isOwner && !editingHours && (
-                        <button onClick={handleEditHours} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                          <Edit2 size={14} className="text-gray-500 dark:text-gray-300" />
-                        </button>
-                      )}
-                    </div>
-                    {editingHours ? (
-                      <div className="space-y-2">
-                        <OpeningHoursEditGrid hours={hours} setHours={setHours} />
-                        <div className="flex gap-2 mt-4">
-                          <button onClick={handleSaveHours} disabled={updateHoursMutation.isPending} className="flex items-center gap-1 px-4 py-2 bg-festac-green text-white text-sm font-semibold rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50">
-                            <Save size={14} />
-                            {updateHoursMutation.isPending ? 'Saving...' : 'Save'}
-                          </button>
-                          <button onClick={() => setEditingHours(false)} className="flex items-center gap-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors">
-                            <X size={14} />
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <OpeningHoursGrid hours={vendor.openingHours as any} />
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-gray-900 dark:text-white">Opening Hours</h3>
+                    {isOwner && !editingHours && (
+                      <button onClick={handleEditHours} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                        <Edit2 size={14} className="text-gray-500 dark:text-gray-300" />
+                      </button>
                     )}
                   </div>
-                )}
+                  {editingHours ? (
+                    <div className="space-y-2">
+                      <OpeningHoursEditGrid hours={hours} setHours={setHours} />
+                      <div className="flex gap-2 mt-4">
+                        <button onClick={handleSaveHours} disabled={updateHoursMutation.isPending} className="flex items-center gap-1 px-4 py-2 bg-festac-green text-white text-sm font-semibold rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50">
+                          <Save size={14} />
+                          {updateHoursMutation.isPending ? 'Saving...' : 'Save'}
+                        </button>
+                        <button onClick={() => setEditingHours(false)} className="flex items-center gap-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors">
+                          <X size={14} />
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <OpeningHoursGrid hours={(vendor.openingHours || {}) as any} />
+                  )}
+                </div>
 
                 {/* Current Promotions */}
                 {vendor.promotions?.length > 0 && (
@@ -354,13 +359,97 @@ export default function VendorProfilePage() {
 
             {activeTab === 'reviews' && (
               <motion.div key="reviews" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
+                {!isOwner && (
+                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200">
+                    <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Write a review</h3>
+                    <div className="flex items-center gap-1 mb-3">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setReviewRating(star)}
+                          className="focus:outline-none"
+                        >
+                          <Star
+                            size={24}
+                            className={clsx(
+                              'transition-colors',
+                              star <= reviewRating
+                                ? 'text-festac-amber fill-festac-amber'
+                                : 'text-gray-300 dark:text-gray-600'
+                            )}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                    {!user && (
+                      <div className="space-y-2 mb-3">
+                        <input
+                          type="text"
+                          value={reviewGuestName}
+                          onChange={(e) => setReviewGuestName(e.target.value)}
+                          placeholder="Your name *"
+                          className="w-full rounded-xl border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm p-3 focus:outline-none focus:ring-2 focus:ring-festac-green"
+                        />
+                        <input
+                          type="tel"
+                          value={reviewGuestPhone}
+                          onChange={(e) => setReviewGuestPhone(e.target.value)}
+                          placeholder="Phone number *"
+                          className="w-full rounded-xl border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm p-3 focus:outline-none focus:ring-2 focus:ring-festac-green"
+                        />
+                        <input
+                          type="email"
+                          value={reviewGuestEmail}
+                          onChange={(e) => setReviewGuestEmail(e.target.value)}
+                          placeholder="Email (optional)"
+                          className="w-full rounded-xl border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm p-3 focus:outline-none focus:ring-2 focus:ring-festac-green"
+                        />
+                      </div>
+                    )}
+                    <textarea
+                      value={reviewComment}
+                      onChange={(e) => setReviewComment(e.target.value)}
+                      placeholder="Share your experience (optional)"
+                      className="w-full rounded-xl border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm p-3 min-h-[80px] focus:outline-none focus:ring-2 focus:ring-festac-green"
+                    />
+                    <button
+                      onClick={() => {
+                        if (!reviewRating) return;
+                        if (!user && (!reviewGuestName.trim() || !reviewGuestPhone.trim())) return;
+                        const payload: any = { rating: reviewRating, comment: reviewComment.trim() || undefined };
+                        if (!user) {
+                          payload.guestName = reviewGuestName.trim();
+                          payload.guestPhone = reviewGuestPhone.trim();
+                          if (reviewGuestEmail.trim()) payload.guestEmail = reviewGuestEmail.trim();
+                        }
+                        createReview.mutate(payload, {
+                          onSuccess: () => {
+                            setReviewRating(0);
+                            setReviewComment('');
+                            setReviewGuestName('');
+                            setReviewGuestPhone('');
+                            setReviewGuestEmail('');
+                          },
+                        });
+                      }}
+                      disabled={!reviewRating || createReview.isPending || (!user && (!reviewGuestName.trim() || !reviewGuestPhone.trim()))}
+                      className="mt-3 px-4 py-2 bg-festac-green text-white text-sm font-semibold rounded-xl disabled:opacity-50"
+                    >
+                      {createReview.isPending ? 'Submitting...' : 'Submit Review'}
+                    </button>
+                  </div>
+                )}
+                {isOwner && (
+                  <div className="text-center py-6 text-sm text-gray-500 dark:text-gray-300">You cannot review your own business.</div>
+                )}
                 {(reviewsData as any)?.data?.map((r: any) => (
                   <div key={r.id} className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-xl hover:shadow-2xl dark:shadow-none dark:hover:shadow-none transition-shadow duration-200">
                     <div className="flex items-start gap-3">
-                      <Avatar src={r.user?.avatar} name={`${r.user?.firstName} ${r.user?.lastName}`} size="sm" />
+                      <Avatar src={r.user?.avatar} name={r.guestName || `${r.user?.firstName} ${r.user?.lastName}`} size="sm" />
                       <div className="flex-1">
                         <div className="flex items-center justify-between">
-                          <p className="font-semibold text-gray-900 dark:text-white text-sm">{r.user?.firstName} {r.user?.lastName}</p>
+                          <p className="font-semibold text-gray-900 dark:text-white text-sm">{r.guestName || `${r.user?.firstName} ${r.user?.lastName}`}</p>
                           <StarRating rating={r.rating} />
                         </div>
                         {r.comment && <p className="text-gray-500 dark:text-gray-300 text-sm mt-1 leading-relaxed">{r.comment}</p>}

@@ -220,15 +220,33 @@ reviews.get('/vendor/:vendorId', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-reviews.post('/vendor/:vendorId', authenticate, async (req, res, next) => {
+reviews.post('/vendor/:vendorId', optionalAuth, async (req, res, next) => {
   try {
-    const { rating, comment } = req.body as { rating: number; comment?: string };
+    const { rating, comment, guestName, guestPhone, guestEmail } = req.body as { rating: number; comment?: string; guestName?: string; guestPhone?: string; guestEmail?: string };
     if (!rating || rating < 1 || rating > 5) {
       res.status(422).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Rating must be 1-5' } });
       return;
     }
+    if (!req.user && (!guestName?.trim() || !guestPhone?.trim())) {
+      res.status(422).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Name and phone are required for guest reviews' } });
+      return;
+    }
+    const vendor = await prisma.vendor.findUnique({ where: { id: req.params['vendorId']! }, select: { userId: true } });
+    if (!vendor) throw AppError.notFound('Vendor not found');
+    if (req.user?.id === vendor.userId) {
+      throw AppError.forbidden('You cannot review your own business');
+    }
+
     const review = await prisma.review.create({
-      data: { vendorId: req.params['vendorId']!, userId: req.user!.id, rating, comment },
+      data: {
+        vendorId: req.params['vendorId']!,
+        userId: req.user?.id,
+        guestName: req.user ? undefined : guestName?.trim(),
+        guestPhone: req.user ? undefined : guestPhone?.trim(),
+        guestEmail: req.user ? undefined : guestEmail?.trim(),
+        rating,
+        comment,
+      },
     });
     // Update vendor average rating
     const { _avg } = await prisma.review.aggregate({
@@ -466,7 +484,7 @@ admin.get('/verification-requests', async (_req, res, next) => {
     const requests = await prisma.verificationRequest.findMany({
       where: { status: 'PENDING' },
       include: { 
-        vendor: { select: { businessName: true, lga: true } } 
+        vendor: { select: { businessName: true, lga: true, owner: { select: { firstName: true, lastName: true, phone: true } } } } 
       },
       orderBy: { createdAt: 'asc' },
     });
@@ -489,7 +507,12 @@ admin.patch('/verification-requests/:id', async (req, res, next) => {
     if (status === 'APPROVED') {
       await prisma.vendor.update({
         where: { id: request.vendorId },
-        data: { verificationLevel: request.requestedLevel },
+        data: { status: 'ACTIVE', verificationLevel: request.requestedLevel },
+      });
+    } else if (status === 'REJECTED') {
+      await prisma.vendor.update({
+        where: { id: request.vendorId },
+        data: { status: 'REJECTED' },
       });
     }
     sendSuccess(res, request, 'Verification request updated');

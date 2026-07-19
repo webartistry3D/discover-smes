@@ -169,7 +169,7 @@ export const categoryApi = {
 
 export const reviewApi = {
   forVendor: (vendorId: string, page = 1) => api.get(`/reviews/vendor/${vendorId}`, { params: { page } }),
-  create: (vendorId: string, data: { rating: number; comment?: string }) =>
+  create: (vendorId: string, data: { rating: number; comment?: string; guestName?: string; guestPhone?: string; guestEmail?: string }) =>
     api.post(`/reviews/vendor/${vendorId}`, data),
 };
 

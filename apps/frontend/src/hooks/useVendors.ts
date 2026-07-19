@@ -143,7 +143,7 @@ export function useReviews(vendorId: string, page = 1) {
 export function useCreateReview(vendorId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: { rating: number; comment?: string }) => reviewApi.create(vendorId, data),
+    mutationFn: (data: { rating: number; comment?: string; guestName?: string; guestPhone?: string; guestEmail?: string }) => reviewApi.create(vendorId, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.reviews(vendorId) });
       qc.invalidateQueries({ queryKey: queryKeys.vendors.detail(vendorId) });

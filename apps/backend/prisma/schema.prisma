@@ -306,7 +306,10 @@ model VendorFaq {
 model Review {
   id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   vendorId     String   @db.Uuid
-  userId       String   @db.Uuid
+  userId       String?  @db.Uuid
+  guestName    String?
+  guestPhone   String?
+  guestEmail   String?
   rating       Int      // 1-5
   comment      String?
   images       String[] @default([])
@@ -315,10 +318,9 @@ model Review {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  user   User   @relation(fields: [userId], references: [id])
+  vendor Vendor  @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  user   User?   @relation(fields: [userId], references: [id])
 
-  @@unique([vendorId, userId])
   @@index([vendorId, rating])
   @@index([userId])
   @@map("reviews")

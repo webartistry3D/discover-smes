@@ -46,10 +46,11 @@ export function useUpdateChatbotSettings() {
 
 // ─── CHATBOT RULES ────────────────────────────────────────────
 
-export function useChatbotRules() {
+export function useChatbotRules(enabled = true) {
   return useQuery({
     queryKey: chatbotQueryKeys.rules,
     queryFn: () => chatbotApi.getRules().then((r) => r.data.data),
+    enabled,
     staleTime: 5 * 60 * 1000, // 5 min
   });
 }
