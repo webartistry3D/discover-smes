@@ -32,3 +32,5 @@ Thumbs.db
 # Prisma
 prisma/dev.db
 prisma/dev.db-journal
+
+CHATBOT_ENHANCEMENTS_DOCUMENTATION.md chatbot_implementation_plan.md chatbot_update.md DISCOVER_FESTAC_OVERVIEW.md Festac.md generate-icons.mjs implement_twilio.md npm-audit-full.txt npm-audit-summary.txt npm-audit.json PRISMA_TROUBLESHOOTING.md scope_refactored.md scope.md whatsapp_cost_control_system.md
